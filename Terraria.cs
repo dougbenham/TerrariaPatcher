@@ -830,9 +830,9 @@ namespace TerrariaPatcher
                     Instruction.Create(OpCodes.Ret)
                 });
 
-            /*IL.MakeTypePublic(IL.GetTypeDefinition(ModDefinition, "MapHelper"));
-            IL.MakeTypePublic(IL.GetTypeDefinition(ModDefinition, "Lighting"));
-            IL.MakeTypePublic(IL.GetTypeDefinition(ModDefinition, "Main"));*/
+            //IL.MakeTypePublic(IL.GetTypeDefinition(ModDefinition, "MapHelper"));
+            //IL.MakeTypePublic(IL.GetTypeDefinition(ModDefinition, "Lighting"));
+            //IL.MakeTypePublic(IL.GetTypeDefinition(ModDefinition, "Main"));
         }
 
         private static void RemoveSteam()
