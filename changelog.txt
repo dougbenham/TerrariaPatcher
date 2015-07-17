@@ -1,7 +1,8 @@
 v1.2.0.1:	Added SkipSplash plugin.
 		Fixed UseTime (autoreuse) command bug.
 		Fixed Respawn plugin.
-		Fixed GodMode plugin.
+		Fixed GodMode plugin to use statLifeMax2 instead of statLifeMax.
+		Fixed Reveal plugin to use UpdateLighting instead of Update method.
 		Changed Teleport plugin to use friendly teleport method.
 v1.2.0.0:	Updated for Terraria 1.3.0.5.
 		Added IPluginChatCommand.

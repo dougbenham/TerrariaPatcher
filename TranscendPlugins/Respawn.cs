@@ -1,6 +1,7 @@
 ﻿using System;
 using PluginLoader;
 using Terraria;
+using Terraria.ID;
 
 namespace Ruffi123456789Plugins
 {
