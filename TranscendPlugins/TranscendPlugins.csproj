@@ -52,6 +52,7 @@
   <ItemGroup>
     <Compile Include="BuffRates.cs" />
     <Compile Include="CoinGun.cs" />
+    <Compile Include="FullBright.cs" />
     <Compile Include="GodMode.cs" />
     <Compile Include="HomingBullets.cs" />
     <Compile Include="InfiniteFlight.cs" />

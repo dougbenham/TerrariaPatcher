@@ -33,7 +33,7 @@ namespace TranscendPlugins
                             {
                                 mapLight[i, j] = Main.Map[i, j].Light;
                                 //if (Main.tile[i, j] == null || (!Main.tile[i, j].active() && Main.tile[i, j].type == 0) || !Main.tileBlockLight[Main.tile[i, j].type])
-                                Main.Map.UpdateLighting(i, j, 255);
+                                Main.Map.Update(i, j, 255);
                             }
                         }
                     }

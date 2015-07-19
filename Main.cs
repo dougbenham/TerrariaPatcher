@@ -123,7 +123,6 @@ namespace TerrariaPatcher
                 permanentWings.Checked = bool.Parse(IniAPI.ReadIni("General", "PermanentWings", "true", 255, ConfigPath));
                 infiniteCloudJumps.Checked = bool.Parse(IniAPI.ReadIni("General", "InfiniteCloudJumps", "false", 255, ConfigPath));
                 maxCraftingRange.Checked = bool.Parse(IniAPI.ReadIni("General", "MaxCraftingRange", "true", 255, ConfigPath));
-                fullBright.Checked = bool.Parse(IniAPI.ReadIni("General", "FullBright", "false", 255, ConfigPath));
 #if !PUBLIC
                 steamFixEnabled.Checked = bool.Parse(IniAPI.ReadIni("General", "SteamFixEnabled", "true", 255, ConfigPath));
 #else
@@ -167,7 +166,6 @@ namespace TerrariaPatcher
             IniAPI.WriteIni("General", "PermanentWings", permanentWings.Checked.ToString(), ConfigPath);
             IniAPI.WriteIni("General", "InfiniteCloudJumps", infiniteCloudJumps.Checked.ToString(), ConfigPath);
             IniAPI.WriteIni("General", "MaxCraftingRange", maxCraftingRange.Checked.ToString(), ConfigPath);
-            IniAPI.WriteIni("General", "FullBright", fullBright.Checked.ToString(), ConfigPath);
             IniAPI.WriteIni("General", "SteamFixEnabled", steamFixEnabled.Checked.ToString(), ConfigPath);
             IniAPI.WriteIni("General", "Plugins", plugins.Checked.ToString(), ConfigPath);
 
@@ -256,6 +254,12 @@ namespace TerrariaPatcher
                 return;
             }
 
+            if (buffsIn.Items.OfType<Buff>().Any(buff => buff.Name == "Builder"))
+            {
+                if (MessageBox.Show("You have the Builder buff turned on in the Persistent Buffs section. This has been reported to have negative effects when used in conjunction with the UseTime plugin. Please disable one or the other.", Program.AssemblyName, MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) != DialogResult.OK)
+                    return;
+            }
+
             CheckInstallationFolder();
 
             saveFileDialog.InitialDirectory = Path.GetDirectoryName(terrariaPath.Text);
@@ -267,15 +271,21 @@ namespace TerrariaPatcher
 
                 if (File.Exists(saveFileDialog.FileName + ".bak"))
                 {
-                    var versionCurrent = IL.GetAssemblyVersion(saveFileDialog.FileName);
-                    var versionBackup = IL.GetAssemblyVersion(saveFileDialog.FileName + ".bak");
                     var warning = "";
-                    if (versionCurrent != versionBackup)
+                    try
                     {
-                        warning = Environment.NewLine + Environment.NewLine + "WARNING: Your Terraria.exe is version " + versionCurrent + " and your Terraria.exe.bak is version " + versionBackup + ".";
-                        if (versionCurrent > versionBackup)
-                            warning += " It is not recommended to restore a backup of an older version of Terraria!";
+                        var versionCurrent = IL.GetAssemblyVersion(saveFileDialog.FileName);
+                        var versionBackup = IL.GetAssemblyVersion(saveFileDialog.FileName + ".bak");
+                        if (versionCurrent != versionBackup)
+                        {
+                            warning = Environment.NewLine + Environment.NewLine + "WARNING: Your Terraria.exe is version " + versionCurrent + " and your Terraria.exe.bak is version " + versionBackup +
+                                      ".";
+                            if (versionCurrent > versionBackup)
+                                warning += " It is not recommended to restore a backup of an older version of Terraria!";
+                        }
                     }
+                    catch
+                    { }
 
                     if (MessageBox.Show("Would you like to restore your backup before patching?" + warning, Program.AssemblyName, MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                     {
@@ -306,7 +316,6 @@ namespace TerrariaPatcher
                     OneHitKill = oneHitKill.Checked,
 					InfiniteAmmo = infiniteAmmo.Checked,
                     DemigodMode = demigodMode.Checked,
-                    FullBright = fullBright.Checked,
                     RemoveDrowning = removeDrowning.Checked,
                     RemoveDiscordBuff = removeRodBuffEnabled.Checked,
                     RemoveManaCost = removeManaCosts.Checked,

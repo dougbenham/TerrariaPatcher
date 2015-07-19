@@ -3,6 +3,7 @@ using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Windows.Forms;
 using Microsoft.CSharp;
 using Microsoft.Xna.Framework;
 using Terraria;
@@ -30,35 +31,39 @@ namespace PluginLoader
                         .Select(a => a.Location).ToArray();
 
                 foreach (var filename in Directory.EnumerateFiles(@".\Plugins\", "*.cs"))
+                    Load(Path.GetFileNameWithoutExtension(filename), references, File.ReadAllText(filename));
+
+                foreach (var folder in Directory.EnumerateDirectories(@".\Plugins\"))
+                    Load(Path.GetFileName(folder), references, Directory.EnumerateFiles(folder, "*.cs", SearchOption.AllDirectories).Select(File.ReadAllText).ToArray());
+            }
+        }
+
+        private static void Load(string name, string[] references, params string[] sources)
+        {
+            var compilerParams = new CompilerParameters();
+            compilerParams.GenerateInMemory = true;
+            compilerParams.GenerateExecutable = false;
+            compilerParams.TreatWarningsAsErrors = false;
+            compilerParams.CompilerOptions = "/optimize";
+
+            compilerParams.ReferencedAssemblies.AddRange(references);
+
+            var provider = new CSharpCodeProvider();
+            CompilerResults compile = provider.CompileAssemblyFromSource(compilerParams, sources);
+
+            if (compile.Errors.HasErrors)
+            {
+                string text = "Compile error for plugin " + name + ": ";
+                foreach (CompilerError ce in compile.Errors)
                 {
-                    var source = File.ReadAllText(filename);
-
-                    var compilerParams = new CompilerParameters();
-                    compilerParams.GenerateInMemory = true;
-                    compilerParams.GenerateExecutable = false;
-                    compilerParams.TreatWarningsAsErrors = false;
-                    compilerParams.CompilerOptions = "/optimize";
-
-                    compilerParams.ReferencedAssemblies.AddRange(references);
-
-                    var provider = new CSharpCodeProvider();
-                    CompilerResults compile = provider.CompileAssemblyFromSource(compilerParams, source);
-
-                    if (compile.Errors.HasErrors)
-                    {
-                        string text = "Compile error for plugin " + Path.GetFileNameWithoutExtension(filename) + ": ";
-                        foreach (CompilerError ce in compile.Errors)
-                        {
-                            text += ce + Environment.NewLine;
-                        }
-                        throw new Exception(text);
-                    }
-
-                    foreach (var type in compile.CompiledAssembly.GetTypes().Where(type1 => type1.GetInterfaces().Contains(typeof(IPlugin))))
-                    {
-                        loadedPlugins.Add(Activator.CreateInstance(type) as IPlugin);
-                    }
+                    text += ce + Environment.NewLine;
                 }
+                throw new Exception(text);
+            }
+
+            foreach (var type in compile.CompiledAssembly.GetTypes().Where(type1 => type1.GetInterfaces().Contains(typeof(IPlugin))))
+            {
+                loadedPlugins.Add(Activator.CreateInstance(type) as IPlugin);
             }
         }
 
@@ -192,6 +197,46 @@ namespace PluginLoader
             }
 
             return ret || chatRet;
+        }
+
+        public static bool OnLightingGetColor(int x, int y, out Color color)
+        {
+            Load();
+
+            color = Color.White;
+            bool ret = false;
+            foreach (var plugin in loadedPlugins.OfType<IPluginLightingGetColor>())
+            {
+                Color temp;
+                var result = plugin.OnLightingGetColor(x, y, out temp);
+                if (result)
+                {
+                    ret = true;
+                    color = temp;
+                }
+            }
+
+            return ret;
+        }
+
+        public static bool OnPlayerGetItem(Player player, Item newItem, out Item resultItem)
+        {
+            Load();
+
+            resultItem = null;
+            bool ret = false;
+            foreach (var plugin in loadedPlugins.OfType<IPluginPlayerGetItem>())
+            {
+                Item temp;
+                var result = plugin.OnPlayerGetItem(player, newItem, out temp);
+                if (result)
+                {
+                    ret = true;
+                    resultItem = temp;
+                }
+            }
+
+            return ret;
         }
     }
 }

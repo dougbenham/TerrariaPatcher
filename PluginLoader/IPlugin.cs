@@ -1,4 +1,5 @@
-﻿using Terraria;
+﻿using Microsoft.Xna.Framework;
+using Terraria;
 
 namespace PluginLoader
 {
@@ -41,5 +42,13 @@ namespace PluginLoader
     public interface IPluginChatCommand : IPlugin
     {
         bool OnChatCommand(string command, string[] args);
+    }
+    public interface IPluginLightingGetColor : IPlugin
+    {
+        bool OnLightingGetColor(int x, int y, out Color color);
+    }
+    public interface IPluginPlayerGetItem : IPlugin
+    {
+        bool OnPlayerGetItem(Player player, Item newItem, out Item resultItem);
     }
 }

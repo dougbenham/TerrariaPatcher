@@ -21,7 +21,6 @@ namespace TerrariaPatcher
         public bool DemigodMode = false;
 		public bool InfiniteAmmo = false;
         public bool SteamFix = false;
-        public bool FullBright = false;
         public bool Plugins = false;
         public bool InfiniteCloudJumps = false;
         public bool MaxCraftingRange = false;
@@ -73,7 +72,6 @@ namespace TerrariaPatcher
             if (details.DisplayTime) DisplayTime();
             if (details.OneHitKill) OneHitKill();
             if (details.RemoveAnglerQuestLimit) RemoveAnglerQuestLimit();
-            if (details.FullBright) FullBright();
             if (details.Plugins) Plugins();
             if (Math.Abs(details.VampiricHealing - 7.5f) > 0.01) ModVampiricKnives(details.VampiricHealing / 100f);
             if (Math.Abs(details.SpectreHealing - 20f) > 0.01) ModSpectreArmor(details.SpectreHealing / 100f);
@@ -102,23 +100,6 @@ namespace TerrariaPatcher
 
             int spot = IL.ScanForOpcodePattern(ghostHeal, OpCodes.Ldc_R4);
             ghostHeal.Body.Instructions[spot].Operand = healingRate;
-        }
-
-        private static void FullBright()
-        {
-            var lighting = IL.GetTypeDefinition(ModDefinition, "Lighting");
-            var getColor = IL.GetMethodDefinition(lighting, "GetColor", 2);
-
-            int spot = IL.ScanForOpcodePattern(getColor,
-                                               (i, instruction) =>
-                                               {
-                                                   var i0 = instruction.Operand as FieldReference;
-                                                   return i0 != null && i0.Name == "gameMenu";
-                                               },
-                                               OpCodes.Ldsfld,
-                                               OpCodes.Brfalse_S);
-
-            getColor.Body.Instructions[spot + 1].OpCode = OpCodes.Pop;
         }
 
         private static void InfiniteCloudJumps()
@@ -198,6 +179,7 @@ namespace TerrariaPatcher
             il.InsertBefore(in1, il.Create(OpCodes.Call, ModDefinition.Import(thornsScaling)));
             il.Remove(in1);
         }
+
         private static void FixPrefixes(int accessoryPrefix)
         {
             var item = IL.GetTypeDefinition(ModDefinition, "Item");
@@ -711,6 +693,8 @@ namespace TerrariaPatcher
             var onProjectileAI = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnProjectileAI001"));
             var onRightClick = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnItemSlotRightClick"));
             var onNetMessage = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnNetMessageSendData"));
+            var onGetColor = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnLightingGetColor"));
+            var onGetItem = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerGetItem"));
 
             var main = IL.GetTypeDefinition(ModDefinition, "Main");
             var update = IL.GetMethodDefinition(main, "Update");
@@ -829,6 +813,37 @@ namespace TerrariaPatcher
                     Instruction.Create(OpCodes.Brfalse_S, firstInstr),
                     Instruction.Create(OpCodes.Ret)
                 });
+
+            var lighting = IL.GetTypeDefinition(ModDefinition, "Lighting");
+            var getColor = IL.GetMethodDefinition(lighting, "GetColor", 2);
+            firstInstr = getColor.Body.Instructions.FirstOrDefault();
+            var varColor = new VariableDefinition("test", IL.GetTypeReference(ModDefinition, "Microsoft.Xna.Framework.Color"));
+            getColor.Body.Variables.Add(varColor);
+            IL.MethodPrepend(getColor, new[]
+            {
+                Instruction.Create(OpCodes.Ldarg_0),
+                Instruction.Create(OpCodes.Ldarg_1),
+                Instruction.Create(OpCodes.Ldloca_S, varColor),
+                Instruction.Create(OpCodes.Call, onGetColor),
+                Instruction.Create(OpCodes.Brfalse_S, firstInstr),
+                Instruction.Create(OpCodes.Ldloc, varColor),
+                Instruction.Create(OpCodes.Ret)
+            });
+
+            var getItem = IL.GetMethodDefinition(player, "GetItem");
+            firstInstr = getItem.Body.Instructions.FirstOrDefault();
+            var varItem = new VariableDefinition("test", IL.GetTypeDefinition(ModDefinition, "Item"));
+            getItem.Body.Variables.Add(varItem);
+            IL.MethodPrepend(getItem, new[]
+            {
+                Instruction.Create(OpCodes.Ldarg_0),
+                Instruction.Create(OpCodes.Ldarg_2),
+                Instruction.Create(OpCodes.Ldloca_S, varItem),
+                Instruction.Create(OpCodes.Call, onGetItem),
+                Instruction.Create(OpCodes.Brfalse_S, firstInstr),
+                Instruction.Create(OpCodes.Ldloc, varItem),
+                Instruction.Create(OpCodes.Ret)
+            });
 
             //IL.MakeTypePublic(IL.GetTypeDefinition(ModDefinition, "MapHelper"));
             //IL.MakeTypePublic(IL.GetTypeDefinition(ModDefinition, "Lighting"));

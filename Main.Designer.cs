@@ -37,7 +37,6 @@
             this.steamFixEnabled = new System.Windows.Forms.CheckBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.plugins = new System.Windows.Forms.CheckBox();
-            this.fullBright = new System.Windows.Forms.CheckBox();
             this.maxCraftingRange = new System.Windows.Forms.CheckBox();
             this.infiniteCloudJumps = new System.Windows.Forms.CheckBox();
             this.label11 = new System.Windows.Forms.Label();
@@ -150,7 +149,7 @@
             this.steamFixEnabled.AutoSize = true;
             this.steamFixEnabled.Checked = true;
             this.steamFixEnabled.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.steamFixEnabled.Location = new System.Drawing.Point(5, 340);
+            this.steamFixEnabled.Location = new System.Drawing.Point(5, 317);
             this.steamFixEnabled.Name = "steamFixEnabled";
             this.steamFixEnabled.Size = new System.Drawing.Size(72, 17);
             this.steamFixEnabled.TabIndex = 4;
@@ -161,7 +160,6 @@
             // groupBox2
             // 
             this.groupBox2.Controls.Add(this.plugins);
-            this.groupBox2.Controls.Add(this.fullBright);
             this.groupBox2.Controls.Add(this.maxCraftingRange);
             this.groupBox2.Controls.Add(this.infiniteCloudJumps);
             this.groupBox2.Controls.Add(this.label11);
@@ -180,7 +178,7 @@
             this.groupBox2.Controls.Add(this.steamFixEnabled);
             this.groupBox2.Location = new System.Drawing.Point(12, 63);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(308, 388);
+            this.groupBox2.Size = new System.Drawing.Size(308, 362);
             this.groupBox2.TabIndex = 5;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "General:";
@@ -190,24 +188,13 @@
             this.plugins.AutoSize = true;
             this.plugins.Checked = true;
             this.plugins.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.plugins.Location = new System.Drawing.Point(5, 363);
+            this.plugins.Location = new System.Drawing.Point(5, 340);
             this.plugins.Name = "plugins";
             this.plugins.Size = new System.Drawing.Size(215, 17);
             this.plugins.TabIndex = 32;
             this.plugins.Text = "Plugin support (loads from \\Plugins\\*.cs)";
             this.plugins.UseVisualStyleBackColor = true;
             this.plugins.CheckedChanged += new System.EventHandler(this.config_Changed);
-            // 
-            // fullBright
-            // 
-            this.fullBright.AutoSize = true;
-            this.fullBright.Location = new System.Drawing.Point(5, 317);
-            this.fullBright.Name = "fullBright";
-            this.fullBright.Size = new System.Drawing.Size(72, 17);
-            this.fullBright.TabIndex = 31;
-            this.fullBright.Text = "Full Bright";
-            this.fullBright.UseVisualStyleBackColor = true;
-            this.fullBright.CheckedChanged += new System.EventHandler(this.config_Changed);
             // 
             // maxCraftingRange
             // 
@@ -400,7 +387,7 @@
             this.groupBox3.Controls.Add(this.moveIn);
             this.groupBox3.Location = new System.Drawing.Point(326, 12);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(308, 434);
+            this.groupBox3.Size = new System.Drawing.Size(308, 413);
             this.groupBox3.TabIndex = 6;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Persistent Buffs:";
@@ -420,7 +407,7 @@
             // buffsInCount
             // 
             this.buffsInCount.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.buffsInCount.Location = new System.Drawing.Point(166, 414);
+            this.buffsInCount.Location = new System.Drawing.Point(163, 393);
             this.buffsInCount.Name = "buffsInCount";
             this.buffsInCount.Size = new System.Drawing.Size(139, 12);
             this.buffsInCount.TabIndex = 5;
@@ -429,7 +416,7 @@
             // buffsOutCount
             // 
             this.buffsOutCount.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.buffsOutCount.Location = new System.Drawing.Point(6, 414);
+            this.buffsOutCount.Location = new System.Drawing.Point(6, 393);
             this.buffsOutCount.Name = "buffsOutCount";
             this.buffsOutCount.Size = new System.Drawing.Size(130, 12);
             this.buffsOutCount.TabIndex = 4;
@@ -453,7 +440,7 @@
             this.buffsIn.HorizontalScrollbar = true;
             this.buffsIn.Location = new System.Drawing.Point(172, 19);
             this.buffsIn.Name = "buffsIn";
-            this.buffsIn.Size = new System.Drawing.Size(130, 381);
+            this.buffsIn.Size = new System.Drawing.Size(130, 355);
             this.buffsIn.TabIndex = 1;
             this.buffsIn.SelectedIndexChanged += new System.EventHandler(this.buffs_Update);
             // 
@@ -463,7 +450,7 @@
             this.buffsOut.HorizontalScrollbar = true;
             this.buffsOut.Location = new System.Drawing.Point(6, 19);
             this.buffsOut.Name = "buffsOut";
-            this.buffsOut.Size = new System.Drawing.Size(130, 381);
+            this.buffsOut.Size = new System.Drawing.Size(130, 355);
             this.buffsOut.TabIndex = 0;
             this.buffsOut.SelectedIndexChanged += new System.EventHandler(this.buffs_Update);
             // 
@@ -482,7 +469,7 @@
             // save
             // 
             this.save.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.save.Location = new System.Drawing.Point(865, 428);
+            this.save.Location = new System.Drawing.Point(865, 404);
             this.save.Name = "save";
             this.save.Size = new System.Drawing.Size(83, 23);
             this.save.TabIndex = 0;
@@ -604,7 +591,7 @@
             // 
             this.linkLabel.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.linkLabel.AutoSize = true;
-            this.linkLabel.Location = new System.Drawing.Point(714, 412);
+            this.linkLabel.Location = new System.Drawing.Point(714, 388);
             this.linkLabel.Name = "linkLabel";
             this.linkLabel.Size = new System.Drawing.Size(234, 13);
             this.linkLabel.TabIndex = 28;
@@ -616,7 +603,7 @@
             // 
             this.versionWarning.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.versionWarning.AutoSize = true;
-            this.versionWarning.Location = new System.Drawing.Point(948, 399);
+            this.versionWarning.Location = new System.Drawing.Point(948, 375);
             this.versionWarning.Name = "versionWarning";
             this.versionWarning.Size = new System.Drawing.Size(0, 13);
             this.versionWarning.TabIndex = 29;
@@ -626,7 +613,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(956, 459);
+            this.ClientSize = new System.Drawing.Size(956, 435);
             this.Controls.Add(this.versionWarning);
             this.Controls.Add(this.linkLabel);
             this.Controls.Add(this.save);
@@ -697,7 +684,6 @@
         private System.Windows.Forms.GroupBox groupBox6;
         private System.Windows.Forms.NumericUpDown spectreHealingRate;
         private System.Windows.Forms.CheckBox maxCraftingRange;
-        private System.Windows.Forms.CheckBox fullBright;
         private System.Windows.Forms.CheckBox plugins;
         private System.Windows.Forms.LinkLabel linkLabel;
         private System.Windows.Forms.Label versionWarning;

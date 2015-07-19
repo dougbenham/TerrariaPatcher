@@ -1,3 +1,11 @@
+v1.2.0.2:	Moved Full Bright to a plugin with toggleable key.
+		Added '/teleport plantera' and '/teleport strangeplant' commands to teleport plugin. Removed teleport plantera hotkey.
+		Changed Teleport plugin method.
+		Changed UseTime plugin to use 0 instead of 1 for picks/drills/axes/blocks/walls/wires.
+		Added Builder buff / UseTime plugin warning.
+		Reverted Reveal plugin changes.. Causing memory issues.
+		Added ability to load plugins from subfolders with group compilation (allows for larger plugins).
+		Added plugin support for IPluginPlayerGetItem.
 v1.2.0.1:	Added SkipSplash plugin.
 		Fixed UseTime (autoreuse) command bug.
 		Fixed Respawn plugin.

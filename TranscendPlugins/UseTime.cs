@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using System.Windows.Forms;
 using PluginLoader;
 using Terraria;
 using Terraria.ID;
@@ -9,6 +10,7 @@ namespace TranscendPlugins
     public class UseTime : MarshalByRefObject, IPluginItemSetDefaults, IPluginPlayerUpdateBuffs, IPluginChatCommand
     {
         private bool maxTileSpeed, maxWallSpeed, maxPickSpeed, maxReachRange, maxItemPickupRange;
+        private bool builderBuffWarning = false;
 
         private int DefaultItemGrabRange
         {
@@ -34,7 +36,7 @@ namespace TranscendPlugins
             if (maxPickSpeed && (item.axe > 0 ||
                                  item.pick > 0 ||
                                  item.hammer > 0))
-                item.useTime = 1;
+                item.useTime = 0;
 
             if (maxTileSpeed &&
                 (item.createTile >= 0 ||
@@ -43,16 +45,28 @@ namespace TranscendPlugins
                  item.type == ItemID.GreenWrench ||
                  item.type == ItemID.WireCutter ||
                  item.type == ItemID.Actuator))
-                item.useTime = 1;
+                item.useTime = 0;
 
             if (maxWallSpeed && item.createWall > 0)
-                item.useTime = 1;
+                item.useTime = 0;
         }
 
         public void OnPlayerUpdateBuffs(Player player)
         {
             if (player.whoAmI == Main.myPlayer)
             {
+                if (!builderBuffWarning)
+                {
+                    for (int k = 0; k < 22; k++)
+                    {
+                        if (player.buffType[k] == BuffID.Builder && player.buffTime[k] > 0)
+                        {
+                            builderBuffWarning = true;
+                            MessageBox.Show("Please disable the Builder buff, it causes issues with the UseTime plugin.");
+                        }
+                    }
+                }
+
                 if (maxReachRange)
                 {
                     Player.tileRangeX = 100;
