@@ -1,23 +1,23 @@
 ﻿using System;
 using PluginLoader;
 using Terraria;
-using Terraria.ID;
 
 namespace Ruffi123456789Plugins
 {
     public class Respawn : MarshalByRefObject, IPluginUpdate
     {
-        int respawnDelay;
+        bool instantRespawn;
 
         public Respawn()
         {
-            if (!int.TryParse(IniAPI.ReadIni("Respawn", "Delay", "0", writeIt: true), out respawnDelay))
-                respawnDelay = 0;
+            if (!bool.TryParse(IniAPI.ReadIni("Respawn", "Instant", "true", writeIt: true), out instantRespawn))
+                instantRespawn = true;
         }
 
         public void OnUpdate()
         {
-            Main.player[Main.myPlayer].respawnTimer = respawnDelay;
+            if (instantRespawn)
+                Main.player[Main.myPlayer].respawnTimer = 0;
         }
     }
 }
