@@ -697,8 +697,18 @@ namespace TerrariaPatcher
             var onGetItem = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerGetItem"));
             var onChestSetupShop = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnChestSetupShop"));
             var onPlayerQuickBuff = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerQuickBuff"));
+            var onNPCLoot = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnNPCLoot"));
 
             var main = IL.GetTypeDefinition(ModDefinition, "Main");
+            var player = IL.GetTypeDefinition(ModDefinition, "Player");
+            var npc = IL.GetTypeDefinition(ModDefinition, "NPC");
+            var item = IL.GetTypeDefinition(ModDefinition, "Item");
+            var projectile = IL.GetTypeDefinition(ModDefinition, "Projectile");
+            var itemSlot = IL.GetTypeDefinition(ModDefinition, "ItemSlot");
+            var netMessage = IL.GetTypeDefinition(ModDefinition, "NetMessage");
+            var lighting = IL.GetTypeDefinition(ModDefinition, "Lighting");
+            var chest = IL.GetTypeDefinition(ModDefinition, "Chest");
+
             var update = IL.GetMethodDefinition(main, "Update");
             var updateIL = update.Body.GetILProcessor();
 
@@ -721,8 +731,7 @@ namespace TerrariaPatcher
                     Instruction.Create(OpCodes.Call, onUpdate),
                     Instruction.Create(OpCodes.Ret)
                 });
-            
-            var player = IL.GetTypeDefinition(ModDefinition, "Player");
+
             var updatePlayer = IL.GetMethodDefinition(player, "Update");
             var updatePlayerIL = updatePlayer.Body.GetILProcessor();
 
@@ -758,7 +767,6 @@ namespace TerrariaPatcher
                     Instruction.Create(OpCodes.Ret)
                 });
 
-            var item = IL.GetTypeDefinition(ModDefinition, "Item");
             var setDefaults = IL.GetMethodDefinition(item, "SetDefaults", 2);
             var setDefaultsIL = setDefaults.Body.GetILProcessor();
 
@@ -769,7 +777,6 @@ namespace TerrariaPatcher
                     Instruction.Create(OpCodes.Ret)
                 });
 
-            var projectile = IL.GetTypeDefinition(ModDefinition, "Projectile");
             var ai = IL.GetMethodDefinition(projectile, "AI_001");
             var aiIL = ai.Body.GetILProcessor();
 
@@ -780,7 +787,6 @@ namespace TerrariaPatcher
                     Instruction.Create(OpCodes.Ret)
                 });
 
-            var itemSlot = IL.GetTypeDefinition(ModDefinition, "ItemSlot");
             var rightClick = IL.GetMethodDefinition(itemSlot, "RightClick", 3);
             var firstInstr = rightClick.Body.Instructions.FirstOrDefault();
 
@@ -794,7 +800,6 @@ namespace TerrariaPatcher
                     Instruction.Create(OpCodes.Ret)
                 });
 
-            var netMessage = IL.GetTypeDefinition(ModDefinition, "NetMessage");
             var sendData = IL.GetMethodDefinition(netMessage, "SendData");
             firstInstr = sendData.Body.Instructions.FirstOrDefault();
             
@@ -816,7 +821,6 @@ namespace TerrariaPatcher
                     Instruction.Create(OpCodes.Ret)
                 });
 
-            var lighting = IL.GetTypeDefinition(ModDefinition, "Lighting");
             var getColor = IL.GetMethodDefinition(lighting, "GetColor", 2);
             firstInstr = getColor.Body.Instructions.FirstOrDefault();
             var varColor = new VariableDefinition("test", IL.GetTypeReference(ModDefinition, "Microsoft.Xna.Framework.Color"));
@@ -847,7 +851,6 @@ namespace TerrariaPatcher
                 Instruction.Create(OpCodes.Ret)
             });
 
-            var chest = IL.GetTypeDefinition(ModDefinition, "Chest");
             var setupShop = IL.GetMethodDefinition(chest, "SetupShop");
             IL.MethodAppend(setupShop.Body.GetILProcessor(), setupShop.Body.Instructions.Count - 1, 1, new[]
                 {
@@ -864,6 +867,17 @@ namespace TerrariaPatcher
                 {
                     Instruction.Create(OpCodes.Ldarg_0),
                     Instruction.Create(OpCodes.Call, onPlayerQuickBuff),
+                    Instruction.Create(OpCodes.Brfalse_S, firstInstr),
+                    Instruction.Create(OpCodes.Ret)
+                });
+
+            var npcLoot = IL.GetMethodDefinition(npc, "NPCLoot");
+            firstInstr = npcLoot.Body.Instructions.FirstOrDefault();
+
+            IL.MethodPrepend(npcLoot, new[]
+                {
+                    Instruction.Create(OpCodes.Ldarg_0),
+                    Instruction.Create(OpCodes.Call, onNPCLoot),
                     Instruction.Create(OpCodes.Brfalse_S, firstInstr),
                     Instruction.Create(OpCodes.Ret)
                 });

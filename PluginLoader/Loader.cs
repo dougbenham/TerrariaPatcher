@@ -273,5 +273,16 @@ namespace PluginLoader
 
             return ret;
         }
+
+        public static bool OnNPCLoot(NPC npc)
+        {
+            Load();
+
+            var ret = false;
+            foreach (var plugin in loadedPlugins.OfType<IPluginNPCLoot>())
+                ret = plugin.OnNPCLoot(npc) || ret;
+
+            return ret;
+        }
     }
 }

@@ -59,4 +59,8 @@ namespace PluginLoader
     {
         bool OnPlayerQuickBuff(Player player);
     }
+    public interface IPluginNPCLoot : IPlugin
+    {
+        bool OnNPCLoot(NPC npc);
+    }
 }
