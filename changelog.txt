@@ -1,3 +1,4 @@
+v1.2.0.3:	Added plugin support for IPluginChestSetupShop.
 v1.2.0.2:	Moved Full Bright to a plugin with toggleable key.
 		Added '/teleport plantera' and '/teleport strangeplant' commands to teleport plugin. Removed teleport plantera hotkey.
 		Changed Teleport plugin method.

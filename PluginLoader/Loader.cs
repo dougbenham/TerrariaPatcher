@@ -238,5 +238,15 @@ namespace PluginLoader
 
             return ret;
         }
+
+        public static void OnChestSetupShop(Chest chest, int type)
+        {
+            Load();
+
+            foreach (var plugin in loadedPlugins.OfType<IPluginChestSetupShop>())
+            {
+                plugin.OnChestSetupShop(chest, type);
+            }
+        }
     }
 }

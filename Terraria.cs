@@ -695,6 +695,7 @@ namespace TerrariaPatcher
             var onNetMessage = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnNetMessageSendData"));
             var onGetColor = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnLightingGetColor"));
             var onGetItem = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerGetItem"));
+            var onChestSetupShop = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnChestSetupShop"));
 
             var main = IL.GetTypeDefinition(ModDefinition, "Main");
             var update = IL.GetMethodDefinition(main, "Update");
@@ -844,6 +845,16 @@ namespace TerrariaPatcher
                 Instruction.Create(OpCodes.Ldloc, varItem),
                 Instruction.Create(OpCodes.Ret)
             });
+
+            var chest = IL.GetTypeDefinition(ModDefinition, "Chest");
+            var setupShop = IL.GetMethodDefinition(chest, "SetupShop");
+            IL.MethodAppend(setupShop.Body.GetILProcessor(), setupShop.Body.Instructions.Count - 1, 1, new[]
+                {
+                    Instruction.Create(OpCodes.Ldarg_0),
+                    Instruction.Create(OpCodes.Ldarg_1),
+                    Instruction.Create(OpCodes.Call, onChestSetupShop),
+                    Instruction.Create(OpCodes.Ret)
+                });
 
             //IL.MakeTypePublic(IL.GetTypeDefinition(ModDefinition, "MapHelper"));
             //IL.MakeTypePublic(IL.GetTypeDefinition(ModDefinition, "Lighting"));

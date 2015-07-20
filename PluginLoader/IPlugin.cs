@@ -51,4 +51,8 @@ namespace PluginLoader
     {
         bool OnPlayerGetItem(Player player, Item newItem, out Item resultItem);
     }
+    public interface IPluginChestSetupShop : IPlugin
+    {
+        void OnChestSetupShop(Chest chest, int type);
+    }
 }
