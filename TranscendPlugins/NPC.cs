@@ -161,12 +161,13 @@ namespace TranscendPlugins
             if (!int.TryParse(args[0], out npcId))
             {
                 var field = typeof(NPCID).GetFields().FirstOrDefault(info => info.Name.ToLower() == args[0].ToLower());
-                if (field == null)
-                {
-                    Main.NewText("Invalid NPCID.");
-                    return true;
-                }
-                npcId = Convert.ToInt32(field.GetValue(null));
+                if (field != null)
+                    npcId = Convert.ToInt32(field.GetValue(null));
+            }
+            if (npcId == 0)
+            {
+                Main.NewText("Invalid NPCID.");
+                return true;
             }
 
             int count = 1;
@@ -183,7 +184,12 @@ namespace TranscendPlugins
             var x = (int)player.Center.X;
             var y = (int)player.Center.Y - 150;
             for (int i = 0; i < count; i++)
-                Terraria.NPC.NewNPC(x, y, npcId);
+            {
+                if (npcId < 0)
+                    Main.npc[Terraria.NPC.NewNPC(x, y, 1)].netDefaults(npcId); // special slime
+                else
+                    Terraria.NPC.NewNPC(x, y, npcId);
+            }
             return true;
         }
     }
