@@ -3,7 +3,7 @@ using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Windows.Forms;
+using System.Reflection;
 using Microsoft.CSharp;
 using Microsoft.Xna.Framework;
 using Terraria;
@@ -25,10 +25,24 @@ namespace PluginLoader
             {
                 loaded = true;
 
+                // Dynamic compilation requires assemblies to be stored on file, thus we must extract the Newtonsoft.Json.dll embedded resource to a temp file if we want to use it.
+                var resourceName = "Terraria.Libraries.JSON.NET.Net40.Newtonsoft.Json.dll";
+                var newtonsoftFileName = Path.Combine(Path.GetTempPath(), resourceName);
+                if (!File.Exists(newtonsoftFileName))
+                {
+                    using (var stream = Assembly.GetEntryAssembly().GetManifestResourceStream(resourceName))
+                    {
+                        using (var fileStream = new FileStream(newtonsoftFileName, FileMode.Create))
+                        {
+                            stream.CopyTo(fileStream);
+                        }
+                    }
+                }
+
                 var references = AppDomain.CurrentDomain
-                        .GetAssemblies()
-                        .Where(a => !a.IsDynamic)
-                        .Select(a => a.Location).ToArray();
+                    .GetAssemblies()
+                    .Where(a => !a.IsDynamic)
+                    .Select(a => a.Location).Concat(new[] { newtonsoftFileName }).ToArray();
 
                 foreach (var filename in Directory.EnumerateFiles(@".\Plugins\", "*.cs"))
                     Load(Path.GetFileNameWithoutExtension(filename), references, File.ReadAllText(filename));
@@ -49,11 +63,11 @@ namespace PluginLoader
             compilerParams.ReferencedAssemblies.AddRange(references);
 
             var provider = new CSharpCodeProvider();
-            CompilerResults compile = provider.CompileAssemblyFromSource(compilerParams, sources);
+            var compile = provider.CompileAssemblyFromSource(compilerParams, sources);
 
             if (compile.Errors.HasErrors)
             {
-                string text = "Compile error for plugin " + name + ": ";
+                var text = "Compile error for plugin " + name + ": ";
                 foreach (CompilerError ce in compile.Errors)
                 {
                     text += ce + Environment.NewLine;
@@ -106,7 +120,7 @@ namespace PluginLoader
             if (!Main.blockInput && !Main.chatMode && !Main.editSign && !Main.editChest)
             {
                 var keysdown = Main.keyState.GetPressedKeys();
-                bool anyPresses = false;
+                var anyPresses = false;
                 foreach (var hotkey in hotkeys)
                 {
                     if (hotkey.Keys.All(keysdown.Contains))
@@ -167,7 +181,7 @@ namespace PluginLoader
         {
             Load();
 
-            bool ret = false;
+            var ret = false;
             foreach (var plugin in loadedPlugins.OfType<IPluginItemSlotRightClick>())
                 ret = plugin.OnItemSlotRightClick(inv, context, slot) || ret;
 
@@ -188,7 +202,7 @@ namespace PluginLoader
             {
                 var split = text.Substring(1).Split(new[] {' '}, 2);
                 var cmd = split[0].ToLower();
-                string[] args = split.Length > 1 ? split[1].Split(' ') : new string[0];
+                var args = split.Length > 1 ? split[1].Split(' ') : new string[0];
 
                 foreach (var plugin in loadedPlugins.OfType<IPluginChatCommand>())
                     chatRet = plugin.OnChatCommand(cmd, args) || chatRet;
@@ -204,7 +218,7 @@ namespace PluginLoader
             Load();
 
             color = Color.White;
-            bool ret = false;
+            var ret = false;
             foreach (var plugin in loadedPlugins.OfType<IPluginLightingGetColor>())
             {
                 Color temp;
@@ -224,7 +238,7 @@ namespace PluginLoader
             Load();
 
             resultItem = null;
-            bool ret = false;
+            var ret = false;
             foreach (var plugin in loadedPlugins.OfType<IPluginPlayerGetItem>())
             {
                 Item temp;

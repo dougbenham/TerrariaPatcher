@@ -37,6 +37,10 @@
     <Reference Include="Microsoft.Xna.Framework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="Microsoft.Xna.Framework.Game, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="Microsoft.Xna.Framework.Graphics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
+    <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Windows.Forms" />
@@ -57,6 +61,19 @@
     <Compile Include="HomingBullets.cs" />
     <Compile Include="InfiniteFlight.cs" />
     <Compile Include="InfiniteLifeSteal.cs" />
+    <Compile Include="InventoryEnhancements\AutoClean.cs" />
+    <Compile Include="InventoryEnhancements\AutoSort.cs" />
+    <Compile Include="InventoryEnhancements\AutoTrash.cs" />
+    <Compile Include="InventoryEnhancements\Config.cs" />
+    <Compile Include="InventoryEnhancements\HotbarSwap.cs" />
+    <Compile Include="InventoryEnhancements\InventoryEnhancements.cs" />
+    <Compile Include="InventoryEnhancements\InventoryEnhancementsPlugin.cs" />
+    <Compile Include="InventoryEnhancements\SortingSet.cs" />
+    <Compile Include="InventoryEnhancements\Sorting\Sets.cs" />
+    <Compile Include="InventoryEnhancements\Sorting\SortManager.cs" />
+    <Compile Include="InventoryEnhancements\Utils\Input.cs" />
+    <Compile Include="InventoryEnhancements\Utils\Json.cs" />
+    <Compile Include="InventoryEnhancements\Utils\MouseButton.cs" />
     <Compile Include="ItemReplication.cs" />
     <Compile Include="ItemSpawner.cs" />
     <Compile Include="Minions.cs" />
@@ -77,6 +94,10 @@
       <Project>{fab05058-0ecb-4ea1-808c-d8b684d463d8}</Project>
       <Name>PluginLoader</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
