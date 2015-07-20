@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Reflection;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using PluginLoader;
@@ -15,13 +14,11 @@ namespace TranscendPlugins
 
         public Teleport()
         {
-            var mapHelper = Assembly.GetEntryAssembly().GetType("Terraria.Map.MapHelper");
-            var tileToLookup = mapHelper.GetMethod("TileToLookup");
-            planteraBulbTileLookup = (int)tileToLookup.Invoke(null, new object[] { TileID.PlanteraBulb, 0 });
-            plant1Lookup = (int)tileToLookup.Invoke(null, new object[] { TileID.DyePlants, 8 });
-            plant2Lookup = (int)tileToLookup.Invoke(null, new object[] { TileID.DyePlants, 9 });
-            plant3Lookup = (int)tileToLookup.Invoke(null, new object[] { TileID.DyePlants, 10 });
-            plant4Lookup = (int)tileToLookup.Invoke(null, new object[] { TileID.DyePlants, 11 });
+            planteraBulbTileLookup = Terraria.Map.MapHelper.TileToLookup(TileID.PlanteraBulb, 0);
+            plant1Lookup = Terraria.Map.MapHelper.TileToLookup(TileID.DyePlants, 8);
+            plant2Lookup = Terraria.Map.MapHelper.TileToLookup(TileID.DyePlants, 9);
+            plant3Lookup = Terraria.Map.MapHelper.TileToLookup(TileID.DyePlants, 10);
+            plant4Lookup = Terraria.Map.MapHelper.TileToLookup(TileID.DyePlants, 11);
 
             if (!Keys.TryParse(IniAPI.ReadIni("Teleport", "TeleportKey", "F", writeIt: true), out teleportKey))
                 teleportKey = Keys.F;

@@ -55,4 +55,8 @@ namespace PluginLoader
     {
         void OnChestSetupShop(Chest chest, int type);
     }
+    public interface IPluginPlayerQuickBuff : IPlugin
+    {
+        bool OnPlayerQuickBuff(Player player);
+    }
 }

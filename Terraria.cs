@@ -696,6 +696,7 @@ namespace TerrariaPatcher
             var onGetColor = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnLightingGetColor"));
             var onGetItem = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerGetItem"));
             var onChestSetupShop = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnChestSetupShop"));
+            var onPlayerQuickBuff = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerQuickBuff"));
 
             var main = IL.GetTypeDefinition(ModDefinition, "Main");
             var update = IL.GetMethodDefinition(main, "Update");
@@ -856,9 +857,21 @@ namespace TerrariaPatcher
                     Instruction.Create(OpCodes.Ret)
                 });
 
-            //IL.MakeTypePublic(IL.GetTypeDefinition(ModDefinition, "MapHelper"));
-            //IL.MakeTypePublic(IL.GetTypeDefinition(ModDefinition, "Lighting"));
+            var quickBuff = IL.GetMethodDefinition(player, "QuickBuff");
+            firstInstr = quickBuff.Body.Instructions.FirstOrDefault();
+
+            IL.MethodPrepend(quickBuff, new[]
+                {
+                    Instruction.Create(OpCodes.Ldarg_0),
+                    Instruction.Create(OpCodes.Call, onPlayerQuickBuff),
+                    Instruction.Create(OpCodes.Brfalse_S, firstInstr),
+                    Instruction.Create(OpCodes.Ret)
+                });
+
+            IL.MakeTypePublic(IL.GetTypeDefinition(ModDefinition, "MapHelper"));
+            IL.MakeTypePublic(IL.GetTypeDefinition(ModDefinition, "Player"));
             //IL.MakeTypePublic(IL.GetTypeDefinition(ModDefinition, "Main"));
+            //IL.MakeTypePublic(IL.GetTypeDefinition(ModDefinition, "Lighting"));
         }
 
         private static void RemoveSteam()

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Reflection;
 using System.Windows.Forms;
 using PluginLoader;
 using Terraria;
@@ -11,17 +10,7 @@ namespace TranscendPlugins
     {
         private bool maxTileSpeed, maxWallSpeed, maxPickSpeed, maxReachRange, maxItemPickupRange;
         private bool builderBuffWarning = false;
-
-        private int DefaultItemGrabRange
-        {
-            set
-            {
-                var player = Assembly.GetEntryAssembly().GetType("Terraria.Player");
-                var defaultItemGrabRange = player.GetField("defaultItemGrabRange", BindingFlags.Static | BindingFlags.NonPublic);
-                defaultItemGrabRange.SetValue(null, value);
-            }
-        }
-
+        
         public UseTime()
         {
             maxPickSpeed = bool.Parse(IniAPI.ReadIni("UseTime", "MaxPickSpeed", "true", writeIt: true)); // Pick / Hammer / Axe
@@ -73,7 +62,7 @@ namespace TranscendPlugins
                     Player.tileRangeY = 100;
                 }
                 if (maxItemPickupRange)
-                    DefaultItemGrabRange = 700;
+                    Player.defaultItemGrabRange = 700;
             }
         }
 

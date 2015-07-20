@@ -1,3 +1,4 @@
+v1.2.0.5:	Added plugin support for IPluginPlayerQuickBuff.
 v1.2.0.4:	Changed blocks/walls/wires to use usetime 1 instead of 0.
 		Added plugin support for Newtonsoft.Json.dll.
 v1.2.0.3:	Added plugin support for IPluginChestSetupShop.

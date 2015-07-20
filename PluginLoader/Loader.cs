@@ -262,5 +262,16 @@ namespace PluginLoader
                 plugin.OnChestSetupShop(chest, type);
             }
         }
+
+        public static bool OnPlayerQuickBuff(Player player)
+        {
+            Load();
+
+            var ret = false;
+            foreach (var plugin in loadedPlugins.OfType<IPluginPlayerQuickBuff>())
+                ret = plugin.OnPlayerQuickBuff(player) || ret;
+
+            return ret;
+        }
     }
 }

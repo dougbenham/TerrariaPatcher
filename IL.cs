@@ -260,13 +260,21 @@ namespace TerrariaPatcher
             {
                 typeDefinition.NestedTypes.ToList().ForEach(definition =>
                 {
-                    definition.IsPublic = true;
                     if (definition.FullName != typeDefinition.FullName) // avoid infinite recursion
                         MakeTypePublic(definition);
                 });
             }
-            foreach (var field in typeDefinition.Fields) field.IsPublic = true;
-            foreach (var method in typeDefinition.Methods) method.IsPublic = true;
+            if (typeDefinition.IsNested)
+                typeDefinition.IsNestedPublic = true;
+            else
+                typeDefinition.IsPublic = true;
+            foreach (var field in typeDefinition.Fields)
+                field.IsPublic = true;
+            foreach (var method in typeDefinition.Methods)
+            {
+                if (!method.IsSpecialName)
+                    method.IsPublic = true;
+            }
         }
 
         /// <summary>

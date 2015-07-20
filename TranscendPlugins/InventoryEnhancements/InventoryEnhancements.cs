@@ -14,7 +14,7 @@ namespace GTRPlugins
     {
         public static Config config;
         public static bool _notInGame;
-        public static string version = "1.0.8.2";
+        public static string version = "1.0.9";
         public static void Init()
         {
             config = new Config();
