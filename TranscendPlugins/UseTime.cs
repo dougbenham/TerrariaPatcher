@@ -45,10 +45,10 @@ namespace TranscendPlugins
                  item.type == ItemID.GreenWrench ||
                  item.type == ItemID.WireCutter ||
                  item.type == ItemID.Actuator))
-                item.useTime = 0;
+                item.useTime = 1;
 
             if (maxWallSpeed && item.createWall > 0)
-                item.useTime = 0;
+                item.useTime = 1;
         }
 
         public void OnPlayerUpdateBuffs(Player player)
