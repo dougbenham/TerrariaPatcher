@@ -14,7 +14,7 @@ namespace GTRPlugins
     {
         public static Config config;
         public static bool _notInGame;
-        public static string version = "1.0.9";
+        public static string version = "1.1.0";
         public static void Init()
         {
             config = new Config();
@@ -29,7 +29,7 @@ namespace GTRPlugins
             }
             if (!Main.gameMenu)
             {
-                if (Input.KeyPressed(Config.CharToXnaKey(config.SortKey), true) && Main.keyState.IsKeyUp(Keys.LeftShift))
+                if (Input.KeyPressed(Config.CharToXnaKey(config.SortKey), true) && Main.keyState.IsKeyUp(Keys.LeftShift) && config.SortHotkeyEnabled)
                 {
                     AutoTrash.Trash();
                     Clean();
@@ -50,11 +50,11 @@ namespace GTRPlugins
                         config.SaveConfig();
                     }
                 }
-                if (Input.KeyPressed(Config.CharToXnaKey(config.HotbarSwapKey), true))
+                if (Input.KeyPressed(Config.CharToXnaKey(config.HotbarSwapKey), true) && config.HotbarSwapKeyEnabled)
                 {
                     SwapHotbar(config.HotbarCycle);
                 }
-                if (Input.KeyPressed(Config.CharToXnaKey(config.QSKey), true))
+                if (Input.KeyPressed(Config.CharToXnaKey(config.QSKey), true) && config.QSHotkeyEnabled)
                 {
                     QuickStack();
                 }
@@ -104,17 +104,17 @@ namespace GTRPlugins
             {
                 Main.NewText("Inventory Enhancements Configuration Reloaded!", 0, 200, 160, false);
             }
-            if (!char.IsLetter(config.SortKey))
+            if (!char.IsLetter(config.SortKey) && config.SortHotkeyEnabled)
             {
                 Main.NewText("The key \"" + config.SortKey + "\" is not a valid binding. It must be a letter. Reverting to Z", 200, 20, 20, false);
                 config.SortKey = 'Z';
             }
-            if (!char.IsLetter(config.QSKey))
+            if (!char.IsLetter(config.QSKey) && config.QSHotkeyEnabled)
             {
                 Main.NewText("The key \"" + config.QSKey + "\" is not a valid binding. It must be a letter. Reverting to C", 200, 20, 20, false);
                 config.QSKey = 'C';
             }
-            if (!char.IsLetter(config.HotbarSwapKey))
+            if (!char.IsLetter(config.HotbarSwapKey) && config.HotbarSwapKeyEnabled)
             {
                 Main.NewText("The key \"" + config.HotbarSwapKey + "\" is not a valid binding. It must be a letter. Reverting to X", 200, 20, 20, false);
                 config.HotbarSwapKey = 'X';

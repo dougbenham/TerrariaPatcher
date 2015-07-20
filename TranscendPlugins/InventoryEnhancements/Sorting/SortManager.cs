@@ -24,7 +24,7 @@ namespace GTRPlugins.Sorting
             {
                 var player = Main.player[Main.myPlayer];
                 var list = new List<Item>();
-                if (player.chest == -1)
+                if (player.chest == -1 || !InventoryEnhancements.config.SortChests)
                 {
                     for (var i = 10; i < 50; i++)
                     {

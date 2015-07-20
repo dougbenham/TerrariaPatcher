@@ -17,10 +17,18 @@ namespace GTRPlugins
         public bool AutoTrash = false;
         [JsonProperty("Sort")]
         public char SortKey = 'Z';
+        [JsonProperty("Sorting Key Enabled")]
+        public bool SortHotkeyEnabled = true;
         [JsonProperty("Swap Hotbar")]
         public char HotbarSwapKey = 'X';
+        [JsonProperty("Swap Hotbar Key Enabled")]
+        public bool HotbarSwapKeyEnabled = true;
         [JsonProperty("Quick Stack")]
         public char QSKey = 'C';
+        [JsonProperty("Quick Stack Key Enabled")]
+        public bool QSHotkeyEnabled = true;
+        [JsonProperty("Sort Chests")]
+        public bool SortChests = true;
         [JsonProperty("Trash List")]
         public List<int> TrashList = new List<int>
 		{
@@ -72,28 +80,68 @@ namespace GTRPlugins
                 {
                     config.AutoTrash = false;
                 }
+                bool? firstInstance4 = Json.GetFirstInstance<bool>("Sorting Key Enabled", path);
+                if (firstInstance4.HasValue)
+                {
+                    this.SortHotkeyEnabled = firstInstance4.Value;
+                    config.SortHotkeyEnabled = this.SortHotkeyEnabled;
+                }
+                else
+                {
+                    config.SortHotkeyEnabled = true;
+                }
+                bool? firstInstance5 = Json.GetFirstInstance<bool>("Quick Stack Key Enabled", path);
+                if (firstInstance5.HasValue)
+                {
+                    this.QSHotkeyEnabled = firstInstance5.Value;
+                    config.QSHotkeyEnabled = this.QSHotkeyEnabled;
+                }
+                else
+                {
+                    config.QSHotkeyEnabled = true;
+                }
+                bool? firstInstance6 = Json.GetFirstInstance<bool>("Swap Hotbar Key Enabled", path);
+                if (firstInstance6.HasValue)
+                {
+                    this.HotbarSwapKeyEnabled = firstInstance6.Value;
+                    config.HotbarSwapKeyEnabled = this.HotbarSwapKeyEnabled;
+                }
+                else
+                {
+                    config.HotbarSwapKeyEnabled = false;
+                }
+                bool? firstInstance7 = Json.GetFirstInstance<bool>("Sort Chests", path);
+                if (firstInstance7.HasValue)
+                {
+                    this.SortChests = firstInstance7.Value;
+                    config.SortChests = this.SortChests;
+                }
+                else
+                {
+                    config.SortChests = true;
+                }
                 List<int> firstInstanceList = Json.GetFirstInstanceList<int>("Trash List", path);
                 this.TrashList = firstInstanceList;
                 config.TrashList = this.TrashList;
-                char? firstInstance4 = Json.GetFirstInstance<char>("Sort", path);
-                char? c = firstInstance4;
+                char? firstInstance8 = Json.GetFirstInstance<char>("Sort", path);
+                char? c = firstInstance8;
                 if ((c.HasValue ? new int?((int)c.GetValueOrDefault()) : null).HasValue)
                 {
-                    this.SortKey = firstInstance4.Value;
+                    this.SortKey = firstInstance8.Value;
                     config.SortKey = this.SortKey;
                 }
-                char? firstInstance5 = Json.GetFirstInstance<char>("Swap Hotbar", path);
-                c = firstInstance5;
+                char? firstInstance9 = Json.GetFirstInstance<char>("Swap Hotbar", path);
+                c = firstInstance9;
                 if ((c.HasValue ? new int?((int)c.GetValueOrDefault()) : null).HasValue)
                 {
-                    this.HotbarSwapKey = firstInstance5.Value;
+                    this.HotbarSwapKey = firstInstance9.Value;
                     config.HotbarSwapKey = this.HotbarSwapKey;
                 }
-                char? firstInstance6 = Json.GetFirstInstance<char>("Quick Stack", path);
-                c = firstInstance6;
+                char? firstInstance10 = Json.GetFirstInstance<char>("Quick Stack", path);
+                c = firstInstance10;
                 if ((c.HasValue ? new int?((int)c.GetValueOrDefault()) : null).HasValue)
                 {
-                    this.QSKey = firstInstance6.Value;
+                    this.QSKey = firstInstance10.Value;
                     config.QSKey = this.QSKey;
                 }
                 Json.Serialize<Config>(config, path);

@@ -34,32 +34,40 @@ namespace GTRPlugins
 
             if (player.chest != -1)
             {
-                int num = 0;
+                int num2 = 0;
                 for (int i = 0; i < 40; i++)
                 {
                     Chest chest;
-                    if (player.chest > -1) chest = Main.chest[player.chest];
-                    else if (player.chest == -2) chest = player.bank;
-                    else chest = player.bank2;
+                    if (player.chest > -1)
+                    {
+                        chest = Main.chest[player.chest];
+                    }
+                    else if (player.chest == -2)
+                    {
+                        chest = player.bank;
+                    }
+                    else
+                    {
+                        chest = player.bank2;
+                    }
                     if (player.CountBuffs() == 22) return true;
-
                     if (chest.item[i].stack > 0 && chest.item[i].type > 0 && chest.item[i].buffType > 0 && !chest.item[i].summon && chest.item[i].buffType != 90)
                     {
-                        int num2 = chest.item[i].buffType;
+                        int num3 = chest.item[i].buffType;
                         bool flag = true;
                         for (int j = 0; j < 22; j++)
                         {
-                            if (num2 == 27 && (player.buffType[j] == num2 || player.buffType[j] == 101 || player.buffType[j] == 102))
+                            if (num3 == 27 && (player.buffType[j] == num3 || player.buffType[j] == 101 || player.buffType[j] == 102))
                             {
                                 flag = false;
                                 break;
                             }
-                            if (player.buffType[j] == num2)
+                            if (player.buffType[j] == num3)
                             {
                                 flag = false;
                                 break;
                             }
-                            if (Main.meleeBuff[num2] && Main.meleeBuff[player.buffType[j]])
+                            if (Main.meleeBuff[num3] && Main.meleeBuff[player.buffType[j]])
                             {
                                 flag = false;
                                 break;
@@ -95,31 +103,31 @@ namespace GTRPlugins
                         {
                             flag = false;
                         }
-                        if (num2 == 27)
+                        if (num3 == 27)
                         {
-                            num2 = Main.rand.Next(3);
-                            if (num2 == 0)
+                            num3 = Main.rand.Next(3);
+                            if (num3 == 0)
                             {
-                                num2 = 27;
+                                num3 = 27;
                             }
-                            if (num2 == 1)
+                            if (num3 == 1)
                             {
-                                num2 = 101;
+                                num3 = 101;
                             }
-                            if (num2 == 2)
+                            if (num3 == 2)
                             {
-                                num2 = 102;
+                                num3 = 102;
                             }
                         }
                         if (flag)
                         {
-                            num = chest.item[i].useSound;
-                            int num3 = chest.item[i].buffTime;
-                            if (num3 == 0)
+                            num2 = chest.item[i].useSound;
+                            int num4 = chest.item[i].buffTime;
+                            if (num4 == 0)
                             {
-                                num3 = 3600;
+                                num4 = 3600;
                             }
-                            player.AddBuff(num2, num3, true);
+                            player.AddBuff(num3, num4, true);
                             if (chest.item[i].consumable)
                             {
                                 chest.item[i].stack--;
@@ -141,11 +149,14 @@ namespace GTRPlugins
                             NetMessage.SendData(32, -1, -1, "", player.chest, (float)i, 0f, 0f, 0, 0, 0);
                         }
                     }
-                    else NetMessage.SendData(33, -1, -1, "", Main.player[Main.myPlayer].chest, 0f, 0f, 0f, 0, 0, 0);
+                    else
+                    {
+                        NetMessage.SendData(33, -1, -1, "", Main.player[Main.myPlayer].chest, 0f, 0f, 0f, 0, 0, 0);
+                    }
                 }
-                if (num > 0)
+                if (num2 > 0)
                 {
-                    Main.PlaySound(2, (int)player.position.X, (int)player.position.Y, num);
+                    Main.PlaySound(2, (int)player.position.X, (int)player.position.Y, num2);
                     Recipe.FindRecipes();
                 }
             }

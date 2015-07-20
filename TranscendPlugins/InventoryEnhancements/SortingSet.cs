@@ -83,6 +83,21 @@ namespace GTRPlugins
             try
             {
                 orderOfLists = Json.DeSerialize<Dictionary<int, string>>(setConfigPath);
+                if (orderOfLists.Count < _addedSets.Count)
+                {
+                    using (var enumerator = _addedSets.GetEnumerator())
+                    {
+                        while (enumerator.MoveNext())
+                        {
+                            var set = enumerator.Current;
+                            if (!orderOfLists.Any(x => x.Value.ToLower() == set.name.ToLower()))
+                            {
+                                orderOfLists.Add(orderOfLists.Count, set.name);
+                            }
+                        }
+                    }
+                    Json.Serialize(orderOfLists, setConfigPath);
+                }
                 if (orderOfLists.Count == 0)
                 {
                     GenOrder();
