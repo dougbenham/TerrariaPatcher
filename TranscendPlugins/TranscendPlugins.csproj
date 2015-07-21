@@ -75,7 +75,7 @@
     <Compile Include="InventoryEnhancements\SortingSet.cs" />
     <Compile Include="InventoryEnhancements\Sorting\Sets.cs" />
     <Compile Include="InventoryEnhancements\Sorting\SortingManager.cs" />
-    <Compile Include="InventoryEnhancements\UI\Button.cs" />
+    <Compile Include="Shared\UI\Button.cs" />
     <Compile Include="InventoryEnhancements\Utils\Input.cs" />
     <Compile Include="InventoryEnhancements\Utils\Json.cs" />
     <Compile Include="InventoryEnhancements\Utils\MouseButton.cs" />

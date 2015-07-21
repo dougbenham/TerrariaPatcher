@@ -55,10 +55,14 @@ namespace PluginLoader
                     .Where(a => !a.IsDynamic)
                     .Select(a => a.Location).Concat(new[] {newtonsoftFileName}).ToArray();
 
+                var shared = Generate("Shared", references, Directory.EnumerateFiles(@".\Plugins\Shared\", "*.cs", SearchOption.AllDirectories).Select(File.ReadAllText).ToArray());
+
+                references = references.Concat(new[] {shared}).ToArray();
+
                 foreach (var filename in Directory.EnumerateFiles(@".\Plugins\", "*.cs"))
                     Load(Path.GetFileNameWithoutExtension(filename), references, File.ReadAllText(filename));
 
-                foreach (var folder in Directory.EnumerateDirectories(@".\Plugins\"))
+                foreach (var folder in Directory.EnumerateDirectories(@".\Plugins\").Where(s => s != "Shared"))
                     Load(Path.GetFileName(folder), references, Directory.EnumerateFiles(folder, "*.cs", SearchOption.AllDirectories).Select(File.ReadAllText).ToArray());
 
                 // Load hotkey binds
@@ -125,6 +129,33 @@ namespace PluginLoader
             {
                 loadedPlugins.Add(Activator.CreateInstance(type) as IPlugin);
             }
+        }
+
+        private static string Generate(string target, string[] references, params string[] sources)
+        {
+            var compilerParams = new CompilerParameters();
+            compilerParams.OutputAssembly = target;
+            compilerParams.GenerateInMemory = false;
+            compilerParams.GenerateExecutable = false;
+            compilerParams.TreatWarningsAsErrors = false;
+            compilerParams.CompilerOptions = "/optimize";
+
+            compilerParams.ReferencedAssemblies.AddRange(references);
+
+            var provider = new CSharpCodeProvider();
+            var compile = provider.CompileAssemblyFromSource(compilerParams, sources);
+
+            if (compile.Errors.HasErrors)
+            {
+                var text = "Compile error for shared source: ";
+                foreach (CompilerError ce in compile.Errors)
+                {
+                    text += ce + Environment.NewLine;
+                }
+                throw new Exception(text);
+            }
+
+            return compile.PathToAssembly;
         }
 
         #endregion
