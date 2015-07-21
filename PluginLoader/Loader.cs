@@ -35,7 +35,7 @@ namespace PluginLoader
                 loaded = true;
 
                 // Dynamic compilation requires assemblies to be stored on file, thus we must extract the Newtonsoft.Json.dll embedded resource to a temp file if we want to use it.
-                var resourceName = "Newtonsoft.Json.dll";
+                var resourceName = "Terraria.Libraries.JSON.NET.Net40.Newtonsoft.Json.dll";
                 var newtonsoftFileName = Path.Combine(Path.GetTempPath(), resourceName);
                 if (!File.Exists(newtonsoftFileName))
                 {
@@ -90,7 +90,7 @@ namespace PluginLoader
                         }
                     }
 
-                    if (string.IsNullOrEmpty(val) || !val.StartsWith("/") || hotkeyParseFailed)
+                    if (string.IsNullOrEmpty(val) || !val.StartsWith("/") || hotkeyParseFailed || key == Keys.None)
                         MessageBox.Show("Invalid record in [HotkeyBinds]: " + key + ".", "", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     else
                         RegisterHotkey(val, key, control, shift, alt);
@@ -205,7 +205,7 @@ namespace PluginLoader
                 foreach (var hotkey in hotkeys)
                 {
                     if (keysdown.Contains(hotkey.Key) &&
-                        hotkey.IgnoreModifierKeys || (control == hotkey.Control && shift == hotkey.Shift && alt == hotkey.Alt))
+                        (hotkey.IgnoreModifierKeys || (control == hotkey.Control && shift == hotkey.Shift && alt == hotkey.Alt)))
                     {
                         anyPresses = true;
                         if (fresh) hotkey.Action();
@@ -280,11 +280,7 @@ namespace PluginLoader
 
         public static void OnItemSetDefaults(Item item)
         {
-            if (!loaded)
-            {
-                MessageBox.Show("OnItemSetDefaults got there first.");
-                Load();
-            }
+            Load();
 
             foreach (var plugin in loadedPlugins.OfType<IPluginItemSetDefaults>())
                 plugin.OnItemSetDefaults(item);

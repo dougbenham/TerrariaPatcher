@@ -51,7 +51,7 @@ namespace PluginLoader
             GetPrivateProfileSection(section, temp, temp.Length, path);
             string[] ret = Encoding.ASCII.GetString(temp).Trim('\0').Split('\0');
 
-            return (from entry in ret let @equals = entry.IndexOf('=') select @equals >= 0 ? entry.Substring(0, @equals) : entry);
+            return (from entry in ret let @equals = entry.IndexOf('=') select @equals >= 0 ? entry.Substring(0, @equals) : entry).Where(s => !string.IsNullOrEmpty(s));
         }
 
         /// <summary>
