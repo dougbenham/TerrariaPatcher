@@ -11,6 +11,7 @@ namespace TranscendPlugins
 {
     public class NPC : MarshalByRefObject, IPluginChatCommand
     {
+        private bool cnpc;
         private Keys toggleKey, increaseKey, decreaseKey;
         private int previousMaxSpawns;
         private int previousSpawnRate;
@@ -42,7 +43,7 @@ namespace TranscendPlugins
                     defaultSpawnRate.SetValue(null, 60000 / value);
             }
         }
-        
+
         public NPC()
         {
             var npc = Assembly.GetEntryAssembly().GetType("Terraria.NPC");
@@ -62,31 +63,27 @@ namespace TranscendPlugins
             Color purple = Color.Purple;
             Loader.RegisterHotkey(() =>
             {
-                if (Loader.IsControlModifierKeyDown())
-                {
-                    ModifySpawnLimit(-1);
-                    Main.NewText("Spawn limit: " + DefaultMaxSpawns, purple.R, purple.G, purple.B, false);
-                }
-                else
-                {
-                    ModifySpawnRate(-20);
-                    Main.NewText("Spawn rate: " + DefaultSpawnRate + "%", purple.R, purple.G, purple.B, false);
-                }
-            }, decreaseKey);
+                ModifySpawnLimit(-1);
+                Main.NewText("Spawn limit: " + DefaultMaxSpawns, purple.R, purple.G, purple.B, false);
+            }, decreaseKey, control: true);
 
             Loader.RegisterHotkey(() =>
             {
-                if (Loader.IsControlModifierKeyDown())
-                {
-                    ModifySpawnLimit(1);
-                    Main.NewText("Spawn limit: " + DefaultMaxSpawns, purple.R, purple.G, purple.B, false);
-                }
-                else
-                {
-                    ModifySpawnRate(20);
-                    Main.NewText("Spawn rate: " + DefaultSpawnRate + "%", purple.R, purple.G, purple.B, false);
-                }
-            }, increaseKey); 
+                ModifySpawnRate(-20);
+                Main.NewText("Spawn rate: " + DefaultSpawnRate + "%", purple.R, purple.G, purple.B, false);
+            }, decreaseKey, control: false);
+
+            Loader.RegisterHotkey(() =>
+            {
+                ModifySpawnLimit(1);
+                Main.NewText("Spawn limit: " + DefaultMaxSpawns, purple.R, purple.G, purple.B, false);
+            }, increaseKey, control: true);
+
+            Loader.RegisterHotkey(() =>
+            {
+                ModifySpawnRate(20);
+                Main.NewText("Spawn rate: " + DefaultSpawnRate + "%", purple.R, purple.G, purple.B, false);
+            }, increaseKey, control: false);
 
             Loader.RegisterHotkey(() =>
             {
@@ -149,11 +146,19 @@ namespace TranscendPlugins
                 Main.NewText("Usage:");
                 Main.NewText("  /npc id [count]");
                 Main.NewText("  /npc name [count]");
+                Main.NewText("  /npc cnpc (Toggles NPC spawn at cursor position)");
                 Main.NewText("  /npc help");
                 Main.NewText("Example:");
                 Main.NewText("  /npc 21");
                 Main.NewText("  /npc 21 20");
                 Main.NewText("  /npc Skeleton 20");
+                return true;
+            }
+
+            if (args[0] == "cnpc")
+            {
+                cnpc = !cnpc;
+                Main.NewText("NPC spawn at cursor " + (cnpc ? "enabled" : "disabled"));
                 return true;
             }
 
@@ -180,9 +185,18 @@ namespace TranscendPlugins
                 }
             }
 
-            var player = Main.player[Main.myPlayer];
-            var x = (int)player.Center.X;
-            var y = (int)player.Center.Y - 150;
+            int x, y;
+            if (cnpc)
+            {
+                x = (int)(Main.mouseState.X + Main.screenPosition.X);
+                y = (int)(Main.mouseState.Y + Main.screenPosition.Y);
+            }
+            else
+            {
+                var player = Main.player[Main.myPlayer];
+                x = (int)player.Center.X;
+                y = (int)player.Center.Y - 150;
+            }
             for (int i = 0; i < count; i++)
             {
                 if (npcId < 0)

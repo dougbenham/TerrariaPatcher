@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Reflection;
 using Microsoft.Xna.Framework.Input;
 using PluginLoader;
 using Terraria;
@@ -11,26 +10,8 @@ namespace TranscendPlugins
         private Keys toggleKey;
         private Keys toggleSlimeKey;
 
-        private MethodInfo startRain;
-
-        private void StartRain()
-        {
-            startRain.Invoke(null, null);
-        }
-
-        private MethodInfo stopRain;
-
-        private void StopRain()
-        {
-            stopRain.Invoke(null, null);
-        }
-
         public Weather()
         {
-            var main = Assembly.GetEntryAssembly().GetType("Terraria.Main");
-            startRain = main.GetMethod("StartRain", BindingFlags.Static | BindingFlags.NonPublic);
-            stopRain = main.GetMethod("StopRain", BindingFlags.Static | BindingFlags.NonPublic);
-
             if (!Keys.TryParse(IniAPI.ReadIni("Weather", "ToggleRain", "OemSemicolon", writeIt: true), out toggleKey))
                 toggleKey = Keys.OemSemicolon;
 
@@ -39,20 +20,30 @@ namespace TranscendPlugins
 
             Loader.RegisterHotkey(() =>
             {
-                Main.NewText("Toggle rain");
                 if (Main.raining)
-                    StopRain();
+                {
+                    Main.StopRain();
+                    Main.NewText("Rain stopped.");
+                }
                 else
-                    StartRain();
+                {
+                    Main.StartRain();
+                    Main.NewText("Rain started.");
+                }
             }, toggleKey);
 
             Loader.RegisterHotkey(() =>
             {
-                Main.NewText("Toggle slime rain");
                 if (Main.slimeRain)
+                {
                     Main.StopSlimeRain();
+                    Main.NewText("Slime rain stopped.");
+                }
                 else
+                {
                     Main.StartSlimeRain();
+                    Main.NewText("Slime rain started.");
+                }
             }, toggleSlimeKey);
         }
     }

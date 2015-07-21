@@ -1,3 +1,11 @@
+v1.2.0.7:	Added Season plugin.
+		Added ShopSellsScalingPotions plugin.
+		Added InfiniteSundial plugin.
+		Added administrator privileges warning when patching.
+		Added new 'spawn at cursor' command for NPC plugin.
+		Added /range command to UseTime plugin.
+		Added plugin support for IPluginInitialize, IPluginUpdateTime.
+		Fixed bug with plugin support for Newtonsoft.Json.dll.
 v1.2.0.6:	Added plugin support for IPluginNPCLoot.
 v1.2.0.5:	Added plugin support for IPluginPlayerQuickBuff.
 v1.2.0.4:	Changed blocks/walls/wires to use usetime 1 instead of 0.

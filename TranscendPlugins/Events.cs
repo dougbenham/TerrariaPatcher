@@ -51,8 +51,6 @@ namespace TranscendPlugins
 
             Loader.RegisterHotkey(() =>
             {
-                if (Loader.IsControlModifierKeyDown()) return;
-
                 if (Main.invasionType > 0)
                     Main.invasionSize = 0;
                 else
@@ -60,8 +58,6 @@ namespace TranscendPlugins
             }, goblin);
             Loader.RegisterHotkey(() =>
             {
-                if (Loader.IsControlModifierKeyDown()) return;
-
                 if (Main.invasionType > 0)
                     Main.invasionSize = 0;
                 else
@@ -69,8 +65,6 @@ namespace TranscendPlugins
             }, frost);
             Loader.RegisterHotkey(() =>
             {
-                if (Loader.IsControlModifierKeyDown()) return;
-
                 if (Main.invasionType > 0)
                     Main.invasionSize = 0;
                 else
@@ -78,8 +72,6 @@ namespace TranscendPlugins
             }, pirates);
             Loader.RegisterHotkey(() =>
             {
-                if (Loader.IsControlModifierKeyDown()) return;
-
                 if (Main.invasionType > 0)
                     Main.invasionSize = 0;
                 else
@@ -87,8 +79,6 @@ namespace TranscendPlugins
             }, martians);
             Loader.RegisterHotkey(() =>
             {
-                if (Loader.IsControlModifierKeyDown()) return;
-
                 if (Main.pumpkinMoon)
                     Main.stopMoonEvent();
                 else
@@ -96,8 +86,6 @@ namespace TranscendPlugins
             }, pumpkinMoon);
             Loader.RegisterHotkey(() =>
             {
-                if (Loader.IsControlModifierKeyDown()) return;
-
                 if (Main.snowMoon)
                     Main.stopMoonEvent();
                 else
@@ -105,8 +93,6 @@ namespace TranscendPlugins
             }, frostMoon);
             Loader.RegisterHotkey(() =>
             {
-                if (Loader.IsControlModifierKeyDown()) return;
-
                 if (Terraria.NPC.LunarApocalypseIsUp || Terraria.NPC.AnyNPCs(398))
                     StopLunarEvent();
                 else
@@ -114,8 +100,6 @@ namespace TranscendPlugins
             }, lunarApocalypse);
             Loader.RegisterHotkey(() =>
             {
-                if (Loader.IsControlModifierKeyDown()) return;
-
                 if (Terraria.NPC.LunarApocalypseIsUp || Terraria.NPC.AnyNPCs(398))
                     StopLunarEvent();
                 else
@@ -123,8 +107,6 @@ namespace TranscendPlugins
             }, moonLord);
             Loader.RegisterHotkey(() =>
             {
-                if (Loader.IsControlModifierKeyDown()) return;
-
                 if (Main.bloodMoon)
                     Main.bloodMoon = false;
                 else
@@ -132,8 +114,6 @@ namespace TranscendPlugins
             }, bloodMoon);
             Loader.RegisterHotkey(() =>
             {
-                if (Loader.IsControlModifierKeyDown()) return;
-
                 if (Main.eclipse)
                     Main.eclipse = false;
                 else
@@ -141,8 +121,6 @@ namespace TranscendPlugins
             }, eclipse);
             Loader.RegisterHotkey(() =>
             {
-                if (Loader.IsControlModifierKeyDown()) return;
-
                 SpawnMeteor = false;
                 DropMeteor();
             }, meteor);

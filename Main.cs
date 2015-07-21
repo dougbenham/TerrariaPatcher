@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Security.Principal;
 using System.Threading;
 using System.Windows.Forms;
 using Microsoft.Win32;
@@ -260,6 +261,11 @@ namespace TerrariaPatcher
                     return;
             }
 
+            if (!IsAdministrator() && plugins.Checked && !steamFixEnabled.Checked)
+            {
+                MessageBox.Show("Warning, your account does not have administrator privileges. After patching, you might need to run Steam with administrator privileges before running Terraria.", Program.AssemblyName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+
             CheckInstallationFolder();
 
             saveFileDialog.InitialDirectory = Path.GetDirectoryName(terrariaPath.Text);
@@ -410,6 +416,18 @@ namespace TerrariaPatcher
             {
                 MessageBox.Show("This mod is reported to break Steam achievements for the Angler. It will still allow you to get in-game achievements though.", Program.AssemblyName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 SaveConfig();
+            }
+        }
+
+        private static bool IsAdministrator()
+        {
+            try
+            {
+                return new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator);
+            }
+            catch
+            {
+                return false;
             }
         }
     }

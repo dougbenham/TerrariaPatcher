@@ -21,9 +21,8 @@ namespace Ruffi123456789Plugins
                 {
                     Loader.RegisterHotkey(() =>
                     {
-                        if (Loader.IsControlModifierKeyDown())
-                            toSpawn = toSpawn + j;
-                    }, key);
+                        toSpawn = toSpawn + j;
+                    }, key, control: true);
                 }
             }
         }

@@ -32,6 +32,11 @@ namespace TerrariaPatcher
             MethodAppend(il, il.Body.Instructions.Count, 0, instructions);
         }
 
+        public static void MethodAppend(MethodDefinition definition, int index, int overwrite, IEnumerable<Instruction> instructions)
+        {
+            MethodAppend(definition.Body.GetILProcessor(), index, overwrite, instructions);
+        }
+
         public static void MethodAppend(ILProcessor il, int index, int overwrite, IEnumerable<Instruction> instructions)
         {
             var list = instructions.ToList();

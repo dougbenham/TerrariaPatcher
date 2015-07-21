@@ -684,8 +684,12 @@ namespace TerrariaPatcher
 
         private static void Plugins()
         {
+            // Loader target methods
             var loader = ModDefinition.Import(typeof(PluginLoader.Loader)).Resolve();
+            var onInitialize = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnInitialize"));
+            var onDrawInventory = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnDrawInventory"));
             var onUpdate = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnUpdate"));
+            var onUpdateTime = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnUpdateTime"));
             var onPlayerUpdate = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerUpdate"));
             var onPlayerUpdateBuffs = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerUpdateBuffs"));
             var onPlayerPickAmmo = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerPickAmmo"));
@@ -699,6 +703,7 @@ namespace TerrariaPatcher
             var onPlayerQuickBuff = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerQuickBuff"));
             var onNPCLoot = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnNPCLoot"));
 
+            // Types
             var main = IL.GetTypeDefinition(ModDefinition, "Main");
             var player = IL.GetTypeDefinition(ModDefinition, "Player");
             var npc = IL.GetTypeDefinition(ModDefinition, "NPC");
@@ -709,52 +714,100 @@ namespace TerrariaPatcher
             var lighting = IL.GetTypeDefinition(ModDefinition, "Lighting");
             var chest = IL.GetTypeDefinition(ModDefinition, "Chest");
 
+            // Methods
+            var initialize = IL.GetMethodDefinition(main, "Initialize");
+            var drawInventory = IL.GetMethodDefinition(main, "DrawInventory");
             var update = IL.GetMethodDefinition(main, "Update");
-            var updateIL = update.Body.GetILProcessor();
+            var updateTime = IL.GetMethodDefinition(main, "UpdateTime");
+            var updatePlayer = IL.GetMethodDefinition(player, "Update");
+            var updatePlayerBuffs = IL.GetMethodDefinition(player, "UpdateBuffs");
+            var pickAmmo = IL.GetMethodDefinition(player, "PickAmmo");
+            var setDefaults = IL.GetMethodDefinition(item, "SetDefaults", 2);
+            var ai = IL.GetMethodDefinition(projectile, "AI_001");
+            var rightClick = IL.GetMethodDefinition(itemSlot, "RightClick", 3);
+            var sendData = IL.GetMethodDefinition(netMessage, "SendData");
+            var getColor = IL.GetMethodDefinition(lighting, "GetColor", 2);
+            var getItem = IL.GetMethodDefinition(player, "GetItem");
+            var setupShop = IL.GetMethodDefinition(chest, "SetupShop");
+            var quickBuff = IL.GetMethodDefinition(player, "QuickBuff");
+            var npcLoot = IL.GetMethodDefinition(npc, "NPCLoot");
 
-            int spot = IL.ScanForOpcodePattern(update, (i, instruction) =>
             {
-                var f0 = instruction.Operand as FieldReference;
-                var result0 = f0 != null && f0.Name == "netMode";
-                var f33 = update.Body.Instructions[i + 33].Operand as FieldReference;
-                var result33 = f33 != null && f33.Name == "chatMode";
-                return result0 && result33;
-            }, OpCodes.Ldsfld,
-                OpCodes.Ldc_I4_1);
+                // Main.Initialize post hook
+                IL.MethodAppend(initialize, initialize.Body.Instructions.Count - 1, 1, new[]
+                {
+                    Instruction.Create(OpCodes.Call, onInitialize),
+                    Instruction.Create(OpCodes.Ret)
+                });
+            }
 
-            update.Body.Instructions[spot + 0].OpCode = OpCodes.Nop;
-            update.Body.Instructions[spot + 1].OpCode = OpCodes.Nop;
-            update.Body.Instructions[spot + 2].OpCode = OpCodes.Nop;
+            {
+                // Main.DrawInventory post hook
+                IL.MethodAppend(drawInventory, drawInventory.Body.Instructions.Count - 1, 1, new[]
+                {
+                    Instruction.Create(OpCodes.Call, onDrawInventory),
+                    Instruction.Create(OpCodes.Ret)
+                });
+            }
 
-            IL.MethodAppend(updateIL, updateIL.Body.Instructions.Count - 1, 1, new[]
+            {
+                // patch chat to allow on singleplayer
+                int spot = IL.ScanForOpcodePattern(update, (i, instruction) =>
+                {
+                    var f0 = instruction.Operand as FieldReference;
+                    var result0 = f0 != null && f0.Name == "netMode";
+                    var f33 = update.Body.Instructions[i + 33].Operand as FieldReference;
+                    var result33 = f33 != null && f33.Name == "chatMode";
+                    return result0 && result33;
+                }, OpCodes.Ldsfld,
+                    OpCodes.Ldc_I4_1);
+
+                update.Body.Instructions[spot + 0].OpCode = OpCodes.Nop;
+                update.Body.Instructions[spot + 1].OpCode = OpCodes.Nop;
+                update.Body.Instructions[spot + 2].OpCode = OpCodes.Nop;
+            }
+
+            {
+                // Main.Update post hook
+                IL.MethodAppend(update, update.Body.Instructions.Count - 1, 1, new[]
                 {
                     Instruction.Create(OpCodes.Call, onUpdate),
                     Instruction.Create(OpCodes.Ret)
                 });
+            }
 
-            var updatePlayer = IL.GetMethodDefinition(player, "Update");
-            var updatePlayerIL = updatePlayer.Body.GetILProcessor();
+            {
+                // Main.UpdateTime post hook
+                IL.MethodAppend(updateTime, updateTime.Body.Instructions.Count - 1, 1, new[]
+                {
+                    Instruction.Create(OpCodes.Call, onUpdateTime),
+                    Instruction.Create(OpCodes.Ret)
+                });
+            }
 
-            IL.MethodAppend(updatePlayerIL, updatePlayerIL.Body.Instructions.Count - 1, 1, new[]
+            {
+                // Player.Update post hook
+                IL.MethodAppend(updatePlayer, updatePlayer.Body.Instructions.Count - 1, 1, new[]
                 {
                     Instruction.Create(OpCodes.Ldarg_0),
                     Instruction.Create(OpCodes.Call, onPlayerUpdate),
                     Instruction.Create(OpCodes.Ret)
                 });
+            }
 
-            var updatePlayerBuffs = IL.GetMethodDefinition(player, "UpdateBuffs");
-            var updatePlayerBuffsIL = updatePlayerBuffs.Body.GetILProcessor();
-
-            IL.MethodAppend(updatePlayerBuffsIL, updatePlayerBuffsIL.Body.Instructions.Count - 1, 1, new[]
+            {
+                // Player.UpdateBuffs post hook
+                IL.MethodAppend(updatePlayerBuffs, updatePlayerBuffs.Body.Instructions.Count - 1, 1, new[]
                 {
                     Instruction.Create(OpCodes.Ldarg_0),
                     Instruction.Create(OpCodes.Call, onPlayerUpdateBuffs),
                     Instruction.Create(OpCodes.Ret)
                 });
+            }
 
-            var pickAmmo = IL.GetMethodDefinition(player, "PickAmmo");
-            var pickAmmoIL = pickAmmo.Body.GetILProcessor();
-            IL.MethodAppend(pickAmmoIL, pickAmmoIL.Body.Instructions.Count - 1, 1, new[]
+            {
+                // Player.PickAmmo post hook
+                IL.MethodAppend(pickAmmo, pickAmmo.Body.Instructions.Count - 1, 1, new[]
                 {
                     Instruction.Create(OpCodes.Ldarg_0),
                     Instruction.Create(OpCodes.Ldarg_1),
@@ -766,31 +819,32 @@ namespace TerrariaPatcher
                     Instruction.Create(OpCodes.Call, onPlayerPickAmmo),
                     Instruction.Create(OpCodes.Ret)
                 });
+            }
 
-            var setDefaults = IL.GetMethodDefinition(item, "SetDefaults", 2);
-            var setDefaultsIL = setDefaults.Body.GetILProcessor();
-
-            IL.MethodAppend(setDefaultsIL, setDefaultsIL.Body.Instructions.Count - 1, 1, new[]
+            {
+                // Item.SetDefaults post hook
+                IL.MethodAppend(setDefaults, setDefaults.Body.Instructions.Count - 1, 1, new[]
                 {
                     Instruction.Create(OpCodes.Ldarg_0),
                     Instruction.Create(OpCodes.Call, onItemSetDefaults),
                     Instruction.Create(OpCodes.Ret)
                 });
+            }
 
-            var ai = IL.GetMethodDefinition(projectile, "AI_001");
-            var aiIL = ai.Body.GetILProcessor();
-
-            IL.MethodAppend(aiIL, aiIL.Body.Instructions.Count - 1, 1, new[]
+            {
+                // Projectile.AI post hook
+                IL.MethodAppend(ai, ai.Body.Instructions.Count - 1, 1, new[]
                 {
                     Instruction.Create(OpCodes.Ldarg_0),
                     Instruction.Create(OpCodes.Call, onProjectileAI),
                     Instruction.Create(OpCodes.Ret)
                 });
+            }
 
-            var rightClick = IL.GetMethodDefinition(itemSlot, "RightClick", 3);
-            var firstInstr = rightClick.Body.Instructions.FirstOrDefault();
-
-            IL.MethodPrepend(rightClick, new[]
+            {
+                // ItemSlot.RightClick pre hook
+                var firstInstr = rightClick.Body.Instructions.FirstOrDefault();
+                IL.MethodPrepend(rightClick, new[]
                 {
                     Instruction.Create(OpCodes.Ldarg_0),
                     Instruction.Create(OpCodes.Ldarg_1),
@@ -799,11 +853,12 @@ namespace TerrariaPatcher
                     Instruction.Create(OpCodes.Brfalse_S, firstInstr),
                     Instruction.Create(OpCodes.Ret)
                 });
-
-            var sendData = IL.GetMethodDefinition(netMessage, "SendData");
-            firstInstr = sendData.Body.Instructions.FirstOrDefault();
+            }
             
-            IL.MethodPrepend(sendData, new[]
+            {
+                // NetMessage.SendData pre hook
+                var firstInstr = sendData.Body.Instructions.FirstOrDefault();
+                IL.MethodPrepend(sendData, new[]
                 {
                     Instruction.Create(OpCodes.Ldarg_0), // msgType
                     Instruction.Create(OpCodes.Ldarg_1), // remoteClient
@@ -820,72 +875,84 @@ namespace TerrariaPatcher
                     Instruction.Create(OpCodes.Brfalse_S, firstInstr),
                     Instruction.Create(OpCodes.Ret)
                 });
+            }
 
-            var getColor = IL.GetMethodDefinition(lighting, "GetColor", 2);
-            firstInstr = getColor.Body.Instructions.FirstOrDefault();
-            var varColor = new VariableDefinition("test", IL.GetTypeReference(ModDefinition, "Microsoft.Xna.Framework.Color"));
-            getColor.Body.Variables.Add(varColor);
-            IL.MethodPrepend(getColor, new[]
             {
-                Instruction.Create(OpCodes.Ldarg_0),
-                Instruction.Create(OpCodes.Ldarg_1),
-                Instruction.Create(OpCodes.Ldloca_S, varColor),
-                Instruction.Create(OpCodes.Call, onGetColor),
-                Instruction.Create(OpCodes.Brfalse_S, firstInstr),
-                Instruction.Create(OpCodes.Ldloc, varColor),
-                Instruction.Create(OpCodes.Ret)
-            });
+                // Lighting.GetColor pre hook
+                var firstInstr = getColor.Body.Instructions.FirstOrDefault();
+                var varColor = new VariableDefinition("test", IL.GetTypeReference(ModDefinition, "Microsoft.Xna.Framework.Color"));
+                getColor.Body.Variables.Add(varColor);
+                IL.MethodPrepend(getColor, new[]
+                {
+                    Instruction.Create(OpCodes.Ldarg_0),
+                    Instruction.Create(OpCodes.Ldarg_1),
+                    Instruction.Create(OpCodes.Ldloca_S, varColor),
+                    Instruction.Create(OpCodes.Call, onGetColor),
+                    Instruction.Create(OpCodes.Brfalse_S, firstInstr),
+                    Instruction.Create(OpCodes.Ldloc, varColor),
+                    Instruction.Create(OpCodes.Ret)
+                });
+            }
 
-            var getItem = IL.GetMethodDefinition(player, "GetItem");
-            firstInstr = getItem.Body.Instructions.FirstOrDefault();
-            var varItem = new VariableDefinition("test", IL.GetTypeDefinition(ModDefinition, "Item"));
-            getItem.Body.Variables.Add(varItem);
-            IL.MethodPrepend(getItem, new[]
             {
-                Instruction.Create(OpCodes.Ldarg_0),
-                Instruction.Create(OpCodes.Ldarg_2),
-                Instruction.Create(OpCodes.Ldloca_S, varItem),
-                Instruction.Create(OpCodes.Call, onGetItem),
-                Instruction.Create(OpCodes.Brfalse_S, firstInstr),
-                Instruction.Create(OpCodes.Ldloc, varItem),
-                Instruction.Create(OpCodes.Ret)
-            });
+                // Player.GetItem pre hook
+                var firstInstr = getItem.Body.Instructions.FirstOrDefault();
+                var varItem = new VariableDefinition("test", IL.GetTypeDefinition(ModDefinition, "Item"));
+                getItem.Body.Variables.Add(varItem);
+                IL.MethodPrepend(getItem, new[]
+                {
+                    Instruction.Create(OpCodes.Ldarg_0),
+                    Instruction.Create(OpCodes.Ldarg_2),
+                    Instruction.Create(OpCodes.Ldloca_S, varItem),
+                    Instruction.Create(OpCodes.Call, onGetItem),
+                    Instruction.Create(OpCodes.Brfalse_S, firstInstr),
+                    Instruction.Create(OpCodes.Ldloc, varItem),
+                    Instruction.Create(OpCodes.Ret)
+                });
+            }
 
-            var setupShop = IL.GetMethodDefinition(chest, "SetupShop");
-            IL.MethodAppend(setupShop.Body.GetILProcessor(), setupShop.Body.Instructions.Count - 1, 1, new[]
+            {
+                // Chest.SetupShop post hook
+                IL.MethodAppend(setupShop, setupShop.Body.Instructions.Count - 1, 1, new[]
                 {
                     Instruction.Create(OpCodes.Ldarg_0),
                     Instruction.Create(OpCodes.Ldarg_1),
                     Instruction.Create(OpCodes.Call, onChestSetupShop),
                     Instruction.Create(OpCodes.Ret)
                 });
+            }
 
-            var quickBuff = IL.GetMethodDefinition(player, "QuickBuff");
-            firstInstr = quickBuff.Body.Instructions.FirstOrDefault();
-
-            IL.MethodPrepend(quickBuff, new[]
+            {
+                // Player.QuickBuff pre hook
+                var firstInstr = quickBuff.Body.Instructions.FirstOrDefault();
+                IL.MethodPrepend(quickBuff, new[]
                 {
                     Instruction.Create(OpCodes.Ldarg_0),
                     Instruction.Create(OpCodes.Call, onPlayerQuickBuff),
                     Instruction.Create(OpCodes.Brfalse_S, firstInstr),
                     Instruction.Create(OpCodes.Ret)
                 });
+            }
 
-            var npcLoot = IL.GetMethodDefinition(npc, "NPCLoot");
-            firstInstr = npcLoot.Body.Instructions.FirstOrDefault();
-
-            IL.MethodPrepend(npcLoot, new[]
+            {
+                // NPC.NPCLoot pre hook
+                var firstInstr = npcLoot.Body.Instructions.FirstOrDefault();
+                IL.MethodPrepend(npcLoot, new[]
                 {
                     Instruction.Create(OpCodes.Ldarg_0),
                     Instruction.Create(OpCodes.Call, onNPCLoot),
                     Instruction.Create(OpCodes.Brfalse_S, firstInstr),
                     Instruction.Create(OpCodes.Ret)
                 });
+            }
 
-            IL.MakeTypePublic(IL.GetTypeDefinition(ModDefinition, "MapHelper"));
-            IL.MakeTypePublic(IL.GetTypeDefinition(ModDefinition, "Player"));
-            //IL.MakeTypePublic(IL.GetTypeDefinition(ModDefinition, "Main"));
-            //IL.MakeTypePublic(IL.GetTypeDefinition(ModDefinition, "Lighting"));
+            {
+                // Make many fields/methods public so we can access freely without using reflection on the fly
+                IL.MakeTypePublic(IL.GetTypeDefinition(ModDefinition, "MapHelper"));
+                IL.MakeTypePublic(IL.GetTypeDefinition(ModDefinition, "Player"));
+                IL.MakeTypePublic(IL.GetTypeDefinition(ModDefinition, "Main"));
+                //IL.MakeTypePublic(IL.GetTypeDefinition(ModDefinition, "Lighting"));
+            }
         }
 
         private static void RemoveSteam()

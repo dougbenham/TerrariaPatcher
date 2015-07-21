@@ -22,30 +22,25 @@ namespace GTRPlugins
         {
             LoadSets();
             var list = new List<SortingSet>();
-            List<SortingSet> result;
             if (orderOfLists.Count == 0)
             {
-                result = list;
+                return list;
             }
-            else
+            for (var i = 1; i < orderOfLists.Count; i++)
             {
-                for (var i = 1; i < orderOfLists.Count; i++)
+                if (orderOfLists.ContainsKey(i))
                 {
-                    if (orderOfLists.ContainsKey(i))
-                    {
-                        list.Add(GetSetFromName(orderOfLists[i]));
-                    }
+                    list.Add(GetSetFromName(orderOfLists[i]));
                 }
-                foreach (var current in _addedSets)
-                {
-                    if (!list.Contains(current))
-                    {
-                        list.Add(current);
-                    }
-                }
-                result = list;
             }
-            return result;
+            foreach (var current in _addedSets)
+            {
+                if (!list.Contains(current))
+                {
+                    list.Add(current);
+                }
+            }
+            return list;
         }
         public static int[] GetIdsFromName(string name)
         {
@@ -66,18 +61,9 @@ namespace GTRPlugins
         }
         public static SortingSet GetSetFromName(string name)
         {
-            SortingSet result;
-            foreach (var current in _addedSets)
-            {
-                if (current.name == name)
-                {
-                    result = current;
-                    return result;
-                }
-            }
-            result = null;
-            return result;
+            return _addedSets.FirstOrDefault(current => current.name == name);
         }
+
         private static void LoadSets()
         {
             try

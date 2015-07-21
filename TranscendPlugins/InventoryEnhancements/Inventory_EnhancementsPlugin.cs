@@ -1,31 +1,31 @@
 ﻿using System;
+using GTRPlugins.Utils;
 using PluginLoader;
 using Terraria;
 
 namespace GTRPlugins
 {
-    public class InventoryEnhancementPlugin : MarshalByRefObject, IPluginPlayerGetItem, IPluginUpdate, IPluginPlayerQuickBuff
+    public class InventoryEnhancementPlugin : MarshalByRefObject, IPluginInitialize, IPluginDrawInventory, IPluginUpdate, IPluginPlayerQuickBuff
     {
-        public InventoryEnhancementPlugin()
+        public void OnInitialize()
         {
-            InventoryEnhancements.Init();
+            Inventory_Enhancements.Init(null, null);
+            AutoSort.Init(null, null);
         }
 
-        public bool OnPlayerGetItem(Player player, Item newItem, out Item resultItem)
+        public void OnDrawInventory()
         {
-            if (InventoryEnhancements.config.TrashList.Contains(newItem.type) && InventoryEnhancements.config.AutoTrash && Main.netMode == 0 && player.whoAmI == Main.myPlayer)
-            {
-                player.trashItem = newItem;
-                resultItem = new Item();
-                return true;
-            }
-            resultItem = null;
-            return false;
+            Inventory_Enhancements_UI.DrawInventory(null, null);
+            LoadoutSwap.Draw(null, null);
+            ChestSearch.DrawInventory(null, null);
         }
 
         public void OnUpdate()
         {
-            InventoryEnhancements.Update(null);
+            Input.Update();
+            Inventory_Enhancements.Update(null, null);
+            Inventory_Enhancements_UI.Update(null, null);
+            ChestSearch.Update(null, null);
         }
 
         public bool OnPlayerQuickBuff(Player player)
@@ -144,9 +144,9 @@ namespace GTRPlugins
                 {
                     if (player.chest < 0)
                     {
-                        for (int i = 0; i < 40; i++)
+                        for (int l = 0; l < 40; l++)
                         {
-                            NetMessage.SendData(32, -1, -1, "", player.chest, (float)i, 0f, 0f, 0, 0, 0);
+                            NetMessage.SendData(32, -1, -1, "", player.chest, (float)l, 0f, 0f, 0, 0, 0);
                         }
                     }
                     else

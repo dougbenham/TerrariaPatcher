@@ -15,8 +15,8 @@ namespace TranscendPlugins
             if (!Keys.TryParse(IniAPI.ReadIni("Time", "Day", "OemPeriod", writeIt: true), out dayKey))
                 dayKey = Keys.OemPeriod;
 
-            Loader.RegisterHotkey(() => ChangeTime(Loader.IsControlModifierKeyDown() ? "dusk" : "midnight"), nightKey);
-            Loader.RegisterHotkey(() => ChangeTime(Loader.IsControlModifierKeyDown() ? "dawn" : "noon"), dayKey);
+            Loader.RegisterHotkey(() => ChangeTime(Loader.IsControlModifierKeyDown() ? "dusk" : "midnight"), nightKey, ignoreModifierKeys: true);
+            Loader.RegisterHotkey(() => ChangeTime(Loader.IsControlModifierKeyDown() ? "dawn" : "noon"), dayKey, ignoreModifierKeys: true);
         }
 
         private void ChangeTime(string time)

@@ -8,11 +8,16 @@ namespace TranscendPlugins
 {
     public class UseTime : MarshalByRefObject, IPluginItemSetDefaults, IPluginPlayerUpdateBuffs, IPluginChatCommand
     {
+        private int initialTileRangeX, initialTileRangeY, initialDefaultItemGrabRange;
         private bool maxTileSpeed, maxWallSpeed, maxPickSpeed, maxReachRange, maxItemPickupRange;
         private bool builderBuffWarning = false;
         
         public UseTime()
         {
+            initialTileRangeX = Player.tileRangeX;
+            initialTileRangeY = Player.tileRangeY;
+            initialDefaultItemGrabRange = Player.defaultItemGrabRange;
+
             maxPickSpeed = bool.Parse(IniAPI.ReadIni("UseTime", "MaxPickSpeed", "true", writeIt: true)); // Pick / Hammer / Axe
             maxTileSpeed = bool.Parse(IniAPI.ReadIni("UseTime", "MaxTileSpeed", "true", writeIt: true)); // Placing blocks / wire
             maxWallSpeed = bool.Parse(IniAPI.ReadIni("UseTime", "MaxWallSpeed", "true", writeIt: true)); // Placing wall
@@ -61,20 +66,28 @@ namespace TranscendPlugins
                     Player.tileRangeX = 100;
                     Player.tileRangeY = 100;
                 }
-                if (maxItemPickupRange)
-                    Player.defaultItemGrabRange = 700;
+                else
+                {
+                    Player.tileRangeX = initialTileRangeX;
+                    Player.tileRangeY = initialTileRangeY;
+                }
+
+                Player.defaultItemGrabRange = maxItemPickupRange ? 700 : initialDefaultItemGrabRange;
             }
         }
 
         public bool OnChatCommand(string command, string[] args)
         {
-            if (command != "usetime" && command != "autoreuse") return false;
+            if (command != "usetime" && command != "autoreuse" && command != "range") return false;
 
-            if (!(command == "usetime" && args.Length == 1) && !(command == "autoreuse" && args.Length == 0))
+            if (!(command == "usetime" && args.Length == 1) &&
+                !(command == "autoreuse" && args.Length == 0) &&
+                !(command == "range" && args.Length == 0))
             {
                 Main.NewText("Usage:");
                 Main.NewText("   /autoreuse");
                 Main.NewText("   /usetime num");
+                Main.NewText("   /range");
                 Main.NewText("Example:");
                 Main.NewText("   /usetime 0");
                 return true;
@@ -109,6 +122,11 @@ namespace TranscendPlugins
                 case "autoreuse":
                     item.autoReuse = !item.autoReuse;
                     Main.NewText("AutoReuse = " + item.autoReuse);
+                    break;
+                case "range":
+                    IniAPI.WriteIni("UseTime", "MaxReachRange", (maxReachRange = !maxReachRange).ToString());
+                    IniAPI.WriteIni("UseTime", "MaxItemPickupRange", (maxItemPickupRange = maxReachRange /* this is not a typo */).ToString());
+                    Main.NewText("Block reach and item pickup range is " + (maxReachRange ? "enhanced" : "back to normal") + ".");
                     break;
             }
             return true;

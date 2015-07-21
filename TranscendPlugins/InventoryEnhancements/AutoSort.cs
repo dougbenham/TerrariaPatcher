@@ -1,11 +1,12 @@
-﻿using GTRPlugins.Sorting;
+﻿using System;
+using GTRPlugins.Sorting;
 
 namespace GTRPlugins
 {
     public static class AutoSort
     {
         public static SortingManager manager;
-        public static void Init()
+        public static void Init(object sender, EventArgs e)
         {
             manager = new SortingManager();
         }

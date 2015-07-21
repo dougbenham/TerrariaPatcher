@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Windows.Forms;
 using Microsoft.CSharp;
 using Microsoft.Xna.Framework;
 using Terraria;
@@ -13,11 +14,19 @@ namespace PluginLoader
 {
     public static class Loader
     {
+        #region Data
+
         private static List<Hotkey> hotkeys = new List<Hotkey>();
+        private static Keys[] keysdown;
+        private static bool control, shift, alt;
         private static bool fresh = true;
 
-        private static List<IPlugin> loadedPlugins = new List<IPlugin>(); 
+        private static List<IPlugin> loadedPlugins = new List<IPlugin>();
         private static bool loaded, ingame;
+
+        #endregion
+        
+        #region Load
 
         private static void Load()
         {
@@ -26,12 +35,14 @@ namespace PluginLoader
                 loaded = true;
 
                 // Dynamic compilation requires assemblies to be stored on file, thus we must extract the Newtonsoft.Json.dll embedded resource to a temp file if we want to use it.
-                var resourceName = "Terraria.Libraries.JSON.NET.Net40.Newtonsoft.Json.dll";
+                var resourceName = "Newtonsoft.Json.dll";
                 var newtonsoftFileName = Path.Combine(Path.GetTempPath(), resourceName);
                 if (!File.Exists(newtonsoftFileName))
                 {
                     using (var stream = Assembly.GetEntryAssembly().GetManifestResourceStream(resourceName))
                     {
+                        if (stream == null) throw new Exception("Could not extract Newtonsoft.Json.dll from Terraria.");
+
                         using (var fileStream = new FileStream(newtonsoftFileName, FileMode.Create))
                         {
                             stream.CopyTo(fileStream);
@@ -42,13 +53,48 @@ namespace PluginLoader
                 var references = AppDomain.CurrentDomain
                     .GetAssemblies()
                     .Where(a => !a.IsDynamic)
-                    .Select(a => a.Location).Concat(new[] { newtonsoftFileName }).ToArray();
+                    .Select(a => a.Location).Concat(new[] {newtonsoftFileName}).ToArray();
 
                 foreach (var filename in Directory.EnumerateFiles(@".\Plugins\", "*.cs"))
                     Load(Path.GetFileNameWithoutExtension(filename), references, File.ReadAllText(filename));
 
                 foreach (var folder in Directory.EnumerateDirectories(@".\Plugins\"))
                     Load(Path.GetFileName(folder), references, Directory.EnumerateFiles(folder, "*.cs", SearchOption.AllDirectories).Select(File.ReadAllText).ToArray());
+
+                // Load hotkey binds
+                var result = IniAPI.GetIniKeys("HotkeyBinds").ToList();
+                foreach (var keys in result)
+                {
+                    var val = IniAPI.ReadIni("HotkeyBinds", keys, null);
+                    var key = Keys.None;
+                    var control = false;
+                    var shift = false;
+                    var alt = false;
+                    bool hotkeyParseFailed = false;
+                    foreach (var keyStr in keys.Split(','))
+                    {
+                        switch (keyStr.ToLower())
+                        {
+                            case "control":
+                                control = true;
+                                break;
+                            case "shift":
+                                shift = true;
+                                break;
+                            case "alt":
+                                alt = true;
+                                break;
+                            default:
+                                if (key != Keys.None || !Keys.TryParse(keyStr, out key)) hotkeyParseFailed = true;
+                                break;
+                        }
+                    }
+
+                    if (string.IsNullOrEmpty(val) || !val.StartsWith("/") || hotkeyParseFailed)
+                        MessageBox.Show("Invalid record in [HotkeyBinds]: " + key + ".", "", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    else
+                        RegisterHotkey(val, key, control, shift, alt);
+                }
             }
         }
 
@@ -75,42 +121,74 @@ namespace PluginLoader
                 throw new Exception(text);
             }
 
-            foreach (var type in compile.CompiledAssembly.GetTypes().Where(type1 => type1.GetInterfaces().Contains(typeof(IPlugin))))
+            foreach (var type in compile.CompiledAssembly.GetTypes().Where(type1 => type1.GetInterfaces().Contains(typeof (IPlugin))))
             {
                 loadedPlugins.Add(Activator.CreateInstance(type) as IPlugin);
             }
         }
 
-        public static void RegisterHotkey(Action action, params Keys[] keys)
+        #endregion
+        
+        #region Hotkeys
+
+        public static void RegisterHotkey(string command, Keys key, bool control = false, bool shift = false, bool alt = false, bool ignoreModifierKeys = false)
         {
-            RegisterHotkey(new Hotkey() {Keys = keys, Action = action});
+            RegisterHotkey(() =>
+            {
+                var split = command.Substring(1).Split(new[] { ' ' }, 2);
+                var cmd = split[0].ToLower();
+                var args = split.Length > 1 ? split[1].Split(' ') : new string[0];
+
+                foreach (var plugin in loadedPlugins.OfType<IPluginChatCommand>())
+                    plugin.OnChatCommand(cmd, args);
+            }, key, control, shift, alt, ignoreModifierKeys);
+        }
+
+        public static void RegisterHotkey(Action action, Keys key, bool control = false, bool shift = false, bool alt = false, bool ignoreModifierKeys = false)
+        {
+            RegisterHotkey(new Hotkey() { Key = key, Control = control, Shift = shift, Alt = alt, Action = action, IgnoreModifierKeys = ignoreModifierKeys });
         }
 
         public static void RegisterHotkey(Hotkey hotkey)
         {
-            if (hotkey.Keys.Length == 0) return;
             hotkeys.Add(hotkey);
         }
 
         public static bool IsAltModifierKeyDown()
         {
-            return Main.keyState.IsKeyDown(Keys.LeftAlt) || Main.keyState.IsKeyDown(Keys.RightAlt);
+            return alt;
         }
 
         public static bool IsControlModifierKeyDown()
         {
-            return Main.keyState.IsKeyDown(Keys.LeftControl) || Main.keyState.IsKeyDown(Keys.RightControl);
+            return control;
         }
 
         public static bool IsShiftModifierKeyDown()
         {
-            return Main.keyState.IsKeyDown(Keys.LeftShift) || Main.keyState.IsKeyDown(Keys.RightShift);
+            return shift;
+        }
+
+        #endregion
+
+        #region Main
+        
+        public static void OnInitialize()
+        {
+            Load();
+
+            foreach (var plugin in loadedPlugins.OfType<IPluginInitialize>())
+                plugin.OnInitialize();
+        }
+
+        public static void OnDrawInventory()
+        {
+            foreach (var plugin in loadedPlugins.OfType<IPluginDrawInventory>())
+                plugin.OnDrawInventory();
         }
 
         public static void OnUpdate()
         {
-            Load();
-
             if (!ingame)
             {
                 ingame = true;
@@ -119,11 +197,15 @@ namespace PluginLoader
 
             if (!Main.blockInput && !Main.chatMode && !Main.editSign && !Main.editChest)
             {
-                var keysdown = Main.keyState.GetPressedKeys();
+                keysdown = Main.keyState.GetPressedKeys();
+                control = keysdown.Contains(Keys.LeftControl) || keysdown.Contains(Keys.RightControl);
+                shift = keysdown.Contains(Keys.LeftShift) || keysdown.Contains(Keys.RightShift);
+                alt = keysdown.Contains(Keys.LeftAlt) || keysdown.Contains(Keys.RightAlt);
                 var anyPresses = false;
                 foreach (var hotkey in hotkeys)
                 {
-                    if (hotkey.Keys.All(keysdown.Contains))
+                    if (keysdown.Contains(hotkey.Key) &&
+                        hotkey.IgnoreModifierKeys || (control == hotkey.Control && shift == hotkey.Shift && alt == hotkey.Alt))
                     {
                         anyPresses = true;
                         if (fresh) hotkey.Action();
@@ -137,50 +219,79 @@ namespace PluginLoader
                 plugin.OnUpdate();
         }
 
+        public static void OnUpdateTime()
+        {
+            foreach (var plugin in loadedPlugins.OfType<IPluginUpdateTime>())
+                plugin.OnUpdateTime();
+        }
+
+        #endregion
+
+        #region Player
+
         public static void OnPlayerUpdate(Player player)
         {
-            Load();
-
             foreach (var plugin in loadedPlugins.OfType<IPluginPlayerUpdate>())
                 plugin.OnPlayerUpdate(player);
         }
 
-        public static void OnItemSetDefaults(Item item)
-        {
-            Load();
-
-            foreach (var plugin in loadedPlugins.OfType<IPluginItemSetDefaults>())
-                plugin.OnItemSetDefaults(item);
-        }
-
         public static void OnPlayerUpdateBuffs(Player player)
         {
-            Load();
-
             foreach (var plugin in loadedPlugins.OfType<IPluginPlayerUpdateBuffs>())
                 plugin.OnPlayerUpdateBuffs(player);
         }
 
         public static void OnPlayerPickAmmo(Player player, Item weapon, ref int shoot, ref float speed, ref bool canShoot, ref int damage, ref float knockback)
         {
-            Load();
-
             foreach (var plugin in loadedPlugins.OfType<IPluginPlayerPickAmmo>())
                 plugin.OnPlayerPickAmmo(player, weapon, ref shoot, ref speed, ref canShoot, ref damage, ref knockback);
         }
 
-        public static void OnProjectileAI001(Projectile projectile)
+        public static bool OnPlayerGetItem(Player player, Item newItem, out Item resultItem)
         {
-            Load();
+            resultItem = null;
+            var ret = false;
+            foreach (var plugin in loadedPlugins.OfType<IPluginPlayerGetItem>())
+            {
+                Item temp;
+                var result = plugin.OnPlayerGetItem(player, newItem, out temp);
+                if (result)
+                {
+                    ret = true;
+                    resultItem = temp;
+                }
+            }
 
-            foreach (var plugin in loadedPlugins.OfType<IPluginProjectileAI>())
-                plugin.OnProjectileAI001(projectile);
+            return ret;
+        }
+
+        public static bool OnPlayerQuickBuff(Player player)
+        {
+            var ret = false;
+            foreach (var plugin in loadedPlugins.OfType<IPluginPlayerQuickBuff>())
+                ret = plugin.OnPlayerQuickBuff(player) || ret;
+
+            return ret;
+        }
+
+        #endregion
+        
+        #region Item
+
+        public static void OnItemSetDefaults(Item item)
+        {
+            if (!loaded)
+            {
+                MessageBox.Show("OnItemSetDefaults got there first.");
+                Load();
+            }
+
+            foreach (var plugin in loadedPlugins.OfType<IPluginItemSetDefaults>())
+                plugin.OnItemSetDefaults(item);
         }
 
         public static bool OnItemSlotRightClick(Item[] inv, int context, int slot)
         {
-            Load();
-
             var ret = false;
             foreach (var plugin in loadedPlugins.OfType<IPluginItemSlotRightClick>())
                 ret = plugin.OnItemSlotRightClick(inv, context, slot) || ret;
@@ -188,11 +299,23 @@ namespace PluginLoader
             return ret;
         }
 
+        #endregion
+
+        #region Projectile
+
+        public static void OnProjectileAI001(Projectile projectile)
+        {
+            foreach (var plugin in loadedPlugins.OfType<IPluginProjectileAI>())
+                plugin.OnProjectileAI001(projectile);
+        }
+
+        #endregion
+
+        #region NetMessage
+
         public static bool OnNetMessageSendData(int msgType, int remoteClient, int ignoreClient, string text, int number, float number2, float number3, float number4,
             int number5, int number6, int number7)
         {
-            Load();
-
             bool ret = false, chatRet = false;
 
             foreach (var plugin in loadedPlugins.OfType<IPluginNetMessageSendData>())
@@ -213,10 +336,12 @@ namespace PluginLoader
             return ret || chatRet;
         }
 
+        #endregion
+
+        #region Lighting
+
         public static bool OnLightingGetColor(int x, int y, out Color color)
         {
-            Load();
-
             color = Color.White;
             var ret = false;
             foreach (var plugin in loadedPlugins.OfType<IPluginLightingGetColor>())
@@ -233,56 +358,32 @@ namespace PluginLoader
             return ret;
         }
 
-        public static bool OnPlayerGetItem(Player player, Item newItem, out Item resultItem)
-        {
-            Load();
+        #endregion
 
-            resultItem = null;
-            var ret = false;
-            foreach (var plugin in loadedPlugins.OfType<IPluginPlayerGetItem>())
-            {
-                Item temp;
-                var result = plugin.OnPlayerGetItem(player, newItem, out temp);
-                if (result)
-                {
-                    ret = true;
-                    resultItem = temp;
-                }
-            }
-
-            return ret;
-        }
+        #region Chest
 
         public static void OnChestSetupShop(Chest chest, int type)
         {
-            Load();
-
             foreach (var plugin in loadedPlugins.OfType<IPluginChestSetupShop>())
             {
                 plugin.OnChestSetupShop(chest, type);
             }
         }
 
-        public static bool OnPlayerQuickBuff(Player player)
-        {
-            Load();
+        #endregion
 
-            var ret = false;
-            foreach (var plugin in loadedPlugins.OfType<IPluginPlayerQuickBuff>())
-                ret = plugin.OnPlayerQuickBuff(player) || ret;
-
-            return ret;
-        }
+        #region NPC
 
         public static bool OnNPCLoot(NPC npc)
         {
-            Load();
-
             var ret = false;
             foreach (var plugin in loadedPlugins.OfType<IPluginNPCLoot>())
                 ret = plugin.OnNPCLoot(npc) || ret;
 
             return ret;
         }
+
+        #endregion
+
     }
 }

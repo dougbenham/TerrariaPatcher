@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -11,6 +12,8 @@ namespace PluginLoader
 
         [DllImport("kernel32", EntryPoint = "WritePrivateProfileString")]
         public static extern long WriteIni(string section, string key, string val, string path);
+        [DllImport("kernel32.dll")]
+        private static extern int GetPrivateProfileSection(string section, byte[] retVal, int size, string filePath);
         [DllImport("kernel32")]
         private static extern int GetPrivateProfileString(string section, string key, string def, StringBuilder retVal, int size, string filePath);
         [DllImport("kernel32")]
@@ -37,6 +40,18 @@ namespace PluginLoader
             }
 
             return ret;
+        }
+
+        public static IEnumerable<string> GetIniKeys(string section, string path = null)
+        {
+            if (path == null)
+                path = iniPath;
+
+            var temp = new byte[2048];
+            GetPrivateProfileSection(section, temp, temp.Length, path);
+            string[] ret = Encoding.ASCII.GetString(temp).Trim('\0').Split('\0');
+
+            return (from entry in ret let @equals = entry.IndexOf('=') select @equals >= 0 ? entry.Substring(0, @equals) : entry);
         }
 
         /// <summary>

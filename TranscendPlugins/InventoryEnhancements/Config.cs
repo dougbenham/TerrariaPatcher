@@ -10,11 +10,11 @@ namespace GTRPlugins
     public class Config
     {
         [JsonProperty("Subsort Mode")]
-        public int SubsortMode = 0;
+        public int SubsortMode;
         [JsonProperty("Cycle Hotbar")]
-        public bool HotbarCycle = false;
+        public bool HotbarCycle;
         [JsonProperty("Auto Trash")]
-        public bool AutoTrash = false;
+        public bool AutoTrash;
         [JsonProperty("Sort")]
         public char SortKey = 'Z';
         [JsonProperty("Sorting Key Enabled")]
@@ -51,7 +51,7 @@ namespace GTRPlugins
             {
                 Config config = new Config();
                 int? firstInstance = Json.GetFirstInstance<int>("Subsort Mode", path);
-                if (firstInstance.HasValue && firstInstance < 3 && firstInstance > -1)
+                if (firstInstance.HasValue && firstInstance < 4 && firstInstance > -1)
                 {
                     this.SubsortMode = firstInstance.Value;
                     config.SubsortMode = this.SubsortMode;
@@ -60,7 +60,7 @@ namespace GTRPlugins
                 {
                     config.SubsortMode = 0;
                 }
-                bool? firstInstance2 = Json.GetFirstInstance<bool>("Hotbar Cycle", path);
+                bool? firstInstance2 = Json.GetFirstInstance<bool>("Cycle Hotbar", path);
                 if (firstInstance2.HasValue)
                 {
                     this.HotbarCycle = firstInstance2.Value;
@@ -131,27 +131,27 @@ namespace GTRPlugins
                     config.SortKey = this.SortKey;
                 }
                 char? firstInstance9 = Json.GetFirstInstance<char>("Swap Hotbar", path);
-                c = firstInstance9;
-                if ((c.HasValue ? new int?((int)c.GetValueOrDefault()) : null).HasValue)
+                char? c2 = firstInstance9;
+                if ((c2.HasValue ? new int?((int)c2.GetValueOrDefault()) : null).HasValue)
                 {
                     this.HotbarSwapKey = firstInstance9.Value;
                     config.HotbarSwapKey = this.HotbarSwapKey;
                 }
                 char? firstInstance10 = Json.GetFirstInstance<char>("Quick Stack", path);
-                c = firstInstance10;
-                if ((c.HasValue ? new int?((int)c.GetValueOrDefault()) : null).HasValue)
+                char? c3 = firstInstance10;
+                if ((c3.HasValue ? new int?((int)c3.GetValueOrDefault()) : null).HasValue)
                 {
                     this.QSKey = firstInstance10.Value;
                     config.QSKey = this.QSKey;
                 }
-                Json.Serialize<Config>(config, path);
+                Json.Serialize(config, path);
             }
             catch
             {
                 try
                 {
                     Config obj = new Config();
-                    Json.Serialize<Config>(obj, path);
+                    Json.Serialize(obj, path);
                 }
                 catch
                 {
@@ -172,7 +172,7 @@ namespace GTRPlugins
             string path = Main.SavePath + Path.DirectorySeparatorChar + "IEConfig.json";
             try
             {
-                Json.Serialize<Config>(this, path);
+                Json.Serialize(this, path);
             }
             catch
             {
@@ -180,7 +180,7 @@ namespace GTRPlugins
         }
         public static Keys CharToXnaKey(char character)
         {
-            return (Keys)(char.IsLetter(character) ? char.ToUpper(character) : character);
+            return char.IsLetter(character) ? (Keys) char.ToUpper(character) : (Keys) character;
         }
     }
 }

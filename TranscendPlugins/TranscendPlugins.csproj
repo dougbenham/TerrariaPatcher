@@ -49,9 +49,8 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="Terraria, Version=1.3.0.5, Culture=neutral, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Terraria\Terraria.exe</HintPath>
+    <Reference Include="Terraria">
+      <HintPath>..\bin\Terraria.exe</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -62,16 +61,21 @@
     <Compile Include="HomingBullets.cs" />
     <Compile Include="InfiniteFlight.cs" />
     <Compile Include="InfiniteLifeSteal.cs" />
+    <Compile Include="InfiniteSundial.cs" />
     <Compile Include="InventoryEnhancements\AutoClean.cs" />
     <Compile Include="InventoryEnhancements\AutoSort.cs" />
     <Compile Include="InventoryEnhancements\AutoTrash.cs" />
+    <Compile Include="InventoryEnhancements\ChestSearch.cs" />
     <Compile Include="InventoryEnhancements\Config.cs" />
     <Compile Include="InventoryEnhancements\HotbarSwap.cs" />
-    <Compile Include="InventoryEnhancements\InventoryEnhancements.cs" />
-    <Compile Include="InventoryEnhancements\InventoryEnhancementsPlugin.cs" />
+    <Compile Include="InventoryEnhancements\Inventory_Enhancements.cs" />
+    <Compile Include="InventoryEnhancements\Inventory_EnhancementsPlugin.cs" />
+    <Compile Include="InventoryEnhancements\Inventory_Enhancements_UI.cs" />
+    <Compile Include="InventoryEnhancements\LoadoutSwap.cs" />
     <Compile Include="InventoryEnhancements\SortingSet.cs" />
     <Compile Include="InventoryEnhancements\Sorting\Sets.cs" />
-    <Compile Include="InventoryEnhancements\Sorting\SortManager.cs" />
+    <Compile Include="InventoryEnhancements\Sorting\SortingManager.cs" />
+    <Compile Include="InventoryEnhancements\UI\Button.cs" />
     <Compile Include="InventoryEnhancements\Utils\Input.cs" />
     <Compile Include="InventoryEnhancements\Utils\Json.cs" />
     <Compile Include="InventoryEnhancements\Utils\MouseButton.cs" />
@@ -81,6 +85,8 @@
     <Compile Include="MoreAccessorySlots.cs" />
     <Compile Include="NPC.cs" />
     <Compile Include="Respawn.cs" />
+    <Compile Include="Season.cs" />
+    <Compile Include="ShopSellsScalingPotions.cs" />
     <Compile Include="SkipSplash.cs" />
     <Compile Include="Time.cs" />
     <Compile Include="UseTime.cs" />
