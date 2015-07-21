@@ -55,6 +55,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BuffRates.cs" />
+    <Compile Include="ChestSearch.cs" />
     <Compile Include="CoinGun.cs" />
     <Compile Include="FullBright.cs" />
     <Compile Include="GodMode.cs" />
@@ -65,13 +66,12 @@
     <Compile Include="InventoryEnhancements\AutoClean.cs" />
     <Compile Include="InventoryEnhancements\AutoSort.cs" />
     <Compile Include="InventoryEnhancements\AutoTrash.cs" />
-    <Compile Include="InventoryEnhancements\ChestSearch.cs" />
     <Compile Include="InventoryEnhancements\Config.cs" />
     <Compile Include="InventoryEnhancements\HotbarSwap.cs" />
     <Compile Include="InventoryEnhancements\Inventory_Enhancements.cs" />
     <Compile Include="InventoryEnhancements\Inventory_EnhancementsPlugin.cs" />
     <Compile Include="InventoryEnhancements\Inventory_Enhancements_UI.cs" />
-    <Compile Include="InventoryEnhancements\LoadoutSwap.cs" />
+    <Compile Include="LoadoutSwap.cs" />
     <Compile Include="InventoryEnhancements\SortingSet.cs" />
     <Compile Include="InventoryEnhancements\Sorting\Sets.cs" />
     <Compile Include="InventoryEnhancements\Sorting\SortingManager.cs" />

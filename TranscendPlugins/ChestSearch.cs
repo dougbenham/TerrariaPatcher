@@ -4,13 +4,14 @@ using GTRPlugins.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using PluginLoader;
 using Terraria;
 using Terraria.UI;
 using Terraria.UI.Chat;
 
 namespace GTRPlugins
 {
-    public class ChestSearch
+    public class ChestSearch : IPluginUpdate, IPluginDrawInventory
     {
         private class ChestItem : IComparable<ChestItem>
         {
@@ -53,6 +54,7 @@ namespace GTRPlugins
         private static string SearchText;
         private static Button ShowChestSearchButton;
         private static Button ClearTextFieldButton;
+
         static ChestSearch()
         {
             ShowChestSearch = false;
@@ -101,7 +103,7 @@ namespace GTRPlugins
             Main.clrInput();
             SearchTextFocus = true;
         }
-        public static void Update(object sender, EventArgs e)
+        public void OnUpdate()
         {
             if ((Main.chatMode || Main.editSign || Main.editChest || Main.recBigList || Main.player[Main.myPlayer].chest != -1 || !Main.playerInventory) && ShowChestSearch)
             {
@@ -126,7 +128,7 @@ namespace GTRPlugins
                 }
             }
         }
-        public static void DrawInventory(object sender, EventArgs e)
+        public void OnDrawInventory()
         {
             if (Main.player[Main.myPlayer].chest == -1 && Main.npcShop == 0)
             {

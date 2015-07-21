@@ -1,6 +1,8 @@
 v1.2.0.7:	Added Season plugin.
 		Added ShopSellsScalingPotions plugin.
 		Added InfiniteSundial plugin.
+		Added ChestSearch plugin.
+		Added LoadoutSwap plugin.
 		Added administrator privileges warning when patching.
 		Added new 'spawn at cursor' command for NPC plugin.
 		Added /range command to UseTime plugin.

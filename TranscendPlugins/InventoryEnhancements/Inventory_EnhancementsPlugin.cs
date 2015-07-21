@@ -16,8 +16,6 @@ namespace GTRPlugins
         public void OnDrawInventory()
         {
             Inventory_Enhancements_UI.DrawInventory(null, null);
-            LoadoutSwap.Draw(null, null);
-            ChestSearch.DrawInventory(null, null);
         }
 
         public void OnUpdate()
@@ -25,7 +23,6 @@ namespace GTRPlugins
             Input.Update();
             Inventory_Enhancements.Update(null, null);
             Inventory_Enhancements_UI.Update(null, null);
-            ChestSearch.Update(null, null);
         }
 
         public bool OnPlayerQuickBuff(Player player)
