@@ -15,6 +15,8 @@ namespace GTRPlugins
         public bool HotbarCycle = false;
         [JsonPropertyAttribute("Auto Trash")]
         public bool AutoTrash = false;
+        [JsonPropertyAttribute("Reverse Ammo Cycling")]
+        public bool RevAmmoCycle = false;
 
         [JsonPropertyAttribute("Sort")]
         public char SortKey = 'Z';
@@ -75,6 +77,14 @@ namespace GTRPlugins
                     ToSer.HotbarCycle = HotbarCycle;
                 }
                 else ToSer.HotbarCycle = false;
+
+                bool? _revAmmoCycle = Json.GetFirstInstance<bool>("Reverse Ammo Cycling", path);
+                if (_revAmmoCycle != null)
+                {
+                    RevAmmoCycle = (bool)_revAmmoCycle;
+                    ToSer.RevAmmoCycle = RevAmmoCycle;
+                }
+                else ToSer.RevAmmoCycle = false;
 
                 bool? _autoTrash = Json.GetFirstInstance<bool>("Auto Trash", path);
                 if (_autoTrash != null)

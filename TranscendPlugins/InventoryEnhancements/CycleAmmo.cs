@@ -22,10 +22,20 @@ namespace GTRPlugins
             {
                 tempItems[i - 54] = p.inventory[i].Clone();
             }
-            p.inventory[54] = tempItems[3];
-            p.inventory[55] = tempItems[0];
-            p.inventory[56] = tempItems[1];
-            p.inventory[57] = tempItems[2];
+            if (Inventory_Enhancements.config.RevAmmoCycle)
+            {
+                p.inventory[54] = tempItems[1];
+                p.inventory[55] = tempItems[2];
+                p.inventory[56] = tempItems[3];
+                p.inventory[57] = tempItems[0];
+            }
+            else
+            {
+                p.inventory[54] = tempItems[3];
+                p.inventory[55] = tempItems[0];
+                p.inventory[56] = tempItems[1];
+                p.inventory[57] = tempItems[2];
+            }
         }
     }
 }

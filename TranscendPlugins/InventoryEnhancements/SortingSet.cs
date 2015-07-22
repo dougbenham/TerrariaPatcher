@@ -29,16 +29,11 @@ namespace GTRPlugins
             if (orderOfLists.Count == 0) return returnSet;
             for (var i = 1; i < orderOfLists.Count; i++)
             {
-                var set = GetSetFromName(orderOfLists[i]);
-                if (set != null && orderOfLists.ContainsKey(i)) returnSet.Add(set);
-                //foreach (KeyValuePair<int, string> kvp in orderOfLists)
-                //{
-                //    if (kvp.Key == i)
-                //    {
-                //        returnSet.Add(GetSetFromName(kvp.Value));
-                //        break;
-                //    }
-                //}
+                SortingSet getSet = GetSetFromName(orderOfLists[i]);
+                if (getSet != null && orderOfLists.ContainsKey(i))
+                {
+                    returnSet.Add(getSet);
+                }
             }
 
             foreach (var set in _addedSets)
