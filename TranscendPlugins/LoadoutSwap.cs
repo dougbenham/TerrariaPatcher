@@ -8,15 +8,15 @@ namespace GTRPlugins
 {
     public class LoadoutSwap : IPluginDrawInventory
     {
-        private static Button btnLoadoutSwap;
+        private Button btnLoadoutSwap;
 
-        static LoadoutSwap()
+        public LoadoutSwap()
         {
             btnLoadoutSwap = new Button("Swap Loadout", new Vector2(502f, 298f), BtnLoadoutSwapClick);
             btnLoadoutSwap.Scale = 0.9f;
         }
 
-        private static void BtnLoadoutSwapClick(object sender, EventArgs e)
+        private void BtnLoadoutSwapClick(object sender, EventArgs e)
         {
             Player player = Main.player[Main.myPlayer];
             for (int i = 0; i < 10; i++)

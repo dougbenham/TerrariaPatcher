@@ -349,8 +349,10 @@ namespace TerrariaPatcher
                     File.Copy("PluginLoader.dll", target, true);
                 }
 
-                if (!Directory.Exists(".\\Plugins"))
+                if (!Directory.Exists(@".\Plugins"))
                     MessageBox.Show("Plugins folder is missing from TerrariaPatcher folder. Please re-download.", Program.AssemblyName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                else if (!Directory.Exists(@".\Plugins\Shared"))
+                    MessageBox.Show(@"Plugins\Shared folder is missing from TerrariaPatcher folder. Please re-download.", Program.AssemblyName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 else
                     new CopyPlugins(targetFolder).ShowDialog();
 

@@ -49,13 +49,13 @@ namespace GTRPlugins
             }
         }
 
-        public static bool ShowChestSearch;
-        private static bool SearchTextFocus;
-        private static string SearchText;
-        private static Button ShowChestSearchButton;
-        private static Button ClearTextFieldButton;
+        public bool ShowChestSearch;
+        private bool SearchTextFocus;
+        private string SearchText;
+        private Button ShowChestSearchButton;
+        private Button ClearTextFieldButton;
 
-        static ChestSearch()
+        public ChestSearch()
         {
             ShowChestSearch = false;
             SearchTextFocus = false;
@@ -65,7 +65,7 @@ namespace GTRPlugins
             ClearTextFieldButton = new Button("Clear", new Vector2(506f, 328f), ClearTextFieldHandler);
             ClearTextFieldButton.Scale = 0.8f;
         }
-        private static void ShowChestSearchHandler(object sender, EventArgs e)
+        private void ShowChestSearchHandler(object sender, EventArgs e)
         {
             if (!ShowChestSearch)
             {
@@ -77,12 +77,12 @@ namespace GTRPlugins
                 Close();
             }
         }
-        private static void ClearTextFieldHandler(object sender, EventArgs e)
+        private void ClearTextFieldHandler(object sender, EventArgs e)
         {
             FocusTextField();
             SearchText = "";
         }
-        private static void Open()
+        private void Open()
         {
             Main.chatMode = false;
             Main.editSign = false;
@@ -92,13 +92,13 @@ namespace GTRPlugins
             SearchText = "";
             ShowChestSearch = true;
         }
-        private static void Close()
+        private void Close()
         {
             ShowChestSearch = false;
             SearchTextFocus = false;
             Main.blockInput = false;
         }
-        private static void FocusTextField()
+        private void FocusTextField()
         {
             Main.clrInput();
             SearchTextFocus = true;
@@ -145,7 +145,7 @@ namespace GTRPlugins
                     {
                         Vector2 value = new Vector2(Main.chest[i].x * 16 + 16, Main.chest[i].y * 16 + 16);
                         float num = (value - center).Length();
-                        if (num < 200f)
+                        if (num < 400f)
                         {
                             for (int j = 0; j < Main.chest[i].item.Length; j++)
                             {
@@ -254,7 +254,7 @@ namespace GTRPlugins
                 }
             }
         }
-        private static bool IsPlayerInChest(int i)
+        private bool IsPlayerInChest(int i)
         {
             for (int j = 0; j < 255; j++)
             {

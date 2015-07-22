@@ -28,6 +28,8 @@ namespace TerrariaPatcher
             if (!Directory.Exists(targetFolder + "\\Plugins"))
                 Directory.CreateDirectory(targetFolder + "\\Plugins");
 
+            CopyFolder(@".\Plugins\Shared", targetFolder + @"\Plugins\Shared");
+
             foreach (string pluginName in checkedListBox.CheckedItems)
             {
                 var ending = @"\Plugins\" + pluginName + ".cs";
@@ -35,6 +37,15 @@ namespace TerrariaPatcher
             }
 
             this.Close();
+        }
+
+        private static void CopyFolder(string source, string destination)
+        {
+            foreach (string dirPath in Directory.GetDirectories(source, "*", SearchOption.AllDirectories))
+                Directory.CreateDirectory(dirPath.Replace(source, destination));
+
+            foreach (string newPath in Directory.GetFiles(source, "*.*", SearchOption.AllDirectories))
+                File.Copy(newPath, newPath.Replace(source, destination), true);
         }
 
         private void checkedListBox_ItemCheck(object sender, ItemCheckEventArgs e)

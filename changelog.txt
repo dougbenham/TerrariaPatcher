@@ -6,7 +6,9 @@ v1.2.0.7:	Added Season plugin.
 		Added administrator privileges warning when patching.
 		Added new 'spawn at cursor' command for NPC plugin.
 		Added /range command to UseTime plugin.
+		Added /plugins command to loader.
 		Added new hotkey-command bindings. Check plugin notes.
+		Added new Shared folder for shared plugin source code.
 		Added plugin support for IPluginInitialize, IPluginDrawInventory, IPluginUpdateTime.
 		Fixed bug with plugin support for Newtonsoft.Json.dll.
 v1.2.0.6:	Added plugin support for IPluginNPCLoot.

@@ -52,18 +52,18 @@ namespace PluginLoader
 
                 var references = AppDomain.CurrentDomain
                     .GetAssemblies()
-                    .Where(a => !a.IsDynamic)
+                    .Where(a => !a.IsDynamic && !string.IsNullOrEmpty(a.Location))
                     .Select(a => a.Location).Concat(new[] {newtonsoftFileName}).ToArray();
 
-                var shared = Generate("Shared", references, Directory.EnumerateFiles(@".\Plugins\Shared\", "*.cs", SearchOption.AllDirectories).Select(File.ReadAllText).ToArray());
+                var shared = Generate("Shared.dll", references, Directory.EnumerateFiles(@".\Plugins\Shared\", "*.cs", SearchOption.AllDirectories).ToArray());
 
                 references = references.Concat(new[] {shared}).ToArray();
 
                 foreach (var filename in Directory.EnumerateFiles(@".\Plugins\", "*.cs"))
-                    Load(Path.GetFileNameWithoutExtension(filename), references, File.ReadAllText(filename));
+                    Load(Path.GetFileNameWithoutExtension(filename), references, filename);
 
                 foreach (var folder in Directory.EnumerateDirectories(@".\Plugins\").Where(s => s != "Shared"))
-                    Load(Path.GetFileName(folder), references, Directory.EnumerateFiles(folder, "*.cs", SearchOption.AllDirectories).Select(File.ReadAllText).ToArray());
+                    Load(Path.GetFileName(folder), references, Directory.EnumerateFiles(folder, "*.cs", SearchOption.AllDirectories).ToArray());
 
                 // Load hotkey binds
                 var result = IniAPI.GetIniKeys("HotkeyBinds").ToList();
@@ -113,7 +113,7 @@ namespace PluginLoader
             compilerParams.ReferencedAssemblies.AddRange(references);
 
             var provider = new CSharpCodeProvider();
-            var compile = provider.CompileAssemblyFromSource(compilerParams, sources);
+            var compile = provider.CompileAssemblyFromFile(compilerParams, sources);
 
             if (compile.Errors.HasErrors)
             {
@@ -143,7 +143,7 @@ namespace PluginLoader
             compilerParams.ReferencedAssemblies.AddRange(references);
 
             var provider = new CSharpCodeProvider();
-            var compile = provider.CompileAssemblyFromSource(compilerParams, sources);
+            var compile = provider.CompileAssemblyFromFile(compilerParams, sources);
 
             if (compile.Errors.HasErrors)
             {
@@ -155,7 +155,7 @@ namespace PluginLoader
                 throw new Exception(text);
             }
 
-            return compile.PathToAssembly;
+            return compile.CompiledAssembly.Location;
         }
 
         #endregion
@@ -354,9 +354,17 @@ namespace PluginLoader
                 var cmd = split[0].ToLower();
                 var args = split.Length > 1 ? split[1].Split(' ') : new string[0];
 
-                foreach (var plugin in loadedPlugins.OfType<IPluginChatCommand>())
-                    chatRet = plugin.OnChatCommand(cmd, args) || chatRet;
-
+                switch (cmd)
+                {
+                    case "plugins":
+                        Main.NewText(string.Join(", ", loadedPlugins.Select(plugin => plugin.GetType().Name)), Color.Purple.R, Color.Purple.G, Color.Purple.B);
+                        chatRet = true;
+                        break;
+                    default:
+                        foreach (var plugin in loadedPlugins.OfType<IPluginChatCommand>())
+                            chatRet = plugin.OnChatCommand(cmd, args) || chatRet;
+                        break;
+                }
                 if (chatRet) Main.chatText = string.Empty;
             }
 
