@@ -21,15 +21,11 @@ namespace GTRPlugins
 		}
 		public static void Update(object sender, EventArgs e)
 		{
-			if (Main.gameMenu && !_notInGame)
-			{
-				_notInGame = true;
-			}
-			if (Main.gameMenu)
-			{
-				return;
-			}
-			if (Input.KeyPressed(Config.CharToXnaKey(config.SortKey), true) && Main.keyState.IsKeyUp(Keys.LeftShift) && config.SortHotkeyEnabled)
+		    if (Main.gameMenu && !_notInGame)
+		        _notInGame = true;
+		    if (Main.gameMenu)
+		        return;
+		    if (Input.KeyPressed(Config.CharToXnaKey(config.SortKey), true) && Main.keyState.IsKeyUp(Keys.LeftShift) && config.SortHotkeyEnabled)
 			{
 				AutoTrash.Trash();
 				Clean();
@@ -130,7 +126,7 @@ namespace GTRPlugins
 		}
 		public static void LaunchConfigurator()
 		{
-			string text = Assembly.GetExecutingAssembly().Location;
+			string text = Assembly.GetEntryAssembly().Location;
 			text = Path.GetDirectoryName(text) + "\\Configurator.exe";
 			if (!File.Exists(text))
 			{

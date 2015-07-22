@@ -9,8 +9,8 @@ namespace GTRPlugins
     {
         public void OnInitialize()
         {
-            Inventory_Enhancements.Init(null, null);
             AutoSort.Init(null, null);
+            Inventory_Enhancements.Init(null, null);
         }
 
         public void OnDrawInventory()
@@ -20,9 +20,9 @@ namespace GTRPlugins
 
         public void OnUpdate()
         {
-            Input.Update();
             Inventory_Enhancements.Update(null, null);
             Inventory_Enhancements_UI.Update(null, null);
+            Input.Update();
         }
 
         public bool OnPlayerQuickBuff(Player player)
