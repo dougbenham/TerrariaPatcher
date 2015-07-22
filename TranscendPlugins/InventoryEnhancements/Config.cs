@@ -9,164 +9,172 @@ namespace GTRPlugins
 {
     public class Config
     {
-        [JsonProperty("Subsort Mode")]
-        public int SubsortMode;
-        [JsonProperty("Cycle Hotbar")]
-        public bool HotbarCycle;
-        [JsonProperty("Auto Trash")]
-        public bool AutoTrash;
-        [JsonProperty("Sort")]
+        [JsonPropertyAttribute("Subsort Mode")]
+        public int SubsortMode = 0;
+        [JsonPropertyAttribute("Cycle Hotbar")]
+        public bool HotbarCycle = false;
+        [JsonPropertyAttribute("Auto Trash")]
+        public bool AutoTrash = false;
+
+        [JsonPropertyAttribute("Sort")]
         public char SortKey = 'Z';
-        [JsonProperty("Sorting Key Enabled")]
-        public bool SortHotkeyEnabled = true;
-        [JsonProperty("Swap Hotbar")]
+        [JsonPropertyAttribute("Swap Hotbar")]
         public char HotbarSwapKey = 'X';
-        [JsonProperty("Swap Hotbar Key Enabled")]
-        public bool HotbarSwapKeyEnabled = true;
-        [JsonProperty("Quick Stack")]
+        [JsonPropertyAttribute("Quick Stack")]
         public char QSKey = 'C';
-        [JsonProperty("Quick Stack Key Enabled")]
+        [JsonPropertyAttribute("Cycle Ammo")]
+        public char CAKey = 'V';
+        [JsonPropertyAttribute("Sorting Key Enabled")]
+        public bool SortHotkeyEnabled = true;
+        [JsonPropertyAttribute("Swap Hotbar Key Enabled")]
+        public bool HotbarSwapKeyEnabled = true;
+        [JsonPropertyAttribute("Quick Stack Key Enabled")]
         public bool QSHotkeyEnabled = true;
-        [JsonProperty("Sort Chests")]
+        [JsonPropertyAttribute("Cycle Ammo Key Enabled")]
+        public bool CAHotkeyEnabled = true;
+
+        [JsonPropertyAttribute("Sort Chests")]
         public bool SortChests = true;
-        [JsonProperty("Trash List")]
-        public List<int> TrashList = new List<int>
-		{
-			2338,
-			2339,
-			2337
-		};
+
+        [JsonPropertyAttribute("Trash List")]
+        public List<int> TrashList = new List<int> { 2338, 2339, 2337 };
+
+
         public Config()
         {
+
         }
+
         public Config(int subsort, bool cycle)
         {
             this.SubsortMode = subsort;
             this.HotbarCycle = cycle;
         }
+
         public void LoadConfig()
         {
+            Config temp;
+
             string path = Main.SavePath + Path.DirectorySeparatorChar + "IEConfig.json";
             try
             {
-                Config config = new Config();
-                int? firstInstance = Json.GetFirstInstance<int>("Subsort Mode", path);
-                if (firstInstance.HasValue && firstInstance < 4 && firstInstance > -1)
+                Config ToSer = new Config();
+
+                int? _subsortMode = Json.GetFirstInstance<int>("Subsort Mode", path);
+                if (_subsortMode != null && _subsortMode < 4 && _subsortMode > -1)
                 {
-                    this.SubsortMode = firstInstance.Value;
-                    config.SubsortMode = this.SubsortMode;
+                    SubsortMode = (int)_subsortMode;
+                    ToSer.SubsortMode = SubsortMode;
                 }
-                else
+                else ToSer.SubsortMode = 0;
+
+                bool? _hotbarCycle = Json.GetFirstInstance<bool>("Cycle Hotbar", path);
+                if (_hotbarCycle != null)
                 {
-                    config.SubsortMode = 0;
+                    HotbarCycle = (bool)_hotbarCycle;
+                    ToSer.HotbarCycle = HotbarCycle;
                 }
-                bool? firstInstance2 = Json.GetFirstInstance<bool>("Cycle Hotbar", path);
-                if (firstInstance2.HasValue)
+                else ToSer.HotbarCycle = false;
+
+                bool? _autoTrash = Json.GetFirstInstance<bool>("Auto Trash", path);
+                if (_autoTrash != null)
                 {
-                    this.HotbarCycle = firstInstance2.Value;
-                    config.HotbarCycle = this.HotbarCycle;
+                    AutoTrash = (bool)_autoTrash;
+                    ToSer.AutoTrash = AutoTrash;
                 }
-                else
+                else ToSer.AutoTrash = false;
+
+                bool? _sortKeyEnabled = Json.GetFirstInstance<bool>("Sorting Key Enabled", path);
+                if (_sortKeyEnabled != null)
                 {
-                    config.HotbarCycle = false;
+                    SortHotkeyEnabled = (bool)_sortKeyEnabled;
+                    ToSer.SortHotkeyEnabled = SortHotkeyEnabled;
                 }
-                bool? firstInstance3 = Json.GetFirstInstance<bool>("Auto Trash", path);
-                if (firstInstance3.HasValue)
+                else ToSer.SortHotkeyEnabled = true;
+
+                bool? _caKeyEnabled = Json.GetFirstInstance<bool>("Cycle Ammo Key Enabled", path);
+                if (_caKeyEnabled != null)
                 {
-                    this.AutoTrash = firstInstance3.Value;
-                    config.AutoTrash = this.AutoTrash;
+                    CAHotkeyEnabled = (bool)_caKeyEnabled;
+                    ToSer.CAHotkeyEnabled = CAHotkeyEnabled;
                 }
-                else
+                else ToSer.CAHotkeyEnabled = true;
+
+                bool? _qsKeyEnabled = Json.GetFirstInstance<bool>("Quick Stack Key Enabled", path);
+                if (_qsKeyEnabled != null)
                 {
-                    config.AutoTrash = false;
+                    QSHotkeyEnabled = (bool)_qsKeyEnabled;
+                    ToSer.QSHotkeyEnabled = QSHotkeyEnabled;
                 }
-                bool? firstInstance4 = Json.GetFirstInstance<bool>("Sorting Key Enabled", path);
-                if (firstInstance4.HasValue)
+                else ToSer.QSHotkeyEnabled = true;
+
+                bool? _hsKeyEnabled = Json.GetFirstInstance<bool>("Swap Hotbar Key Enabled", path);
+                if (_hsKeyEnabled != null)
                 {
-                    this.SortHotkeyEnabled = firstInstance4.Value;
-                    config.SortHotkeyEnabled = this.SortHotkeyEnabled;
+                    HotbarSwapKeyEnabled = (bool)_hsKeyEnabled;
+                    ToSer.HotbarSwapKeyEnabled = HotbarSwapKeyEnabled;
                 }
-                else
+                else ToSer.HotbarSwapKeyEnabled = false;
+
+                bool? _sortChests = Json.GetFirstInstance<bool>("Sort Chests", path);
+                if (_sortChests != null)
                 {
-                    config.SortHotkeyEnabled = true;
+                    SortChests = (bool)_sortChests;
+                    ToSer.SortChests = SortChests;
                 }
-                bool? firstInstance5 = Json.GetFirstInstance<bool>("Quick Stack Key Enabled", path);
-                if (firstInstance5.HasValue)
+                else ToSer.SortChests = true;
+
+                List<int> _trashList = Json.GetFirstInstanceList<int>("Trash List", path);
+                TrashList = _trashList;
+                ToSer.TrashList = TrashList;
+
+                char? _sortKey = Json.GetFirstInstance<char>("Sort", path);
+                if (_sortKey != null)
                 {
-                    this.QSHotkeyEnabled = firstInstance5.Value;
-                    config.QSHotkeyEnabled = this.QSHotkeyEnabled;
+                    SortKey = (char)_sortKey;
+                    ToSer.SortKey = SortKey;
                 }
-                else
+
+                char? _caKey = Json.GetFirstInstance<char>("Cycle Ammo", path);
+                if (_caKey != null)
                 {
-                    config.QSHotkeyEnabled = true;
+                    CAKey = (char)_caKey;
+                    ToSer.CAKey = CAKey;
                 }
-                bool? firstInstance6 = Json.GetFirstInstance<bool>("Swap Hotbar Key Enabled", path);
-                if (firstInstance6.HasValue)
+
+                char? _hotbarSwapKey = Json.GetFirstInstance<char>("Swap Hotbar", path);
+                if (_hotbarSwapKey != null)
                 {
-                    this.HotbarSwapKeyEnabled = firstInstance6.Value;
-                    config.HotbarSwapKeyEnabled = this.HotbarSwapKeyEnabled;
+                    HotbarSwapKey = (char)_hotbarSwapKey;
+                    ToSer.HotbarSwapKey = HotbarSwapKey;
                 }
-                else
+
+                char? _qsKey = Json.GetFirstInstance<char>("Quick Stack", path);
+                if (_qsKey != null)
                 {
-                    config.HotbarSwapKeyEnabled = false;
+                    QSKey = (char)_qsKey;
+                    ToSer.QSKey = QSKey;
                 }
-                bool? firstInstance7 = Json.GetFirstInstance<bool>("Sort Chests", path);
-                if (firstInstance7.HasValue)
-                {
-                    this.SortChests = firstInstance7.Value;
-                    config.SortChests = this.SortChests;
-                }
-                else
-                {
-                    config.SortChests = true;
-                }
-                List<int> firstInstanceList = Json.GetFirstInstanceList<int>("Trash List", path);
-                this.TrashList = firstInstanceList;
-                config.TrashList = this.TrashList;
-                char? firstInstance8 = Json.GetFirstInstance<char>("Sort", path);
-                char? c = firstInstance8;
-                if ((c.HasValue ? new int?((int)c.GetValueOrDefault()) : null).HasValue)
-                {
-                    this.SortKey = firstInstance8.Value;
-                    config.SortKey = this.SortKey;
-                }
-                char? firstInstance9 = Json.GetFirstInstance<char>("Swap Hotbar", path);
-                char? c2 = firstInstance9;
-                if ((c2.HasValue ? new int?((int)c2.GetValueOrDefault()) : null).HasValue)
-                {
-                    this.HotbarSwapKey = firstInstance9.Value;
-                    config.HotbarSwapKey = this.HotbarSwapKey;
-                }
-                char? firstInstance10 = Json.GetFirstInstance<char>("Quick Stack", path);
-                char? c3 = firstInstance10;
-                if ((c3.HasValue ? new int?((int)c3.GetValueOrDefault()) : null).HasValue)
-                {
-                    this.QSKey = firstInstance10.Value;
-                    config.QSKey = this.QSKey;
-                }
-                Json.Serialize(config, path);
+
+                Json.Serialize(ToSer, path);
             }
             catch
             {
                 try
                 {
-                    Config obj = new Config();
-                    Json.Serialize(obj, path);
+                    temp = new Config();
+                    Json.Serialize(temp, path);
                 }
                 catch
                 {
                     this.SubsortMode = 0;
                     this.HotbarCycle = false;
-                    this.TrashList = new List<int>
-					{
-						2338,
-						2339,
-						2337
-					};
+                    this.TrashList = new List<int> { 2338, 2339, 2337 };
                     this.AutoTrash = false;
                 }
             }
         }
+
         public void SaveConfig()
         {
             string path = Main.SavePath + Path.DirectorySeparatorChar + "IEConfig.json";
@@ -176,11 +184,13 @@ namespace GTRPlugins
             }
             catch
             {
+
             }
         }
+
         public static Keys CharToXnaKey(char character)
         {
-            return char.IsLetter(character) ? (Keys) char.ToUpper(character) : (Keys) character;
+            return (Keys)((int)(char.IsLetter(character) ? char.ToUpper(character) : character));
         }
     }
 }

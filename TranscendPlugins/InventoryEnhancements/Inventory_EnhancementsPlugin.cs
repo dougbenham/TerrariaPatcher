@@ -5,7 +5,7 @@ using Terraria;
 
 namespace GTRPlugins
 {
-    public class InventoryEnhancementPlugin : MarshalByRefObject, IPluginInitialize, IPluginDrawInventory, IPluginUpdate, IPluginPlayerQuickBuff
+    public class InventoryEnhancementPlugin : MarshalByRefObject, IPluginInitialize, IPluginDrawInventory, IPluginUpdate, IPluginPlayerQuickBuff, IPluginPlayerGetItem
     {
         public void OnInitialize()
         {
@@ -22,6 +22,8 @@ namespace GTRPlugins
         {
             Inventory_Enhancements.Update(null, null);
             Inventory_Enhancements_UI.Update(null, null);
+            CycleAmmo.Update(null, null);
+            AutoTrash.Update(null, null);
             Input.Update();
         }
 
@@ -158,6 +160,17 @@ namespace GTRPlugins
                 }
             }
 
+            return false;
+        }
+
+        public bool OnPlayerGetItem(Player player, Item newItem, out Item resultItem)
+        {
+            if (AutoTrash.Trash(player, newItem))
+            {
+                resultItem = new Item();
+                return true;
+            }
+            resultItem = null;
             return false;
         }
     }

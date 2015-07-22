@@ -6,83 +6,85 @@ namespace GTRPlugins
     {
         public static void Clean()
         {
-            if (Main.player[Main.myPlayer].chest == -1)
-            {
-                AutoClean.CleanPlayer();
-                return;
-            }
-            AutoClean.CleanChest();
+            if (Main.player[Main.myPlayer].chest == -1) CleanPlayer();
+            else CleanChest();
         }
-        private static void CleanPlayer()
+
+        static void CleanPlayer()
         {
             Player player = Main.player[Main.myPlayer];
-            for (int i = 10; i < 50; i++)
+            for (int curSlot = 10; curSlot < 50; curSlot++)
             {
-                Item item = player.inventory[i];
-                if (!item.favorited && item.type != 0 && item.stack < item.maxStack)
+                Item item = player.inventory[curSlot];
+                if (item.favorited) continue;
+                if (item.type != 0 && item.stack < item.maxStack)
                 {
-                    for (int j = 10; j < 50; j++)
+                    for (int i = 10; i < 50; i++)
                     {
-                        Item item2 = player.inventory[j];
-                        if (!item2.favorited && j != i && item2.stack < item2.maxStack && item.type == item2.type)
+                        Item item2 = player.inventory[i];
+                        if (item2.favorited) continue;
+                        if (i != curSlot && item2.stack < item2.maxStack)
                         {
-                            int num = item.maxStack - item.stack;
-                            item.stack += item2.stack;
-                            if (item.stack >= item.maxStack)
+                            if (item.type == item2.type)
                             {
-                                player.inventory[i].stack = item.maxStack;
-                            }
-                            item2.stack -= num;
-                            if (item2.stack <= 0)
-                            {
-                                player.inventory[j].SetDefaults(0, false);
+                                int spaceRemaining = item.maxStack - item.stack;
+
+                                item.stack += item2.stack;
+                                if (item.stack >= item.maxStack)
+                                {
+                                    player.inventory[curSlot].stack = item.maxStack;
+                                }
+
+                                item2.stack -= spaceRemaining;
+                                if (item2.stack <= 0)
+                                {
+                                    player.inventory[i].SetDefaults(0, false);
+                                }
                             }
                         }
                     }
                 }
             }
         }
-        private static void CleanChest()
+
+        static void CleanChest()
         {
             Player player = Main.player[Main.myPlayer];
             Chest chest;
-            if (player.chest == -2)
+            if (player.chest == -2) chest = player.bank;
+            else if (player.chest == -3) chest = player.bank2;
+            else chest = Main.chest[player.chest];
+            for (int curSlot = 0; curSlot < 40; curSlot++)
             {
-                chest = player.bank;
-            }
-            else if (player.chest == -3)
-            {
-                chest = player.bank2;
-            }
-            else
-            {
-                chest = Main.chest[player.chest];
-            }
-            for (int i = 0; i < 40; i++)
-            {
-                Item item = chest.item[i];
+                Item item = chest.item[curSlot];
                 if (item.type != 0 && item.stack < item.maxStack)
                 {
-                    for (int j = 0; j < 40; j++)
+                    for (int i = 0; i < 40; i++)
                     {
-                        Item item2 = chest.item[j];
-                        if (j != i && item2.stack < item2.maxStack && item.type == item2.type)
+                        Item item2 = chest.item[i];
+                        if (i != curSlot && item2.stack < item2.maxStack)
                         {
-                            int num = item.maxStack - item.stack;
-                            item.stack += item2.stack;
-                            if (item.stack >= item.maxStack)
+                            if (item.type == item2.type)
                             {
-                                chest.item[i].stack = item.maxStack;
-                            }
-                            item2.stack -= num;
-                            if (item2.stack <= 0)
-                            {
-                                chest.item[j].SetDefaults(0, false);
+                                int spaceRemaining = item.maxStack - item.stack;
+
+                                item.stack += item2.stack;
+                                if (item.stack >= item.maxStack)
+                                {
+                                    chest.item[curSlot].stack = item.maxStack;
+                                }
+
+                                item2.stack -= spaceRemaining;
+                                if (item2.stack <= 0)
+                                {
+                                    chest.item[i].SetDefaults(0, false);
+                                }
                             }
                         }
                     }
                 }
             }
         }
+
     }
 }

@@ -7,61 +7,66 @@ using Terraria;
 namespace GTRPlugins
 {
     internal class SortingSet
-    {
+    {//
         public int[] ids;
         public string name;
-        public static Dictionary<int, string> orderOfLists = new Dictionary<int, string>();
-        public static List<SortingSet> _addedSets = new List<SortingSet>();
+        //
+        public static Dictionary<int, string> orderOfLists = new Dictionary<int, string> { };
+        public static List<SortingSet> _addedSets = new List<SortingSet> { };
+
         private static string setConfigPath = Main.SavePath + Path.DirectorySeparatorChar + "Sorting Order.json";
+
         public SortingSet(string name, int[] ids)
         {
             this.ids = ids;
             this.name = name;
         }
+
         public static List<SortingSet> OrganizeSets()
         {
             LoadSets();
-            var list = new List<SortingSet>();
-            if (orderOfLists.Count == 0)
-            {
-                return list;
-            }
+            var returnSet = new List<SortingSet> { };
+            if (orderOfLists.Count == 0) return returnSet;
             for (var i = 1; i < orderOfLists.Count; i++)
             {
-                if (orderOfLists.ContainsKey(i))
-                {
-                    list.Add(GetSetFromName(orderOfLists[i]));
-                }
+                var set = GetSetFromName(orderOfLists[i]);
+                if (set != null && orderOfLists.ContainsKey(i)) returnSet.Add(set);
+                //foreach (KeyValuePair<int, string> kvp in orderOfLists)
+                //{
+                //    if (kvp.Key == i)
+                //    {
+                //        returnSet.Add(GetSetFromName(kvp.Value));
+                //        break;
+                //    }
+                //}
             }
-            foreach (var current in _addedSets)
+
+            foreach (var set in _addedSets)
             {
-                if (!list.Contains(current))
-                {
-                    list.Add(current);
-                }
+                if (!returnSet.Contains(set)) returnSet.Add(set);
             }
-            return list;
+            return returnSet;
         }
+
         public static int[] GetIdsFromName(string name)
         {
-            var list = new List<int>();
-            foreach (var current in _addedSets)
+            var toret = new List<int> { };
+            foreach (var set in _addedSets)
             {
-                if (current.name == name)
+                if (set.name == name)
                 {
-                    var array = current.ids;
-                    for (var i = 0; i < array.Length; i++)
+                    foreach (var i in set.ids)
                     {
-                        var item = array[i];
-                        list.Add(item);
+                        toret.Add(i);
                     }
                 }
             }
-            return list.ToArray();
+            return toret.ToArray();
         }
+
         public static SortingSet GetSetFromName(string name)
         {
-            return _addedSets.FirstOrDefault(current => current.name == name);
+            return _addedSets.FirstOrDefault(set => set.name == name);
         }
 
         private static void LoadSets()
@@ -71,15 +76,11 @@ namespace GTRPlugins
                 orderOfLists = Json.DeSerialize<Dictionary<int, string>>(setConfigPath);
                 if (orderOfLists.Count < _addedSets.Count)
                 {
-                    using (var enumerator = _addedSets.GetEnumerator())
+                    foreach (var set in _addedSets)
                     {
-                        while (enumerator.MoveNext())
+                        if (!(orderOfLists.Any(x => x.Value.ToLower() == set.name.ToLower())))
                         {
-                            var set = enumerator.Current;
-                            if (!orderOfLists.Any(x => x.Value.ToLower() == set.name.ToLower()))
-                            {
-                                orderOfLists.Add(orderOfLists.Count, set.name);
-                            }
+                            orderOfLists.Add(orderOfLists.Count, set.name);
                         }
                     }
                     Json.Serialize(orderOfLists, setConfigPath);
@@ -103,30 +104,30 @@ namespace GTRPlugins
                 }
             }
         }
+
         private static void GenOrder()
         {
             orderOfLists.Clear();
-            foreach (var current in _addedSets)
+            foreach (var set in _addedSets)
             {
-                orderOfLists.Add(orderOfLists.Count + 1, current.name);
+                orderOfLists.Add(orderOfLists.Count + 1, set.name);
             }
         }
+
         public List<Item> sortOutValid(ref List<Item> items)
         {
-            var list = new List<Item>();
+            var temp = new List<Item> { };
             for (var i = 0; i < items.Count(); i++)
             {
                 if (ids.Contains(items[i].type))
                 {
-                    list.Add(items[i]);
+                    temp.Add(items[i]);
                     items.Remove(items[i]);
                     i--;
                 }
             }
-            return (
-                from x in list
-                orderby x.stack, x.type
-                select x).ToList<Item>();
+            temp = temp.OrderBy(x => x.stack).ThenBy(x => x.type).ToList();
+            return temp;
         }
     }
 }

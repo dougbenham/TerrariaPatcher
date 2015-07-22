@@ -68,6 +68,7 @@
     <Compile Include="InventoryEnhancements\AutoSort.cs" />
     <Compile Include="InventoryEnhancements\AutoTrash.cs" />
     <Compile Include="InventoryEnhancements\Config.cs" />
+    <Compile Include="InventoryEnhancements\CycleAmmo.cs" />
     <Compile Include="InventoryEnhancements\HotbarSwap.cs" />
     <Compile Include="InventoryEnhancements\Inventory_Enhancements.cs" />
     <Compile Include="InventoryEnhancements\Inventory_EnhancementsPlugin.cs" />

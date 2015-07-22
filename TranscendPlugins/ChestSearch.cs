@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using GTRPlugins.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using PluginLoader;
 using Terraria;
 using Terraria.UI;
@@ -18,30 +17,33 @@ namespace GTRPlugins
             public int chest;
             public int slot;
             public float distance;
+
             public Item GetItem()
             {
                 return Main.chest[chest].item[slot];
             }
+
             public Chest GetChest()
             {
                 return Main.chest[chest];
             }
+
             public int CompareTo(ChestItem comp)
             {
                 if (comp == null)
                 {
                     return 1;
                 }
-                int num = string.Compare(GetItem().name, comp.GetItem().name, StringComparison.InvariantCulture);
-                if (num != 0)
+                int nameComp = string.Compare(GetItem().name, comp.GetItem().name, StringComparison.InvariantCulture);
+                if (nameComp != 0)
                 {
-                    return num;
+                    return nameComp;
                 }
                 if (distance < comp.distance)
                 {
                     return -1;
                 }
-                if (distance > comp.distance)
+                else if (distance > comp.distance)
                 {
                     return 1;
                 }
@@ -49,40 +51,40 @@ namespace GTRPlugins
             }
         }
 
-        public bool ShowChestSearch;
-        private bool SearchTextFocus;
-        private string SearchText;
-        private Button ShowChestSearchButton;
-        private Button ClearTextFieldButton;
+        private const float Range = 400;
+        public static bool ShowChestSearch = false;
+        private static bool SearchTextFocus = false;
+        private static string SearchText = "";
+        private static Button ShowChestSearchButton;
+        private static Button ClearTextFieldButton;
 
-        public ChestSearch()
+        static ChestSearch()
         {
-            ShowChestSearch = false;
-            SearchTextFocus = false;
-            SearchText = "";
-            ShowChestSearchButton = new Button("Search Chests", new Vector2(500f, 278f), ShowChestSearchHandler);
+            ShowChestSearchButton = new Button("Search Chests", new Vector2(500, 278), ShowChestSearchHandler);
             ShowChestSearchButton.Scale = 0.9f;
-            ClearTextFieldButton = new Button("Clear", new Vector2(506f, 328f), ClearTextFieldHandler);
+            ClearTextFieldButton = new Button("Clear", new Vector2(506, 328), ClearTextFieldHandler);
             ClearTextFieldButton.Scale = 0.8f;
         }
-        private void ShowChestSearchHandler(object sender, EventArgs e)
+
+        private static void ShowChestSearchHandler(object sender, EventArgs e)
         {
             if (!ShowChestSearch)
             {
                 Open();
-                return;
             }
-            if (ShowChestSearch)
+            else if (ShowChestSearch)
             {
                 Close();
             }
         }
-        private void ClearTextFieldHandler(object sender, EventArgs e)
+
+        private static void ClearTextFieldHandler(object sender, EventArgs e)
         {
             FocusTextField();
             SearchText = "";
         }
-        private void Open()
+
+        private static void Open()
         {
             Main.chatMode = false;
             Main.editSign = false;
@@ -92,23 +94,28 @@ namespace GTRPlugins
             SearchText = "";
             ShowChestSearch = true;
         }
-        private void Close()
+
+        private static void Close()
         {
             ShowChestSearch = false;
             SearchTextFocus = false;
             Main.blockInput = false;
         }
-        private void FocusTextField()
+
+        private static void FocusTextField()
         {
             Main.clrInput();
             SearchTextFocus = true;
         }
+
         public void OnUpdate()
         {
+            // Hide chest search when conflicting interfaces are displayed
             if ((Main.chatMode || Main.editSign || Main.editChest || Main.recBigList || Main.player[Main.myPlayer].chest != -1 || !Main.playerInventory) && ShowChestSearch)
             {
                 Close();
             }
+
             if (ShowChestSearch)
             {
                 if (SearchTextFocus)
@@ -121,13 +128,14 @@ namespace GTRPlugins
                     }
                     Main.blockInput = true;
                 }
-                if (!SearchTextFocus || Main.keyState.IsKeyDown(Keys.Escape))
+                if (!SearchTextFocus || Main.keyState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.Escape))
                 {
                     SearchTextFocus = false;
                     Main.blockInput = false;
                 }
             }
         }
+
         public void OnDrawInventory()
         {
             if (Main.player[Main.myPlayer].chest == -1 && Main.npcShop == 0)
@@ -136,37 +144,34 @@ namespace GTRPlugins
             }
             if (ShowChestSearch)
             {
+                // Locate items
                 Player player = Main.player[Main.myPlayer];
-                Vector2 center = player.Center;
-                List<ChestItem> list = new List<ChestItem>();
+                Vector2 playerPos = player.Center;
+                List<ChestItem> itemList = new List<ChestItem>();
                 for (int i = 0; i < 1000; i++)
                 {
                     if (Main.chest[i] != null && !IsPlayerInChest(i) && !Chest.isLocked(Main.chest[i].x, Main.chest[i].y))
                     {
-                        Vector2 value = new Vector2(Main.chest[i].x * 16 + 16, Main.chest[i].y * 16 + 16);
-                        float num = (value - center).Length();
-                        if (num < 400f)
+                        Vector2 pos = new Vector2((float)(Main.chest[i].x * 16 + 16), (float)(Main.chest[i].y * 16 + 16));
+                        float dist = (pos - playerPos).Length();
+                        if (dist < Range)
                         {
                             for (int j = 0; j < Main.chest[i].item.Length; j++)
                             {
                                 if (Main.chest[i].item[j] != null && Main.chest[i].item[j].type > 0 && Main.chest[i].item[j].stack > 0 && Main.chest[i].item[j].name.ToLower().Contains(SearchText.ToLower()))
                                 {
-                                    list.Add(new ChestItem
-                                    {
-                                        chest = i,
-                                        slot = j,
-                                        distance = num
-                                    });
+                                    itemList.Add(new ChestItem() { chest = i, slot = j, distance = dist });
                                 }
                             }
                         }
                     }
                 }
-                list.Sort();
+                itemList.Sort();
+                // Draw text field
                 ClearTextFieldButton.Draw();
-                int num2 = 150;
-                int num3 = 316;
-                if (Main.mouseX > num2 && Main.mouseX < num2 + 350 && Main.mouseY > num3 && Main.mouseY < num3 + Main.textBackTexture.Height)
+                int textFieldX = 150;
+                int textFieldY = 316;
+                if ((Main.mouseX > textFieldX) && (Main.mouseX < (textFieldX + 350)) && (Main.mouseY > textFieldY) && (Main.mouseY < (textFieldY + Main.textBackTexture.Height)))
                 {
                     Main.player[Main.myPlayer].mouseInterface = true;
                     if (Main.mouseLeftRelease && Main.mouseLeft)
@@ -186,9 +191,10 @@ namespace GTRPlugins
                     Main.player[Main.myPlayer].mouseInterface = true;
                     SearchTextFocus = false;
                 }
-                Main.spriteBatch.Draw(Main.textBackTexture, new Vector2(num2, num3), new Rectangle(0, 0, 175, Main.textBackTexture.Height), new Color(160, 160, 160, 160), 0f, default(Vector2), 1f, SpriteEffects.None, 0f);
-                Main.spriteBatch.Draw(Main.textBackTexture, new Vector2(num2 + 175, num3), new Rectangle(Main.textBackTexture.Width - 175, 0, 175, Main.textBackTexture.Height), new Color(160, 160, 160, 160), 0f, default(Vector2), 1f, SpriteEffects.None, 0f);
-                string text = SearchText;
+
+                Main.spriteBatch.Draw(Main.textBackTexture, new Vector2(textFieldX, textFieldY), new Microsoft.Xna.Framework.Rectangle?(new Microsoft.Xna.Framework.Rectangle(0, 0, 175, Main.textBackTexture.Height)), new Microsoft.Xna.Framework.Color(160, 160, 160, 160), 0f, default(Vector2), 1f, SpriteEffects.None, 0f);
+                Main.spriteBatch.Draw(Main.textBackTexture, new Vector2(textFieldX + 175, textFieldY), new Microsoft.Xna.Framework.Rectangle?(new Microsoft.Xna.Framework.Rectangle(Main.textBackTexture.Width - 175, 0, 175, Main.textBackTexture.Height)), new Microsoft.Xna.Framework.Color(160, 160, 160, 160), 0f, default(Vector2), 1f, SpriteEffects.None, 0f);
+                string searchText = SearchText;
                 if (SearchTextFocus)
                 {
                     Main.instance.textBlinkerCount++;
@@ -206,55 +212,60 @@ namespace GTRPlugins
                     }
                     if (Main.instance.textBlinkerState == 1)
                     {
-                        text += "|";
+                        searchText = searchText + "|";
                     }
                 }
-                Vector2 vector = new Vector2(num2 + 10, num3 + 6);
-                for (int k = 0; k < ChatManager.ShadowDirections.Length; k++)
+                Vector2 searchTextPosition = new Vector2(textFieldX + 10, textFieldY + 6);
+                for (int i = 0; i < ChatManager.ShadowDirections.Length; i++)
                 {
-                    Main.spriteBatch.DrawString(Main.fontMouseText, text, vector + ChatManager.ShadowDirections[k] * 2f, Color.Black, 0f, Vector2.Zero, Vector2.One, SpriteEffects.None, 0f);
+                    Main.spriteBatch.DrawString(Main.fontMouseText, searchText, searchTextPosition + ChatManager.ShadowDirections[i] * 2, Color.Black, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0f);
                 }
-                float num4 = Main.mouseTextColor / 255f;
-                Color color = SearchTextFocus ? Color.Silver : Color.White;
-                Main.spriteBatch.DrawString(Main.fontMouseText, text, vector, new Color(color.R * num4, color.G * num4, color.B * num4), 0f, Vector2.Zero, Vector2.One, SpriteEffects.None, 0f);
-                int context = 3;
-                int num5 = 42;
-                int num6 = 150;
-                int num7 = 358;
-                int num8 = (Main.screenWidth - num6 - 260) / num5;
-                int num9 = Main.screenHeight - 42;
+                float pulse = (float)Main.mouseTextColor / 255;
+                Color textColor = SearchTextFocus ? Color.Silver : Color.White;
+                Main.spriteBatch.DrawString(Main.fontMouseText, searchText, searchTextPosition, new Color(textColor.R * pulse, textColor.G * pulse, textColor.B * pulse), 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0f);
+
+                // Draw item slots
+                int invContext = 3;
+                int slotSize = 42;
+                int offsetX = 150;
+                int offsetY = 358;
+                int width = (Main.screenWidth - offsetX - 260) / slotSize;
+                int height = Main.screenHeight - 42;
                 Main.inventoryScale = 0.75f;
-                for (int l = 0; l < list.Count; l++)
+                for (int i = 0; i < itemList.Count; i++)
                 {
-                    int num10 = l % num8 * num5 + num6;
-                    int num11 = l / num8 * num5 + num7;
-                    if (num11 > num9)
+                    int x = (i % width) * slotSize + offsetX;
+                    int y = ((int)(i / width)) * slotSize + offsetY;
+                    if (y > height)
                     {
-                        return;
+                        break;
                     }
-                    Item item = list[l].GetItem();
-                    if (Main.mouseX >= num10 && Main.mouseX <= num10 + num5 && Main.mouseY >= num11 && Main.mouseY <= num11 + num5)
+                    Item item = itemList[i].GetItem();
+                    if (Main.mouseX >= x && Main.mouseX <= x + slotSize && Main.mouseY >= y && Main.mouseY <= y + slotSize)
                     {
                         player.mouseInterface = true;
-                        if (Main.mouseX <= num10 + Main.inventoryBackTexture.Width * Main.inventoryScale && Main.mouseY <= num11 + Main.inventoryBackTexture.Height * Main.inventoryScale)
+                        if ((float)Main.mouseX <= (float)x + (float)Main.inventoryBackTexture.Width * Main.inventoryScale && (float)Main.mouseY <= (float)y + (float)Main.inventoryBackTexture.Height * Main.inventoryScale)
                         {
-                            int chest = player.chest;
-                            Chest chest2 = list[l].GetChest();
-                            player.chest = list[l].chest;
-                            ItemSlot.Handle(chest2.item, context, list[l].slot);
-                            for (int m = 0; m < 4; m++)
+                            int prevPlayerChest = player.chest;
+                            Chest chest = itemList[i].GetChest();
+                            player.chest = itemList[i].chest;
+                            ItemSlot.Handle(chest.item, invContext, itemList[i].slot);
+
+                            // Sparkle that shit
+                            for (int j = 0; j < 4; j++)
                             {
-                                int num12 = Dust.NewDust(new Vector2(chest2.x * 16 + 10, chest2.y * 16 + 15), 10, 10, 66, 0f, 0f, 100, new Color(Main.DiscoR, Main.DiscoG, Main.DiscoB), 1f);
-                                Main.dust[num12].noGravity = true;
+                                int k = Dust.NewDust(new Vector2(chest.x * 16 + 10, chest.y * 16 + 15), 10, 10, 66, 0f, 0f, 100, new Color(Main.DiscoR, Main.DiscoG, Main.DiscoB), 1f);
+                                Main.dust[k].noGravity = true;
                             }
-                            player.chest = chest;
+                            player.chest = prevPlayerChest;
                         }
                     }
-                    ItemSlot.Draw(Main.spriteBatch, ref item, context, new Vector2(num10, num11));
+                    ItemSlot.Draw(Main.spriteBatch, ref item, invContext, new Vector2((float)x, (float)y), default(Microsoft.Xna.Framework.Color));
                 }
             }
         }
-        private bool IsPlayerInChest(int i)
+
+        private static bool IsPlayerInChest(int i)
         {
             for (int j = 0; j < 255; j++)
             {

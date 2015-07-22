@@ -8,90 +8,80 @@ namespace GTRPlugins.Utils
     {
         public static void Serialize<T>(T obj, string path)
         {
-            JsonSerializer jsonSerializer = new JsonSerializer();
-            jsonSerializer.Formatting = Formatting.Indented;
-            using (StreamWriter streamWriter = new StreamWriter(path))
+            JsonSerializer serializer = new JsonSerializer();
+            serializer.Formatting = Formatting.Indented;
+            using (StreamWriter writer = new StreamWriter(path))
+            using (JsonTextWriter jwriter = new JsonTextWriter(writer))
             {
-                using (JsonTextWriter jsonTextWriter = new JsonTextWriter(streamWriter))
-                {
-                    jsonSerializer.Serialize(jsonTextWriter, obj);
-                }
+                serializer.Serialize(jwriter, obj);
             }
         }
+
         public static bool SerializeAndCheck<T>(T obj, string path)
         {
-            bool result;
             try
             {
-                JsonSerializer jsonSerializer = new JsonSerializer();
-                jsonSerializer.Formatting = Formatting.Indented;
-                using (StreamWriter streamWriter = new StreamWriter(path))
+                JsonSerializer serializer = new JsonSerializer();
+                serializer.Formatting = Formatting.Indented;
+                using (StreamWriter writer = new StreamWriter(path))
+                using (JsonTextWriter jwriter = new JsonTextWriter(writer))
                 {
-                    using (JsonTextWriter jsonTextWriter = new JsonTextWriter(streamWriter))
-                    {
-                        jsonSerializer.Serialize(jsonTextWriter, obj);
-                    }
+                    serializer.Serialize(jwriter, obj);
                 }
-                result = true;
+                return true;
             }
             catch
             {
-                result = false;
+                return false;
             }
-            return result;
         }
+
         public static T DeSerialize<T>(string path)
         {
-            T result;
-            using (StreamReader streamReader = new StreamReader(path))
+            using (StreamReader reader = new StreamReader(path))
             {
-                result = JsonConvert.DeserializeObject<T>(streamReader.ReadToEnd());
+                return JsonConvert.DeserializeObject<T>(reader.ReadToEnd());
             }
-            return result;
         }
+
         public static T? GetFirstInstance<T>(string propertyName, string path) where T : struct
         {
-            T? result;
-            using (StreamReader streamReader = new StreamReader(path))
+            using (StreamReader reader = new StreamReader(path))
+            using (var jsonReader = new JsonTextReader(reader))
             {
-                using (JsonTextReader jsonTextReader = new JsonTextReader(streamReader))
+                while (jsonReader.Read())
                 {
-                    while (jsonTextReader.Read())
+                    if (jsonReader.TokenType == JsonToken.PropertyName
+                        && (string)jsonReader.Value == propertyName)
                     {
-                        if (jsonTextReader.TokenType == JsonToken.PropertyName && (string)jsonTextReader.Value == propertyName)
-                        {
-                            jsonTextReader.Read();
-                            JsonSerializer jsonSerializer = new JsonSerializer();
-                            result = new T?(jsonSerializer.Deserialize<T>(jsonTextReader));
-                            return result;
-                        }
+                        jsonReader.Read();
+
+                        var serializer = new JsonSerializer();
+                        return serializer.Deserialize<T>(jsonReader);
                     }
-                    result = null;
                 }
+                return null;
             }
-            return result;
         }
+
         public static List<T> GetFirstInstanceList<T>(string propertyName, string path)
         {
-            List<T> result;
-            using (StreamReader streamReader = new StreamReader(path))
+            using (StreamReader reader = new StreamReader(path))
+            using (var jsonReader = new JsonTextReader(reader))
             {
-                using (JsonTextReader jsonTextReader = new JsonTextReader(streamReader))
+                while (jsonReader.Read())
                 {
-                    while (jsonTextReader.Read())
+                    if (jsonReader.TokenType == JsonToken.PropertyName
+                        && (string)jsonReader.Value.ToString().ToLower() == propertyName.ToLower())
                     {
-                        if (jsonTextReader.TokenType == JsonToken.PropertyName && jsonTextReader.Value.ToString().ToLower() == propertyName.ToLower())
-                        {
-                            jsonTextReader.Read();
-                            JsonSerializer jsonSerializer = new JsonSerializer();
-                            result = jsonSerializer.Deserialize<List<T>>(jsonTextReader);
-                            return result;
-                        }
+                        jsonReader.Read();
+
+                        var serializer = new JsonSerializer();
+                        return serializer.Deserialize<List<T>>(jsonReader);
                     }
-                    result = new List<T>();
                 }
+                return new List<T> { };
             }
-            return result;
         }
     }
 }

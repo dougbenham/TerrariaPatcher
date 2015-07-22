@@ -6,9 +6,6 @@ namespace GTRPlugins.Utils
 {
     public static class Input
     {
-        private static KeyboardState _lastKeyState;
-        private static MouseState _mouseState;
-        private static MouseState _lastMouseState;
         public static bool PlayerHasKeyControl
         {
             get
@@ -18,75 +15,78 @@ namespace GTRPlugins.Utils
         }
         public static Vector2 MousePosition
         {
-            get
-            {
-                return new Vector2((float)Main.mouseX, (float)Main.mouseY);
-            }
+            get { return new Vector2(Main.mouseX, Main.mouseY); }
         }
         public static float ScrollDelta
         {
-            get
-            {
-                return (float)(Input._mouseState.ScrollWheelValue - Input._lastMouseState.ScrollWheelValue);
-            }
+            get { return _mouseState.ScrollWheelValue - _lastMouseState.ScrollWheelValue; }
         }
+
+        private static KeyboardState _lastKeyState;
+        private static MouseState _mouseState;
+        private static MouseState _lastMouseState;
+
+
+        // If te player does not have control of the keyboard (editing signs, chatting, etc), 
+        // then by default, all key press queries will return as if the keys are up.
         public static bool KeyPressed(Keys key, bool ignoreIfPlayerDoesNotHaveControl = true)
         {
-            return (!ignoreIfPlayerDoesNotHaveControl || Input.PlayerHasKeyControl) && Main.keyState.IsKeyDown(key) && Input._lastKeyState.IsKeyUp(key);
+            if (ignoreIfPlayerDoesNotHaveControl && !PlayerHasKeyControl) return false;
+            return Main.keyState.IsKeyDown(key) && _lastKeyState.IsKeyUp(key);
         }
         public static bool KeyReleased(Keys key, bool ignoreIfPlayerDoesNotHaveControl = true)
         {
-            return (ignoreIfPlayerDoesNotHaveControl && !Input.PlayerHasKeyControl) || (Main.keyState.IsKeyUp(key) && Input._lastKeyState.IsKeyDown(key));
+            if (ignoreIfPlayerDoesNotHaveControl && !PlayerHasKeyControl) return true;
+            return Main.keyState.IsKeyUp(key) && _lastKeyState.IsKeyDown(key);
         }
         public static bool IsKeyDown(Keys key, bool ignoreIfPlayerDoesNotHaveControl = true)
         {
-            return (!ignoreIfPlayerDoesNotHaveControl || Input.PlayerHasKeyControl) && Main.keyState.IsKeyDown(key);
+            if (ignoreIfPlayerDoesNotHaveControl && !PlayerHasKeyControl) return false;
+            return Main.keyState.IsKeyDown(key);
+
         }
         public static bool IsKeyUp(Keys key, bool ignoreIfPlayerDoesNotHaveControl = true)
         {
-            return (!ignoreIfPlayerDoesNotHaveControl || Input.PlayerHasKeyControl) && Main.keyState.IsKeyUp(key);
+            if (ignoreIfPlayerDoesNotHaveControl && !PlayerHasKeyControl) return false;
+            return Main.keyState.IsKeyUp(key);
         }
+
+
         public static bool MouseButtonPressed(MouseButton button)
         {
-            return Input.GetMouseButton(Input._mouseState, button) && !Input.GetMouseButton(Input._lastMouseState, button);
+            return GetMouseButton(_mouseState, button) && !GetMouseButton(_lastMouseState, button);
         }
         public static bool MouseButtonReleased(MouseButton button)
         {
-            return !Input.GetMouseButton(Input._mouseState, button) && Input.GetMouseButton(Input._lastMouseState, button);
+            return !GetMouseButton(_mouseState, button) && GetMouseButton(_lastMouseState, button);
         }
         public static bool IsMouseButtonDown(MouseButton button)
         {
-            return Input.GetMouseButton(Input._mouseState, button);
+            return GetMouseButton(_mouseState, button);
         }
         public static bool IsMouseButtonUp(MouseButton button)
         {
-            return !Input.IsMouseButtonDown(button);
+            return !IsMouseButtonDown(button);
         }
         private static bool GetMouseButton(MouseState state, MouseButton button)
         {
-            bool result;
             switch (button)
             {
                 case MouseButton.Left:
-                    result = (state.LeftButton == ButtonState.Pressed);
-                    break;
+                    return state.LeftButton == ButtonState.Pressed;
                 case MouseButton.Right:
-                    result = (state.RightButton == ButtonState.Pressed);
-                    break;
+                    return state.RightButton == ButtonState.Pressed;
                 case MouseButton.Middle:
-                    result = (state.MiddleButton == ButtonState.Pressed);
-                    break;
-                default:
-                    result = false;
-                    break;
+                    return state.MiddleButton == ButtonState.Pressed;
             }
-            return result;
+            return false;
         }
+
         internal static void Update()
         {
-            Input._lastKeyState = Main.keyState;
-            Input._lastMouseState = Input._mouseState;
-            Input._mouseState = Mouse.GetState();
+            _lastKeyState = Main.keyState;
+            _lastMouseState = _mouseState;
+            _mouseState = Mouse.GetState();
         }
     }
 }
