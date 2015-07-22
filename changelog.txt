@@ -1,3 +1,4 @@
+v1.2.0.8:	Added DropRates plugin.
 v1.2.0.7:	Added Season plugin.
 		Added ShopSellsScalingPotions plugin.
 		Added InfiniteSundial plugin.

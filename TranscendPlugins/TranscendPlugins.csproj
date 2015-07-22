@@ -57,6 +57,7 @@
     <Compile Include="BuffRates.cs" />
     <Compile Include="ChestSearch.cs" />
     <Compile Include="CoinGun.cs" />
+    <Compile Include="DropRates.cs" />
     <Compile Include="FullBright.cs" />
     <Compile Include="GodMode.cs" />
     <Compile Include="HomingBullets.cs" />
