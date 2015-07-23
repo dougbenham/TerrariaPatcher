@@ -35,11 +35,13 @@ namespace PluginLoader
                 loaded = true;
 
                 // Dynamic compilation requires assemblies to be stored on file, thus we must extract the Newtonsoft.Json.dll embedded resource to a temp file if we want to use it.
-                var resourceName = "Terraria.Libraries.JSON.NET.Net40.Newtonsoft.Json.dll";
-                var newtonsoftFileName = Path.Combine(Path.GetTempPath(), resourceName);
+                var baseName = "Newtonsoft.Json.dll";
+                var assembly = Assembly.GetEntryAssembly();
+                var resourceName = assembly.GetManifestResourceNames().FirstOrDefault(s => s.Contains(baseName));
+                var newtonsoftFileName = Path.Combine(Path.GetTempPath(), baseName);
                 if (!File.Exists(newtonsoftFileName))
                 {
-                    using (var stream = Assembly.GetEntryAssembly().GetManifestResourceStream(resourceName))
+                    using (var stream = assembly.GetManifestResourceStream(resourceName))
                     {
                         if (stream == null) throw new Exception("Could not extract Newtonsoft.Json.dll from Terraria.");
 

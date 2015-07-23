@@ -51,7 +51,7 @@ namespace GTRPlugins
             }
         }
 
-        private const float Range = 400;
+        private const float Range = 200;
         public static bool ShowChestSearch = false;
         private static bool SearchTextFocus = false;
         private static string SearchText = "";
