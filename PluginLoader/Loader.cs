@@ -34,38 +34,43 @@ namespace PluginLoader
             {
                 loaded = true;
 
-                // Dynamic compilation requires assemblies to be stored on file, thus we must extract the Newtonsoft.Json.dll embedded resource to a temp file if we want to use it.
-                var baseName = "Newtonsoft.Json.dll";
-                var assembly = Assembly.GetEntryAssembly();
-                var resourceName = assembly.GetManifestResourceNames().FirstOrDefault(s => s.Contains(baseName));
-                var newtonsoftFileName = Path.Combine(Path.GetTempPath(), baseName);
-                if (!File.Exists(newtonsoftFileName))
-                {
-                    using (var stream = assembly.GetManifestResourceStream(resourceName))
-                    {
-                        if (stream == null) throw new Exception("Could not extract Newtonsoft.Json.dll from Terraria.");
-
-                        using (var fileStream = new FileStream(newtonsoftFileName, FileMode.Create))
-                        {
-                            stream.CopyTo(fileStream);
-                        }
-                    }
-                }
-
                 var references = AppDomain.CurrentDomain
                     .GetAssemblies()
                     .Where(a => !a.IsDynamic && !string.IsNullOrEmpty(a.Location))
-                    .Select(a => a.Location).Concat(new[] {newtonsoftFileName}).ToArray();
+                    .Select(a => a.Location).ToList();
+                var jsonBaseName = "Newtonsoft.Json.dll";
+                if (!references.Any(s => s.Contains(jsonBaseName)))
+                {
+                    // Dynamic compilation requires assemblies to be stored on file, thus we must extract the Newtonsoft.Json.dll embedded resource to a temp file if we want to use it.
+                    var assembly = Assembly.GetEntryAssembly();
+                    var resourceName = assembly.GetManifestResourceNames().FirstOrDefault(s => s.Contains(jsonBaseName));
+                    if (resourceName == null) throw new Exception("Could not extract Newtonsoft.Json.dll from Terraria.");
 
-                var shared = Generate("Shared.dll", references, Directory.EnumerateFiles(@".\Plugins\Shared\", "*.cs", SearchOption.AllDirectories).ToArray());
+                    var newtonsoftFileName = Path.Combine(".", jsonBaseName);
+                    if (!File.Exists(newtonsoftFileName))
+                    {
+                        using (var stream = assembly.GetManifestResourceStream(resourceName))
+                        {
+                            if (stream == null) throw new Exception("Could not extract Newtonsoft.Json.dll from Terraria.");
 
-                references = references.Concat(new[] {shared}).ToArray();
+                            using (var fileStream = new FileStream(newtonsoftFileName, FileMode.Create))
+                            {
+                                stream.CopyTo(fileStream);
+                            }
+                        }
+                    }
+
+                    references.Add(newtonsoftFileName);
+                }
+
+                references.Add(Generate("Shared.dll", references.ToArray(), Directory.EnumerateFiles(@".\Plugins\Shared\", "*.cs", SearchOption.AllDirectories).ToArray()));
+                var referencesArray = references.ToArray();
 
                 foreach (var filename in Directory.EnumerateFiles(@".\Plugins\", "*.cs"))
-                    Load(Path.GetFileNameWithoutExtension(filename), references, filename);
+                    Load(Path.GetFileNameWithoutExtension(filename), referencesArray, filename);
 
                 foreach (var folder in Directory.EnumerateDirectories(@".\Plugins\").Where(s => s != "Shared"))
-                    Load(Path.GetFileName(folder), references, Directory.EnumerateFiles(folder, "*.cs", SearchOption.AllDirectories).ToArray());
+                    Load(Path.GetFileName(folder), referencesArray, Directory.EnumerateFiles(folder, "*.cs", SearchOption.AllDirectories).ToArray());
 
                 // Load hotkey binds
                 var result = IniAPI.GetIniKeys("HotkeyBinds").ToList();
