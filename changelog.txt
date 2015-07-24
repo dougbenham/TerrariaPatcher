@@ -1,4 +1,5 @@
 v1.2.0.11:	Added command '/usetime' to reset to original value.
+		Fixed hotkey-support for using just CTRL / ALT / SHIFT as a hotkey.
 v1.2.0.10:	Added BuffImmunity plugin.
 		Added Flashlight plugin.
 		Added PortableCraftingGuide plugin.

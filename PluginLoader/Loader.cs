@@ -185,6 +185,11 @@ namespace PluginLoader
 
         public static void RegisterHotkey(Action action, Keys key, bool control = false, bool shift = false, bool alt = false, bool ignoreModifierKeys = false)
         {
+            if (key == Keys.LeftControl || key == Keys.RightControl ||
+                key == Keys.LeftAlt || key == Keys.RightAlt ||
+                key == Keys.LeftShift || key == Keys.RightShift)
+                ignoreModifierKeys = true;
+
             RegisterHotkey(new Hotkey() { Key = key, Control = control, Shift = shift, Alt = alt, Action = action, IgnoreModifierKeys = ignoreModifierKeys });
         }
 
