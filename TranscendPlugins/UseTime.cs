@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Windows.Forms;
 using PluginLoader;
 using Terraria;
@@ -10,7 +11,7 @@ namespace TranscendPlugins
     {
         private int initialTileRangeX, initialTileRangeY, initialDefaultItemGrabRange;
         private bool maxTileSpeed, maxWallSpeed, maxPickSpeed, maxReachRange, maxItemPickupRange;
-        private bool builderBuffWarning = false;
+        private bool builderBuffWarning = false, resetUseTime = false;
         
         public UseTime()
         {
@@ -27,6 +28,8 @@ namespace TranscendPlugins
 
         public void OnItemSetDefaults(Item item)
         {
+            if (resetUseTime) return;
+
             if (maxPickSpeed && (item.axe > 0 ||
                                  item.pick > 0 ||
                                  item.hammer > 0))
@@ -80,13 +83,13 @@ namespace TranscendPlugins
         {
             if (command != "usetime" && command != "autoreuse" && command != "range") return false;
 
-            if (!(command == "usetime" && args.Length == 1) &&
+            if (!(command == "usetime" && args.Length <= 1) &&
                 !(command == "autoreuse" && args.Length == 0) &&
                 !(command == "range" && args.Length == 0))
             {
                 Main.NewText("Usage:");
                 Main.NewText("   /autoreuse");
-                Main.NewText("   /usetime num");
+                Main.NewText("   /usetime [num]");
                 Main.NewText("   /range");
                 Main.NewText("Example:");
                 Main.NewText("   /usetime 0");
@@ -109,15 +112,27 @@ namespace TranscendPlugins
             switch (command)
             {
                 case "usetime":
-                    int num;
-                    if (!int.TryParse(args[0], out num))
+                    if (args.Length == 1)
                     {
-                        Main.NewText("Invalid num.");
-                        break;
+                        int num;
+                        if (!int.TryParse(args[0], out num))
+                        {
+                            Main.NewText("Invalid num.");
+                            break;
+                        }
+
+                        item.useTime = num;
+                    }
+                    else
+                    {
+                        var stack = item.stack;
+                        resetUseTime = true;
+                        item.netDefaults(item.type);
+                        resetUseTime = false;
+                        item.stack = stack;
                     }
 
-                    item.useTime = num;
-                    Main.NewText("UseTime = " + num);
+                    Main.NewText("UseTime = " + item.useTime);
                     break;
                 case "autoreuse":
                     item.autoReuse = !item.autoReuse;

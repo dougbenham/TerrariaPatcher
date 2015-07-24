@@ -1,3 +1,4 @@
+v1.2.0.11:	Added command '/usetime' to reset to original value.
 v1.2.0.10:	Added BuffImmunity plugin.
 		Added Flashlight plugin.
 		Added PortableCraftingGuide plugin.
