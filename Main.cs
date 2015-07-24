@@ -341,20 +341,20 @@ namespace TerrariaPatcher
                     Program.ShowErrorMessage("An error occurred, you possibly have already patched this exe or it is an incompatible version.\n\n" + ex.ToString());
                 }
 
-                var targetFolder = Path.GetDirectoryName(saveFileDialog.FileName);
 
                 if (details.Plugins)
                 {
+                    var targetFolder = Path.GetDirectoryName(saveFileDialog.FileName);
                     var target = targetFolder + @"\PluginLoader.dll";
                     File.Copy("PluginLoader.dll", target, true);
-                }
 
-                if (!Directory.Exists(@".\Plugins"))
-                    MessageBox.Show("Plugins folder is missing from TerrariaPatcher folder. Please re-download.", Program.AssemblyName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                else if (!Directory.Exists(@".\Plugins\Shared"))
-                    MessageBox.Show(@"Plugins\Shared folder is missing from TerrariaPatcher folder. Please re-download.", Program.AssemblyName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                else
-                    new CopyPlugins(targetFolder).ShowDialog();
+                    if (!Directory.Exists(@".\Plugins"))
+                        MessageBox.Show("Plugins folder is missing from TerrariaPatcher folder. Please re-download.", Program.AssemblyName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    else if (!Directory.Exists(@".\Plugins\Shared"))
+                        MessageBox.Show(@"Plugins\Shared folder is missing from TerrariaPatcher folder. Please re-download.", Program.AssemblyName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    else
+                        new CopyPlugins(targetFolder).ShowDialog();
+                }
 
                 MessageBox.Show("Done.", Program.AssemblyName);
             }

@@ -690,6 +690,8 @@ namespace TerrariaPatcher
             var onDrawInventory = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnDrawInventory"));
             var onUpdate = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnUpdate"));
             var onUpdateTime = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnUpdateTime"));
+            var onPlaySound = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlaySound"));
+            var onPlayerPreUpdate = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerPreUpdate"));
             var onPlayerUpdate = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerUpdate"));
             var onPlayerUpdateBuffs = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerUpdateBuffs"));
             var onPlayerPickAmmo = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerPickAmmo"));
@@ -719,6 +721,7 @@ namespace TerrariaPatcher
             var drawInventory = IL.GetMethodDefinition(main, "DrawInventory");
             var update = IL.GetMethodDefinition(main, "Update");
             var updateTime = IL.GetMethodDefinition(main, "UpdateTime");
+            var playSound = IL.GetMethodDefinition(main, "PlaySound", 4);
             var updatePlayer = IL.GetMethodDefinition(player, "Update");
             var updatePlayerBuffs = IL.GetMethodDefinition(player, "UpdateBuffs");
             var pickAmmo = IL.GetMethodDefinition(player, "PickAmmo");
@@ -786,6 +789,28 @@ namespace TerrariaPatcher
             }
 
             {
+                // Main.PlaySound pre hook
+                var firstInstr = playSound.Body.Instructions.FirstOrDefault();
+                IL.MethodPrepend(playSound, new[]
+                {
+                    Instruction.Create(OpCodes.Ldarg_0), // type
+                    Instruction.Create(OpCodes.Ldarg_1), // x
+                    Instruction.Create(OpCodes.Ldarg_2), // y
+                    Instruction.Create(OpCodes.Ldarg_3), // style
+                    Instruction.Create(OpCodes.Call, onPlaySound),
+                    Instruction.Create(OpCodes.Brfalse_S, firstInstr),
+                    Instruction.Create(OpCodes.Ret)
+                });
+            }
+
+            {
+                // Player.Update pre hook
+                IL.MethodPrepend(updatePlayer, new[]
+                {
+                    Instruction.Create(OpCodes.Ldarg_0),
+                    Instruction.Create(OpCodes.Call, onPlayerPreUpdate)
+                });
+
                 // Player.Update post hook
                 IL.MethodAppend(updatePlayer, updatePlayer.Body.Instructions.Count - 1, 1, new[]
                 {

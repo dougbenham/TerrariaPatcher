@@ -30,6 +30,10 @@ namespace PluginLoader
     {
         void OnUpdateTime();
     }
+    public interface IPluginPlaySound : IPlugin
+    {
+        bool OnPlaySound(int type, int x, int y, int style);
+    }
 
     #endregion
 
@@ -38,6 +42,10 @@ namespace PluginLoader
     public interface IPluginPlayerUpdate : IPlugin
     {
         void OnPlayerUpdate(Player player);
+    }
+    public interface IPluginPlayerPreUpdate : IPlugin
+    {
+        void OnPlayerPreUpdate(Player player);
     }
     public interface IPluginPlayerUpdateBuffs : IPlugin
     {

@@ -43,15 +43,16 @@ namespace PluginLoader
                 {
                     // Dynamic compilation requires assemblies to be stored on file, thus we must extract the Newtonsoft.Json.dll embedded resource to a temp file if we want to use it.
                     var assembly = Assembly.GetEntryAssembly();
+                    var error = "Could not extract Newtonsoft.Json.dll from Terraria.";
                     var resourceName = assembly.GetManifestResourceNames().FirstOrDefault(s => s.Contains(jsonBaseName));
-                    if (resourceName == null) throw new Exception("Could not extract Newtonsoft.Json.dll from Terraria.");
+                    if (resourceName == null) throw new Exception(error);
 
                     var newtonsoftFileName = Path.Combine(".", jsonBaseName);
                     if (!File.Exists(newtonsoftFileName))
                     {
                         using (var stream = assembly.GetManifestResourceStream(resourceName))
                         {
-                            if (stream == null) throw new Exception("Could not extract Newtonsoft.Json.dll from Terraria.");
+                            if (stream == null) throw new Exception(error);
 
                             using (var fileStream = new FileStream(newtonsoftFileName, FileMode.Create))
                             {
@@ -263,6 +264,15 @@ namespace PluginLoader
                 plugin.OnUpdateTime();
         }
 
+        public static bool OnPlaySound(int type, int x, int y, int style)
+        {
+            var ret = false;
+            foreach (var plugin in loadedPlugins.OfType<IPluginPlaySound>())
+                ret = plugin.OnPlaySound(type, x, y, style) || ret;
+
+            return ret;
+        }
+
         #endregion
 
         #region Player
@@ -271,6 +281,12 @@ namespace PluginLoader
         {
             foreach (var plugin in loadedPlugins.OfType<IPluginPlayerUpdate>())
                 plugin.OnPlayerUpdate(player);
+        }
+
+        public static void OnPlayerPreUpdate(Player player)
+        {
+            foreach (var plugin in loadedPlugins.OfType<IPluginPlayerPreUpdate>())
+                plugin.OnPlayerPreUpdate(player);
         }
 
         public static void OnPlayerUpdateBuffs(Player player)

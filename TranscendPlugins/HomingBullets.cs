@@ -18,6 +18,7 @@ namespace TranscendPlugins
             if (pProjectile.type == ProjectileID.VortexBeaterRocket) return; // don't want to do tracking x2
             if (pProjectile.type == ProjectileID.PygmySpear) return;
             if (pProjectile.type == ProjectileID.MiniRetinaLaser) return;
+            if (pProjectile.type == ProjectileID.ElectrosphereMissile) return;
             
             float num138 = (float)Math.Sqrt((double)(pProjectile.velocity.X * pProjectile.velocity.X + pProjectile.velocity.Y * pProjectile.velocity.Y));
             float num139 = pProjectile.localAI[0];
