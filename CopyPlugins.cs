@@ -11,10 +11,12 @@ namespace TerrariaPatcher
 
         public CopyPlugins(string targetFolder)
         {
-            this.targetFolder = targetFolder;
+            this.targetFolder = targetFolder + @"\Plugins";
 
             InitializeComponent();
-            
+
+            clearExisting.Checked = bool.Parse(IniAPI.ReadIni("ActivePlugins", "ClearExisting", "true", 255, Main.ConfigPath, true));
+
             foreach (var filename in Directory.EnumerateFiles(@".\Plugins\", "*.cs"))
             {
                 var name = Path.GetFileNameWithoutExtension(filename);
@@ -25,15 +27,18 @@ namespace TerrariaPatcher
 
         private void copyButton_Click(object sender, EventArgs e)
         {
-            if (!Directory.Exists(targetFolder + "\\Plugins"))
-                Directory.CreateDirectory(targetFolder + "\\Plugins");
+            if (Directory.Exists(targetFolder) && clearExisting.Checked)
+                Directory.Delete(targetFolder, true);
 
-            CopyFolder(@".\Plugins\Shared", targetFolder + @"\Plugins\Shared");
+            if (!Directory.Exists(targetFolder))
+                Directory.CreateDirectory(targetFolder);
+
+            CopyFolder(@".\Plugins\Shared", targetFolder + @"\Shared");
 
             foreach (string pluginName in checkedListBox.CheckedItems)
             {
-                var ending = @"\Plugins\" + pluginName + ".cs";
-                File.Copy("." + ending, targetFolder + ending, true);
+                var ending = @"\" + pluginName + ".cs";
+                File.Copy(@".\Plugins" + ending, targetFolder + ending, true);
             }
 
             this.Close();
@@ -56,6 +61,12 @@ namespace TerrariaPatcher
         private void CopyPlugins_Shown(object sender, EventArgs e)
         {
             copyButton.Focus();
+        }
+
+        private void clearExisting_CheckedChanged(object sender, EventArgs e)
+        {
+            copyButton.Text = clearExisting.Checked ? "Sync" : "Copy";
+            IniAPI.WriteIni("ActivePlugins", "ClearExisting", (clearExisting.Checked).ToString(), Main.ConfigPath);
         }
     }
 }
