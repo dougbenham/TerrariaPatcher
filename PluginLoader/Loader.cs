@@ -70,8 +70,13 @@ namespace PluginLoader
                 foreach (var filename in Directory.EnumerateFiles(@".\Plugins\", "*.cs"))
                     Load(Path.GetFileNameWithoutExtension(filename), referencesArray, filename);
 
-                foreach (var folder in Directory.EnumerateDirectories(@".\Plugins\").Where(s => s != "Shared"))
-                    Load(Path.GetFileName(folder), referencesArray, Directory.EnumerateFiles(folder, "*.cs", SearchOption.AllDirectories).ToArray());
+                foreach (var folder in Directory.EnumerateDirectories(@".\Plugins\"))
+                {
+                    var name = Path.GetFileName(folder);
+                    if (name == "Shared") continue;
+
+                    Load(name, referencesArray, Directory.EnumerateFiles(folder, "*.cs", SearchOption.AllDirectories).ToArray());
+                }
 
                 // Load hotkey binds
                 var result = IniAPI.GetIniKeys("HotkeyBinds").ToList();

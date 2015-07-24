@@ -1,5 +1,8 @@
 ﻿using System;
+using System.CodeDom;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 using PluginLoader;
 
@@ -7,17 +10,27 @@ namespace TerrariaPatcher
 {
     public partial class CopyPlugins : Form
     {
+        private readonly string sourceFolder;
+        private string sourceSharedFolder { get { return Path.Combine(sourceFolder, "Shared"); } }
         private readonly string targetFolder;
+        private string targetSharedFolder { get { return Path.Combine(targetFolder, "Shared"); } }
 
         public CopyPlugins(string targetFolder)
         {
+            this.sourceFolder = @".\Plugins";
             this.targetFolder = targetFolder + @"\Plugins";
 
             InitializeComponent();
 
             clearExisting.Checked = bool.Parse(IniAPI.ReadIni("ActivePlugins", "ClearExisting", "true", 255, Main.ConfigPath, true));
 
-            foreach (var filename in Directory.EnumerateFiles(@".\Plugins\", "*.cs"))
+            foreach (var folder in Directory.EnumerateDirectories(sourceFolder).Where(s => s != sourceSharedFolder))
+            {
+                var name = Path.GetFileName(folder);
+                checkedListBox.Items.Add(name);
+                checkedListBox.SetItemChecked(checkedListBox.Items.Count - 1, bool.Parse(IniAPI.ReadIni("ActivePlugins", name, "true", 255, Main.ConfigPath, true)));
+            }
+            foreach (var filename in Directory.EnumerateFiles(sourceFolder, "*.cs"))
             {
                 var name = Path.GetFileNameWithoutExtension(filename);
                 checkedListBox.Items.Add(name);
@@ -27,18 +40,48 @@ namespace TerrariaPatcher
 
         private void copyButton_Click(object sender, EventArgs e)
         {
-            if (Directory.Exists(targetFolder) && clearExisting.Checked)
-                Directory.Delete(targetFolder, true);
+            var toCopy = new List<string>();
+            foreach (string pluginName in checkedListBox.CheckedItems)
+            {
+                if (Directory.Exists(Path.Combine(sourceFolder, pluginName)))
+                    toCopy.Add(pluginName + '\\');
+                else
+                    toCopy.Add(pluginName + ".cs");
+            }
 
             if (!Directory.Exists(targetFolder))
                 Directory.CreateDirectory(targetFolder);
 
-            CopyFolder(@".\Plugins\Shared", targetFolder + @"\Shared");
-
-            foreach (string pluginName in checkedListBox.CheckedItems)
+            if (clearExisting.Checked)
             {
-                var ending = @"\" + pluginName + ".cs";
-                File.Copy(@".\Plugins" + ending, targetFolder + ending, true);
+                foreach (var folder in Directory.EnumerateDirectories(targetFolder).Where(s => s != targetSharedFolder))
+                {
+                    var name = Path.GetFileName(folder);
+                    if (toCopy.Contains(name + '\\')) continue;
+
+                    if (MessageBox.Show("Delete " + folder + "?", Program.AssemblyName, MessageBoxButtons.YesNo) == DialogResult.Yes)
+                        Directory.Delete(folder, true);
+                }
+                foreach (var file in Directory.EnumerateFiles(targetFolder, "*.cs"))
+                {
+                    var name = Path.GetFileName(file);
+                    if (toCopy.Contains(name)) continue;
+
+                    if (MessageBox.Show("Delete " + file + "?", Program.AssemblyName, MessageBoxButtons.YesNo) == DialogResult.Yes)
+                        File.Delete(file);
+                }
+            }
+
+            CopyFolder(sourceSharedFolder, targetSharedFolder);
+
+            foreach (string pluginName in toCopy)
+            {
+                var sourcePath = Path.Combine(sourceFolder, pluginName);
+                var destinationPath = Path.Combine(targetFolder, pluginName);
+                if (Directory.Exists(sourcePath))
+                    CopyFolder(sourcePath, destinationPath);
+                else
+                    File.Copy(sourcePath, destinationPath, true);
             }
 
             this.Close();
