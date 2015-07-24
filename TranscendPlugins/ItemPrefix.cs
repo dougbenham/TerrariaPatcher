@@ -52,7 +52,13 @@ namespace TranscendPlugins
                 }
             }
 
-            if (!item.Prefix(prefixId))
+            if (prefixId == 0)
+            {
+                var stack = item.stack;
+                item.netDefaults(item.type);
+                item.stack = stack;
+            }
+            else if (!item.Prefix(prefixId))
                 Main.NewText("Invalid prefix ID for this item type.");
             return true;
         }

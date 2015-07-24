@@ -842,7 +842,7 @@ namespace TerrariaPatcher
             {
                 // Player.Hurt pre hook
                 var firstInstr = hurt.Body.Instructions.FirstOrDefault();
-                var varDbl = new VariableDefinition("test", IL.GetTypeDefinition(ModDefinition, "System.Double"));
+                var varDbl = new VariableDefinition(ModDefinition.Import(typeof(double)));
                 hurt.Body.Variables.Add(varDbl);
                 IL.MethodPrepend(hurt, new[]
                 {
