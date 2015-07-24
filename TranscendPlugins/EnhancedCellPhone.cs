@@ -6,7 +6,7 @@ using Terraria.ID;
 
 namespace BlahPlugins
 {
-    public class EnhancedPDA : MarshalByRefObject, IPluginPlayerPreUpdate
+    public class EnhancedCellPhone : MarshalByRefObject, IPluginPlayerPreUpdate
     {
         private Mode mode = Mode.Home;
         enum Mode
@@ -18,9 +18,9 @@ namespace BlahPlugins
             Random = 4
         }
 
-        public EnhancedPDA()
+        public EnhancedCellPhone()
         {
-            if (!Mode.TryParse(IniAPI.ReadIni("EnhancedPDA", "Mode", "Home", writeIt: true), out mode)) mode = Mode.Home;
+            if (!Mode.TryParse(IniAPI.ReadIni("EnhancedCellPhone", "Mode", "Home", writeIt: true), out mode)) mode = Mode.Home;
         }
 
         public void OnPlayerPreUpdate(Player player)
@@ -36,8 +36,8 @@ namespace BlahPlugins
 
                     if (mode == Mode.Random) mode = Mode.Home;
                     else mode++;
-                    IniAPI.WriteIni("EnhancedPDA", "Mode", mode.ToString());
-                    Main.NewText("Enhanced PDA: " + mode, 255, 235, 150, false);
+                    IniAPI.WriteIni("EnhancedCellPhone", "Mode", mode.ToString());
+                    Main.NewText("Enhanced CellPhone: " + mode, 255, 235, 150, false);
                 }
                 else if (Main.mouseLeft && Main.mouseLeftRelease)
                 {

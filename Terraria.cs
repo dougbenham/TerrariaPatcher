@@ -18,7 +18,6 @@ namespace TerrariaPatcher
         public bool RemoveAnglerQuestLimit = false;
         public bool RemoveDrowning = false;
         public bool OneHitKill = false;
-        public bool DemigodMode = false;
 		public bool InfiniteAmmo = false;
         public bool SteamFix = false;
         public bool Plugins = false;
@@ -67,7 +66,6 @@ namespace TerrariaPatcher
             if (details.MaxCraftingRange) RecipeRange();
             if (details.InfiniteCloudJumps) InfiniteCloudJumps();
             if (details.RemoveManaCost) RemoveManaCost();
-            if (details.DemigodMode) DemigodMode();
             if (details.RemoveDrowning) RemoveDrowning();
             if (details.DisplayTime) DisplayTime();
             if (details.OneHitKill) OneHitKill();
@@ -409,15 +407,6 @@ namespace TerrariaPatcher
             drawInfoAccs.Body.Instructions[spot + 2].OpCode = OpCodes.Blt;
         }
 
-        private static void DemigodMode()
-        {
-            var player = IL.GetTypeDefinition(ModDefinition, "Player");
-            var killMe = IL.GetMethodDefinition(player, "KillMe");
-            killMe.Body.ExceptionHandlers.Clear();
-            killMe.Body.Instructions.Clear();
-            killMe.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
-        }
-
         private static void RemoveDrowning()
         {
             var player = IL.GetTypeDefinition(ModDefinition, "Player");
@@ -694,6 +683,8 @@ namespace TerrariaPatcher
             var onPlayerPreUpdate = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerPreUpdate"));
             var onPlayerUpdate = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerUpdate"));
             var onPlayerUpdateBuffs = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerUpdateBuffs"));
+            var onPlayerKillMe = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerKillMe"));
+            var onPlayerHurt = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerHurt"));
             var onPlayerPickAmmo = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerPickAmmo"));
             var onItemSetDefaults = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnItemSetDefaults"));
             var onProjectileAI = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnProjectileAI001"));
@@ -724,6 +715,8 @@ namespace TerrariaPatcher
             var playSound = IL.GetMethodDefinition(main, "PlaySound", 4);
             var updatePlayer = IL.GetMethodDefinition(player, "Update");
             var updatePlayerBuffs = IL.GetMethodDefinition(player, "UpdateBuffs");
+            var killMe = IL.GetMethodDefinition(player, "KillMe");
+            var hurt = IL.GetMethodDefinition(player, "Hurt");
             var pickAmmo = IL.GetMethodDefinition(player, "PickAmmo");
             var setDefaults = IL.GetMethodDefinition(item, "SetDefaults", 2);
             var ai = IL.GetMethodDefinition(projectile, "AI_001");
@@ -826,6 +819,44 @@ namespace TerrariaPatcher
                 {
                     Instruction.Create(OpCodes.Ldarg_0),
                     Instruction.Create(OpCodes.Call, onPlayerUpdateBuffs),
+                    Instruction.Create(OpCodes.Ret)
+                });
+            }
+
+            {
+                // Player.KillMe pre hook
+                var firstInstr = killMe.Body.Instructions.FirstOrDefault();
+                IL.MethodPrepend(killMe, new[]
+                {
+                    Instruction.Create(OpCodes.Ldarg_0),
+                    Instruction.Create(OpCodes.Ldarg_1),
+                    Instruction.Create(OpCodes.Ldarg_2),
+                    Instruction.Create(OpCodes.Ldarg_3),
+                    Instruction.Create(OpCodes.Ldarg_S, killMe.Parameters.FirstOrDefault(def => def.Name == "deathText")),
+                    Instruction.Create(OpCodes.Call, onPlayerKillMe),
+                    Instruction.Create(OpCodes.Brfalse_S, firstInstr),
+                    Instruction.Create(OpCodes.Ret)
+                });
+            }
+
+            {
+                // Player.Hurt pre hook
+                var firstInstr = hurt.Body.Instructions.FirstOrDefault();
+                var varDbl = new VariableDefinition("test", IL.GetTypeDefinition(ModDefinition, "System.Double"));
+                hurt.Body.Variables.Add(varDbl);
+                IL.MethodPrepend(hurt, new[]
+                {
+                    Instruction.Create(OpCodes.Ldarg_0), // this
+                    Instruction.Create(OpCodes.Ldarg_1), // Damage
+                    Instruction.Create(OpCodes.Ldarg_2), // hitDirection
+                    Instruction.Create(OpCodes.Ldarg_3), // pvp
+                    Instruction.Create(OpCodes.Ldarg_S, hurt.Parameters.FirstOrDefault(def => def.Name == "quiet")),
+                    Instruction.Create(OpCodes.Ldarg_S, hurt.Parameters.FirstOrDefault(def => def.Name == "deathText")),
+                    Instruction.Create(OpCodes.Ldarg_S, hurt.Parameters.FirstOrDefault(def => def.Name == "Crit")),
+                    Instruction.Create(OpCodes.Ldloca_S, varDbl),
+                    Instruction.Create(OpCodes.Call, onPlayerHurt),
+                    Instruction.Create(OpCodes.Brfalse_S, firstInstr),
+                    Instruction.Create(OpCodes.Ldloc, varDbl),
                     Instruction.Create(OpCodes.Ret)
                 });
             }

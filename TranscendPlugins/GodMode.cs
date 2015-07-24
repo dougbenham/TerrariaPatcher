@@ -6,27 +6,47 @@ using Terraria;
 
 namespace ZeromaruPlugins
 {
-    public class GodMode : MarshalByRefObject, IPluginUpdate
+    public class GodMode : MarshalByRefObject, IPluginUpdate, IPluginPlayerHurt, IPluginPlayerKillMe
     {
-        private bool god = false;
-        private Keys godmodeKey;
+        enum Mode
+        {
+            Off = 0,
+            DemiGod = 1,
+            God = 2
+        }
+        private Mode mode = Mode.Off;
+        private Keys key;
 
         public GodMode()
         {
-            if (!Keys.TryParse(IniAPI.ReadIni("GodMode", "GodModeKey", "G", writeIt: true), out godmodeKey))
-                godmodeKey = Keys.G;
+            if (!Keys.TryParse(IniAPI.ReadIni("GodMode", "Key", "G", writeIt: true), out key)) key = Keys.G;
+            if (!Mode.TryParse(IniAPI.ReadIni("GodMode", "Mode", "Off", writeIt: true), out mode)) mode = Mode.Off;
 
             Color green = Color.Green;
+            Action update = () =>
+            {
+                IniAPI.WriteIni("GodMode", "Mode", mode.ToString());
+                Main.NewText("God Mode: " + mode, green.R, green.G, green.B, false);
+            };
+
             Loader.RegisterHotkey(() =>
             {
-                god = !god;
-                Main.NewText("God Mode " + (god ? "Enabled" : "Disabled"), green.R, green.G, green.B, false);
-            }, godmodeKey);
+                if (mode == Mode.God) mode = Mode.Off;
+                else mode++;
+                update();
+            }, key);
+
+            Loader.RegisterHotkey(() =>
+            {
+                if (mode == Mode.Off) mode = Mode.God;
+                else mode--;
+                update();
+            }, key, shift: true);
         }
 
         public void OnUpdate()
         {
-            if (god)
+            if (mode == Mode.God)
             {
                 var player = Main.player[Main.myPlayer];
                 player.statLife = player.statLifeMax2;
@@ -37,6 +57,17 @@ namespace ZeromaruPlugins
                 player.immuneTime = 10;
                 player.immuneAlpha = 0;
             }
+        }
+
+        public bool OnPlayerHurt(Player player, int damage, int hitDirection, bool pvp, bool quiet, string deathText, bool crit, out double result)
+        {
+            result = 0.0;
+            return mode == Mode.God;
+        }
+
+        public bool OnPlayerKillMe(Player player, double dmg, int hitDirection, bool pvp, string deathText)
+        {
+            return mode == Mode.God || mode == Mode.DemiGod;
         }
     }
 }

@@ -51,6 +51,14 @@ namespace PluginLoader
     {
         void OnPlayerUpdateBuffs(Player player);
     }
+    public interface IPluginPlayerHurt : IPlugin
+    {
+        bool OnPlayerHurt(Player player, int damage, int hitDirection, bool pvp, bool quiet, string deathText, bool crit, out double result);
+    }
+    public interface IPluginPlayerKillMe : IPlugin
+    {
+        bool OnPlayerKillMe(Player player, double dmg, int hitDirection, bool pvp, string deathText);
+    }
     public interface IPluginPlayerPickAmmo : IPlugin
     {
         void OnPlayerPickAmmo(Player player, Item weapon, ref int shoot, ref float speed, ref bool canShoot, ref int damage, ref float knockback);

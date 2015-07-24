@@ -75,6 +75,7 @@
     <Compile Include="InventoryEnhancements\Inventory_Enhancements.cs" />
     <Compile Include="InventoryEnhancements\Inventory_EnhancementsPlugin.cs" />
     <Compile Include="InventoryEnhancements\Inventory_Enhancements_UI.cs" />
+    <Compile Include="ItemPrefix.cs" />
     <Compile Include="LoadoutSwap.cs" />
     <Compile Include="InventoryEnhancements\SortingSet.cs" />
     <Compile Include="InventoryEnhancements\Sorting\Sets.cs" />
@@ -99,7 +100,7 @@
     <Compile Include="Reveal.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Events.cs" />
-    <Compile Include="EnhancedPDA.cs" />
+    <Compile Include="EnhancedCellPhone.cs" />
     <Compile Include="Weather.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -116,7 +116,6 @@ namespace TerrariaPatcher
                 removeManaCosts.Checked = bool.Parse(IniAPI.ReadIni("General", "RemoveManaCosts", "true", 255, ConfigPath));
                 removeAnglerQuestLimit.Checked = bool.Parse(IniAPI.ReadIni("General", "RemoveAnglerQuestLimit", "false", 255, ConfigPath));
                 removeDrowning.Checked = bool.Parse(IniAPI.ReadIni("General", "RemoveDrowning", "true", 255, ConfigPath));
-                demigodMode.Checked = bool.Parse(IniAPI.ReadIni("General", "DemigodMode", "true", 255, ConfigPath));
                 oneHitKill.Checked = bool.Parse(IniAPI.ReadIni("General", "OneHitKill", "false", 255, ConfigPath));
                 infiniteAmmo.Checked = bool.Parse(IniAPI.ReadIni("General", "InfiniteAmmo", "true", 255, ConfigPath));
                 fixedPrefixes.Checked = bool.Parse(IniAPI.ReadIni("General", "FixedPrefixes", "true", 255, ConfigPath));
@@ -159,7 +158,6 @@ namespace TerrariaPatcher
             IniAPI.WriteIni("General", "RemoveManaCosts", removeManaCosts.Checked.ToString(), ConfigPath);
             IniAPI.WriteIni("General", "RemoveAnglerQuestLimit", removeAnglerQuestLimit.Checked.ToString(), ConfigPath);
             IniAPI.WriteIni("General", "RemoveDrowning", removeDrowning.Checked.ToString(), ConfigPath);
-            IniAPI.WriteIni("General", "DemigodMode", demigodMode.Checked.ToString(), ConfigPath);
             IniAPI.WriteIni("General", "OneHitKill", oneHitKill.Checked.ToString(), ConfigPath);
             IniAPI.WriteIni("General", "InfiniteAmmo", infiniteAmmo.Checked.ToString(), ConfigPath);
             IniAPI.WriteIni("General", "FixedPrefixes", fixedPrefixes.Checked.ToString(), ConfigPath);
@@ -321,7 +319,6 @@ namespace TerrariaPatcher
                     PermanentWings = permanentWings.Enabled && permanentWings.Checked,
                     OneHitKill = oneHitKill.Checked,
 					InfiniteAmmo = infiniteAmmo.Checked,
-                    DemigodMode = demigodMode.Checked,
                     RemoveDrowning = removeDrowning.Checked,
                     RemoveDiscordBuff = removeRodBuffEnabled.Checked,
                     RemoveManaCost = removeManaCosts.Checked,

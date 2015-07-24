@@ -300,6 +300,32 @@ namespace PluginLoader
                 plugin.OnPlayerUpdateBuffs(player);
         }
 
+        public static bool OnPlayerHurt(Player player, int damage, int hitDirection, bool pvp, bool quiet, string deathText, bool crit, out double result)
+        {
+            result = 0.0;
+            var ret = false;
+            foreach (var plugin in loadedPlugins.OfType<IPluginPlayerHurt>())
+            {
+                double temp;
+                if (plugin.OnPlayerHurt(player, damage, hitDirection, pvp, quiet, deathText, crit, out temp))
+                {
+                    ret = true;
+                    result = temp;
+                }
+            }
+
+            return ret;
+        }
+
+        public static bool OnPlayerKillMe(Player player, double dmg, int hitDirection, bool pvp, string deathText)
+        {
+            var ret = false;
+            foreach (var plugin in loadedPlugins.OfType<IPluginPlayerKillMe>())
+                ret = plugin.OnPlayerKillMe(player, dmg, hitDirection, pvp, deathText) || ret;
+
+            return ret;
+        }
+
         public static void OnPlayerPickAmmo(Player player, Item weapon, ref int shoot, ref float speed, ref bool canShoot, ref int damage, ref float knockback)
         {
             foreach (var plugin in loadedPlugins.OfType<IPluginPlayerPickAmmo>())
@@ -313,8 +339,7 @@ namespace PluginLoader
             foreach (var plugin in loadedPlugins.OfType<IPluginPlayerGetItem>())
             {
                 Item temp;
-                var result = plugin.OnPlayerGetItem(player, newItem, out temp);
-                if (result)
+                if (plugin.OnPlayerGetItem(player, newItem, out temp))
                 {
                     ret = true;
                     resultItem = temp;
