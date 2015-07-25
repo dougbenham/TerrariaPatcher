@@ -304,7 +304,7 @@ namespace TerrariaPatcher
                     catch
                     { }
 
-                    if (MessageBox.Show("Would you like to restore your backup before patching?" + warning, Program.AssemblyName, MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                    if (MessageBox.Show("Would you like to restore your backup before patching?" + warning, Program.AssemblyName, MessageBoxButtons.YesNo, string.IsNullOrEmpty(warning) ? MessageBoxIcon.Question : MessageBoxIcon.Warning) == DialogResult.Yes)
                     {
                         File.Delete(saveFileDialog.FileName);
                         File.Move(saveFileDialog.FileName + ".bak", saveFileDialog.FileName);
