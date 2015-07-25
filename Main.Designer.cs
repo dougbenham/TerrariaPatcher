@@ -71,6 +71,8 @@
             this.spectreHealingRate = new System.Windows.Forms.NumericUpDown();
             this.linkLabel = new System.Windows.Forms.LinkLabel();
             this.versionWarning = new System.Windows.Forms.Label();
+            this.filterBuffsOut = new System.Windows.Forms.TextBox();
+            this.filterBuffsIn = new System.Windows.Forms.TextBox();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.spawnRateVoodoo)).BeginInit();
             this.groupBox2.SuspendLayout();
@@ -363,6 +365,8 @@
             // 
             // groupBox3
             // 
+            this.groupBox3.Controls.Add(this.filterBuffsIn);
+            this.groupBox3.Controls.Add(this.filterBuffsOut);
             this.groupBox3.Controls.Add(this.allOut);
             this.groupBox3.Controls.Add(this.buffsInCount);
             this.groupBox3.Controls.Add(this.buffsOutCount);
@@ -423,9 +427,9 @@
             // 
             this.buffsIn.FormattingEnabled = true;
             this.buffsIn.HorizontalScrollbar = true;
-            this.buffsIn.Location = new System.Drawing.Point(172, 19);
+            this.buffsIn.Location = new System.Drawing.Point(172, 45);
             this.buffsIn.Name = "buffsIn";
-            this.buffsIn.Size = new System.Drawing.Size(130, 342);
+            this.buffsIn.Size = new System.Drawing.Size(130, 316);
             this.buffsIn.TabIndex = 1;
             this.buffsIn.SelectedIndexChanged += new System.EventHandler(this.buffs_Update);
             // 
@@ -433,9 +437,9 @@
             // 
             this.buffsOut.FormattingEnabled = true;
             this.buffsOut.HorizontalScrollbar = true;
-            this.buffsOut.Location = new System.Drawing.Point(6, 19);
+            this.buffsOut.Location = new System.Drawing.Point(6, 45);
             this.buffsOut.Name = "buffsOut";
-            this.buffsOut.Size = new System.Drawing.Size(130, 342);
+            this.buffsOut.Size = new System.Drawing.Size(130, 316);
             this.buffsOut.TabIndex = 0;
             this.buffsOut.SelectedIndexChanged += new System.EventHandler(this.buffs_Update);
             // 
@@ -594,6 +598,22 @@
             this.versionWarning.TabIndex = 29;
             this.versionWarning.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
+            // filterBuffsOut
+            // 
+            this.filterBuffsOut.Location = new System.Drawing.Point(8, 19);
+            this.filterBuffsOut.Name = "filterBuffsOut";
+            this.filterBuffsOut.Size = new System.Drawing.Size(128, 20);
+            this.filterBuffsOut.TabIndex = 7;
+            this.filterBuffsOut.TextChanged += new System.EventHandler(this.filterBuffsOut_TextChanged);
+            // 
+            // filterBuffsIn
+            // 
+            this.filterBuffsIn.Location = new System.Drawing.Point(172, 19);
+            this.filterBuffsIn.Name = "filterBuffsIn";
+            this.filterBuffsIn.Size = new System.Drawing.Size(130, 20);
+            this.filterBuffsIn.TabIndex = 8;
+            this.filterBuffsIn.TextChanged += new System.EventHandler(this.filterBuffsIn_TextChanged);
+            // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -616,6 +636,7 @@
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
             this.groupBox3.ResumeLayout(false);
+            this.groupBox3.PerformLayout();
             this.groupBox4.ResumeLayout(false);
             this.groupBox4.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.vampiricKnivesHealingRate)).EndInit();
@@ -671,6 +692,8 @@
         private System.Windows.Forms.CheckBox plugins;
         private System.Windows.Forms.LinkLabel linkLabel;
         private System.Windows.Forms.Label versionWarning;
+        private System.Windows.Forms.TextBox filterBuffsIn;
+        private System.Windows.Forms.TextBox filterBuffsOut;
     }
 }
 

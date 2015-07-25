@@ -1,4 +1,7 @@
-v1.2.0.12:	Added ItemPrefix plugin.
+v1.2.0.12:	Added filter for persistent buffs on UI.
+		Sorted persistent buffs alphabetically.
+		Added sync feature to Copy Plugins window, to help delete plugins you deselected.
+		Added ItemPrefix plugin.
 		Added customizable timer to Respawn plugin.
 		Moved Demi-God mod to the GodMode plugin.
 		Renamed EnhancedPDA plugin to EnhancedCellPhone.

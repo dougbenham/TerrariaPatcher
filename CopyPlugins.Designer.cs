@@ -61,9 +61,9 @@
             this.clearExisting.CheckState = System.Windows.Forms.CheckState.Checked;
             this.clearExisting.Location = new System.Drawing.Point(3, 7);
             this.clearExisting.Name = "clearExisting";
-            this.clearExisting.Size = new System.Drawing.Size(126, 17);
+            this.clearExisting.Size = new System.Drawing.Size(238, 17);
             this.clearExisting.TabIndex = 2;
-            this.clearExisting.Text = "Clear Existing Plugins";
+            this.clearExisting.Text = "Remove Unchecked Plugins (recommended)";
             this.clearExisting.UseVisualStyleBackColor = true;
             this.clearExisting.CheckedChanged += new System.EventHandler(this.clearExisting_CheckedChanged);
             // 

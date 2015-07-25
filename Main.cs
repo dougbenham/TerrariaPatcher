@@ -81,6 +81,7 @@ namespace TerrariaPatcher
             var buffNames = new string[] { "Obsidian Skin", "Regeneration", "Swiftness", "Gills", "Ironskin", "Mana Regeneration", "Magic Power", "Featherfall", "Spelunker", "Invisibility", "Shine", "Night Owl", "Battle", "Thorns", "Water Walking", "Archery", "Hunter", "Gravitation", "Shadow Orb", "Poisoned", "Potion Sickness", "Darkness", "Cursed", "On Fire!", "Tipsy", "Well Fed", "Fairy", "Werewolf", "Clairvoyance", "Bleeding", "Confused", "Slow", "Weak", "Merfolk", "Silenced", "Broken Armor", "Horrified", "The Tongue", "Cursed Inferno", "Pet Bunny", "Baby Penguin", "Pet Turtle", "Paladin's Shield", "Frostburn", "Baby Eater", "Chilled", "Frozen", "Honey", "Pygmies", "Baby Skeletron Head", "Baby Hornet", "Tiki Spirit", "Pet Lizard", "Pet Parrot", "Baby Truffle", "Pet Sapling", "Wisp", "Rapid Healing", "Shadow Dodge", "Leaf Crystal", "Baby Dinosaur", "Ice Barrier", "Panic!", "Baby Slime", "Eyeball Spring", "Baby Snowman", "Burning", "Suffocation", "Ichor", "Venom", "Midas", "Weapon Imbue: Venom", "Weapon Imbue: Cursed Flames", "Weapon Imbue: Fire", "Weapon Imbue: Gold", "Weapon Imbue: Ichor", "Weapon Imbue: Nanites", "Weapon Imbue: Confetti", "Weapon Imbue: Poison", "Blackout", "Pet Spider", "Squashling", "Ravens", "Black Cat", "Cursed Sapling", "Water Candle", "Campfire", "Chaos State", "Heart Lamp", "Rudolph", "Puppy", "Baby Grinch", "Ammo Box", "Mana Sickness", "Beetle Endurance", "Beetle Endurance", "Beetle Endurance", "Beetle Might", "Beetle Might", "Beetle Might", "Fairy", "Fairy", "Wet", "Mining", "Heartreach", "Calm", "Builder", "Titan", "Flipper", "Summoning", "Dangersense", "Ammo Reservation", "Lifeforce", "Endurance", "Rage", "Inferno", "Wrath", "Minecart", "Lovestruck", "Stinky", "Fishing", "Sonar", "Crate", "Warmth", "Hornet", "Imp", "Zephyr Fish", "Bunny Mount", "Pigron Mount", "Slime Mount", "Turtle Mount", "Bee Mount", "Spider", "Twins", "Pirate", "Mini Minotaur", "Slime", "Minecart", "Sharknado", "UFO", "UFO Mount", "Drill Mount", "Scutlix Mount", "Electrified", "The Line", "Happy!", "Banner", "Feral Bite", "Webbed", "Bewitched", "Life Drain", "Magic Lantern", "Shadowflame", "Baby Face Monster", "Crimson Heart", "Stoned", "Peace Candle", "Star in a Bottle", "Sharpened", "Dazed", "Deadly Sphere", "", "Obstructed", "Distorted", "Dryad's Blessing", "Minecart", "Minecart", "", "Penetrated", "Solar Blaze", "Solar Blaze", "Solar Blaze", "Life Nebula", "Life Nebula", "Life Nebula", "Mana Nebula", "Mana Nebula", "Mana Nebula", "Damage Nebula", "Damage Nebula", "Damage Nebula", "Stardust Cell", "Celled", "Minecart", "Minecart", "Dryad's Bane", "Stardust Guardian", "Stardust Dragon", "Daybroken", "Suspicious Looking Eye" };
             for (int i = 0; i < buffNames.Length; i++)
                 buffs.Add(new Buff() { Name = buffNames[i], Index = i + 1 });
+            buffs.Sort();
 
             LoadConfig();
         }
@@ -137,9 +138,9 @@ namespace TerrariaPatcher
                 spawnRateVoodoo.Value = decimal.Parse(IniAPI.ReadIni("Spawning", "SpawnRateVoodoo", "15", 255, ConfigPath));
 
                 ResetBuffs();
-                foreach (var index in IniAPI.ReadIni("PermanentBuffs", "List", "3, 5, 11, 14, 26, 60, 58, 7, 146", 500, ConfigPath).Split(new[] {", "}, StringSplitOptions.RemoveEmptyEntries))
+                foreach (var index in IniAPI.ReadIni("PermanentBuffs", "List", "3, 5, 11, 14, 26, 60, 58, 7, 146", 500, ConfigPath).Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries))
                 {
-                    var nIndex = int.Parse(index);
+                    var nIndex = int.Parse(index.Trim());
                     MoveIn(buffs.Find(buff => buff.Index == nIndex));
                 }
             }
@@ -173,7 +174,7 @@ namespace TerrariaPatcher
 
             IniAPI.WriteIni("Spawning", "SpawnRateVoodoo", spawnRateVoodoo.Value.ToString(), ConfigPath);
 
-            IniAPI.WriteIni("PermanentBuffs", "List", string.Join(", ", (from Buff buff in buffsIn.Items select buff.Index)), ConfigPath);
+            IniAPI.WriteIni("PermanentBuffs", "List", string.Join(", ", (from Buff buff in buffs.Where(buff => buff.Active) select buff.Index)), ConfigPath);
         }
 
         private void buffs_Update(object sender, EventArgs e)
@@ -193,7 +194,12 @@ namespace TerrariaPatcher
             buffsIn.Items.Clear();
             buffsOut.Items.Clear();
             foreach (var buff in buffs)
-                buffsOut.Items.Add(buff);
+            {
+                buff.Active = false;
+
+                if (CheckIncludedByFilter(buff))
+                    buffsOut.Items.Add(buff);
+            }
 
             buffs_Update(null, null);
         }
@@ -205,8 +211,11 @@ namespace TerrariaPatcher
 
         private void MoveIn(Buff buff)
         {
+            buff.Active = true;
             buffsOut.Items.Remove(buff);
-            buffsIn.Items.Add(buff);
+
+            if (CheckIncludedByFilter(buff))
+                buffsIn.Items.Add(buff);
 
             buffs_Update(null, null);
         }
@@ -214,21 +223,25 @@ namespace TerrariaPatcher
         private void moveOut_Click(object sender, EventArgs e)
         {
             var buff = (Buff)buffsIn.SelectedItem;
+            buff.Active = false;
             buffsIn.Items.Remove(buff);
 
-            int i;
-            for (i = buffsOut.Items.Count - 1; i >= 0; i--)
+            if (CheckIncludedByFilter(buff))
             {
-                var test = buffsOut.Items[i] as Buff;
-                if (test.Index < buff.Index)
+                int i;
+                for (i = buffsOut.Items.Count - 1; i >= 0; i--)
                 {
-                    buffsOut.Items.Insert(i + 1, buff);
-                    break;
+                    var test = buffsOut.Items[i] as Buff;
+                    if (test.CompareTo(buff) <= 0)
+                    {
+                        buffsOut.Items.Insert(i + 1, buff);
+                        break;
+                    }
                 }
+
+                if (i == -1) buffsOut.Items.Insert(0, buff);
             }
 
-            if (i == -1) buffsOut.Items.Insert(0, buff);
-            
             buffs_Update(null, null);
         }
 
@@ -253,7 +266,7 @@ namespace TerrariaPatcher
                 return;
             }
 
-            if (buffsIn.Items.OfType<Buff>().Any(buff => buff.Name == "Builder"))
+            if (buffs.Any(buff => buff.Active && buff.Name == "Builder"))
             {
                 if (MessageBox.Show("You have the Builder buff turned on in the Persistent Buffs section. This has been reported to have negative effects when used in conjunction with the UseTime plugin. Please disable one or the other.", Program.AssemblyName, MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) != DialogResult.OK)
                     return;
@@ -306,7 +319,7 @@ namespace TerrariaPatcher
                     }
                 }
 
-                var buffValues = (from Buff buff in buffsIn.Items select buff.Index).ToList();
+                var buffValues = (from Buff buff in buffs.Where(buff => buff.Active) select buff.Index).ToList();
                 var details = new TerrariaDetails()
                 {
                     InfiniteCloudJumps = infiniteCloudJumps.Checked,
@@ -337,8 +350,7 @@ namespace TerrariaPatcher
                 {
                     Program.ShowErrorMessage("An error occurred, you possibly have already patched this exe or it is an incompatible version.\n\n" + ex.ToString());
                 }
-
-
+                
                 if (details.Plugins)
                 {
                     var targetFolder = Path.GetDirectoryName(saveFileDialog.FileName);
@@ -418,6 +430,38 @@ namespace TerrariaPatcher
             }
         }
 
+        private bool CheckIncludedByFilter(Buff buff)
+        {
+            string filter = (buff.Active ? filterBuffsIn : filterBuffsOut).Text.ToLower();
+            return buff.ToString().ToLower().Contains(filter);
+        }
+
+        private void filterBuffsOut_TextChanged(object sender, EventArgs e)
+        {
+            buffsOut.Items.Clear();
+
+            foreach (var buff in buffs)
+            {
+                if (!buff.Active && CheckIncludedByFilter(buff))
+                    buffsOut.Items.Add(buff);
+            }
+
+            buffs_Update(null, null);
+        }
+
+        private void filterBuffsIn_TextChanged(object sender, EventArgs e)
+        {
+            buffsIn.Items.Clear();
+
+            foreach (var buff in buffs)
+            {
+                if (buff.Active && CheckIncludedByFilter(buff))
+                    buffsIn.Items.Add(buff);
+            }
+
+            buffs_Update(null, null);
+        }
+
         private static bool IsAdministrator()
         {
             try
@@ -430,10 +474,18 @@ namespace TerrariaPatcher
             }
         }
     }
-    class Buff
+    class Buff : IComparable<Buff>
     {
         public string Name;
         public int Index;
+        public bool Active;
+
+        public int CompareTo(Buff other)
+        {
+            if (other == null) return 0;
+            var result = this.Name.CompareTo(other.Name);
+            return result == 0 ? this.Index.CompareTo(other.Index) : result;
+        }
 
         public override string ToString()
         {
