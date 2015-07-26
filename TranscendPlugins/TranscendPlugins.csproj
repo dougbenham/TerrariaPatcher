@@ -54,6 +54,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Bind.cs" />
     <Compile Include="BuffImmunity.cs" />
     <Compile Include="BuffRates.cs" />
     <Compile Include="ChestSearch.cs" />

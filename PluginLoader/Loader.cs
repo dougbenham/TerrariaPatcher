@@ -83,34 +83,12 @@ namespace PluginLoader
                 foreach (var keys in result)
                 {
                     var val = IniAPI.ReadIni("HotkeyBinds", keys, null);
-                    var key = Keys.None;
-                    var control = false;
-                    var shift = false;
-                    var alt = false;
-                    bool hotkeyParseFailed = false;
-                    foreach (var keyStr in keys.Split(','))
-                    {
-                        switch (keyStr.ToLower())
-                        {
-                            case "control":
-                                control = true;
-                                break;
-                            case "shift":
-                                shift = true;
-                                break;
-                            case "alt":
-                                alt = true;
-                                break;
-                            default:
-                                if (key != Keys.None || !Keys.TryParse(keyStr, out key)) hotkeyParseFailed = true;
-                                break;
-                        }
-                    }
+                    var key = ParseHotkey(keys);
 
-                    if (string.IsNullOrEmpty(val) || !val.StartsWith("/") || hotkeyParseFailed || key == Keys.None)
+                    if (string.IsNullOrEmpty(val) || !val.StartsWith("/") || key == null)
                         MessageBox.Show("Invalid record in [HotkeyBinds]: " + key + ".", "", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     else
-                        RegisterHotkey(val, key, control, shift, alt);
+                        RegisterHotkey(val, key);
                 }
             }
         }
@@ -177,30 +155,85 @@ namespace PluginLoader
 
         public static void RegisterHotkey(string command, Keys key, bool control = false, bool shift = false, bool alt = false, bool ignoreModifierKeys = false)
         {
-            RegisterHotkey(() =>
+            RegisterHotkey(command, new Hotkey() { Key = key, Control = control, Shift = shift, Alt = alt, IgnoreModifierKeys = ignoreModifierKeys });
+        }
+
+        public static void RegisterHotkey(string command, Hotkey key)
+        {
+            key.Tag = command;
+            key.Action = () =>
             {
-                var split = command.Substring(1).Split(new[] { ' ' }, 2);
+                var split = command.Substring(1).Split(new[] {' '}, 2);
                 var cmd = split[0].ToLower();
                 var args = split.Length > 1 ? split[1].Split(' ') : new string[0];
 
                 foreach (var plugin in loadedPlugins.OfType<IPluginChatCommand>())
                     plugin.OnChatCommand(cmd, args);
-            }, key, control, shift, alt, ignoreModifierKeys);
+            };
+            RegisterHotkey(key);
         }
 
         public static void RegisterHotkey(Action action, Keys key, bool control = false, bool shift = false, bool alt = false, bool ignoreModifierKeys = false)
         {
-            if (key == Keys.LeftControl || key == Keys.RightControl ||
-                key == Keys.LeftAlt || key == Keys.RightAlt ||
-                key == Keys.LeftShift || key == Keys.RightShift)
-                ignoreModifierKeys = true;
+            RegisterHotkey(new Hotkey() { Action = action, Key = key, Control = control, Shift = shift, Alt = alt, IgnoreModifierKeys = ignoreModifierKeys });
+        }
 
-            RegisterHotkey(new Hotkey() { Key = key, Control = control, Shift = shift, Alt = alt, Action = action, IgnoreModifierKeys = ignoreModifierKeys });
+        public static void RegisterHotkey(Action action, Hotkey key)
+        {
+            key.Action = action;
+            RegisterHotkey(key);
         }
 
         public static void RegisterHotkey(Hotkey hotkey)
         {
             hotkeys.Add(hotkey);
+        }
+
+        public static void UnregisterHotkey(Keys key, bool control = false, bool shift = false, bool alt = false, bool ignoreModifierKeys = false)
+        {
+            UnregisterHotkey(new Hotkey() { Key = key, Control = control, Shift = shift, Alt = alt, IgnoreModifierKeys = ignoreModifierKeys });
+        }
+
+        public static void UnregisterHotkey(Hotkey hotkey)
+        {
+            hotkeys.RemoveAll(key => key.Equals(hotkey));
+        }
+
+        public static IReadOnlyCollection<Hotkey> GetHotkeys()
+        {
+            return hotkeys.AsReadOnly();
+        }
+
+        public static Hotkey ParseHotkey(string hotkey)
+        {
+            var key = Keys.None;
+            var control = false;
+            var shift = false;
+            var alt = false;
+            bool hotkeyParseFailed = false;
+            foreach (var keyStr in hotkey.Split(','))
+            {
+                switch (keyStr.ToLower())
+                {
+                    case "control":
+                        control = true;
+                        break;
+                    case "shift":
+                        shift = true;
+                        break;
+                    case "alt":
+                        alt = true;
+                        break;
+                    default:
+                        if (key != Keys.None || !Keys.TryParse(keyStr, true, out key)) hotkeyParseFailed = true;
+                        break;
+                }
+            }
+
+            if (hotkeyParseFailed || key == Keys.None)
+                return null;
+
+            return new Hotkey() {Key = key, Control = control, Alt = alt, Shift = shift};
         }
 
         public static bool IsAltModifierKeyDown()

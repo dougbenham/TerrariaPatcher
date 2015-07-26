@@ -22,6 +22,7 @@ namespace TranscendPlugins
             if (pProjectile.type == ProjectileID.Meteor1) return;
             if (pProjectile.type == ProjectileID.Meteor2) return;
             if (pProjectile.type == ProjectileID.Meteor3) return;
+            if (pProjectile.type == ProjectileID.MoonlordArrowTrail) return;
             
             float num138 = (float)Math.Sqrt((double)(pProjectile.velocity.X * pProjectile.velocity.X + pProjectile.velocity.Y * pProjectile.velocity.Y));
             float num139 = pProjectile.localAI[0];

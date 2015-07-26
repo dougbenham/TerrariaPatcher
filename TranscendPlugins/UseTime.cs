@@ -126,9 +126,11 @@ namespace TranscendPlugins
                     else
                     {
                         var stack = item.stack;
+                        var prefix = item.prefix;
                         resetUseTime = true;
                         item.netDefaults(item.type);
                         resetUseTime = false;
+                        item.Prefix(prefix);
                         item.stack = stack;
                     }
 

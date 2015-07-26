@@ -1,3 +1,7 @@
+v1.2.0.13:	Added Bind plugin.
+		Added 2nd proc of Luminite Arrows to HomingPlugins plugin exclusions.
+		Fixed PortableCraftingGuide to use inventory key set in Terraria config.
+		Fixed /usetime command to preserve item prefix when reseting usetime.
 v1.2.0.12:	Added filter for persistent buffs on UI.
 		Sorted persistent buffs alphabetically.
 		Added sync feature to Copy Plugins window, to help delete plugins you deselected.

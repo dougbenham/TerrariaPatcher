@@ -20,10 +20,12 @@ namespace TranscendPlugins
                 pcg = !pcg;
             }, pcgKey);
 
+            Keys invKey;
+            Keys.TryParse(Main.cInv, out invKey);
             Loader.RegisterHotkey(() =>
             {
                 pcg = false;
-            }, Keys.Escape);
+            }, invKey);
         }
 
         public void OnUpdate()
