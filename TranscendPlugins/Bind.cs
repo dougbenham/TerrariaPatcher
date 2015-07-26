@@ -16,12 +16,13 @@ namespace MrBlueSLPlugins
                 (command == "listbinds" && args.Length > 0 && args[0] == "help"))
             {
                 Main.NewText("Usage:");
-                Main.NewText("  /bind modifier,hotkey command");
-                Main.NewText("  /unbind modifier,hotkey");
+                Main.NewText("  /bind modifiers,hotkey command");
+                Main.NewText("  /unbind modifiers,hotkey");
                 Main.NewText("  /listbinds");
                 Main.NewText("Example:");
                 Main.NewText("  /bind Control,T /time dusk");
                 Main.NewText("  /unbind Control,T");
+                Main.NewText("  /bind Control,Shift,K /usetime");
                 return true;
             }
             

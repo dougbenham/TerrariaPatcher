@@ -18,6 +18,10 @@ namespace PluginLoader
     {
         void OnInitialize();
     }
+    public interface IPluginDrawInterface : IPlugin
+    {
+        void OnDrawInterface();
+    }
     public interface IPluginDrawInventory : IPlugin
     {
         void OnDrawInventory();

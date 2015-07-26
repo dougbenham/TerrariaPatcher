@@ -1,3 +1,4 @@
+v1.2.0.14:	Fixed EnhancedCellPhone plugin with better right-click interception.
 v1.2.0.13:	Added Bind plugin.
 		Added 2nd proc of Luminite Arrows to HomingPlugins plugin exclusions.
 		Fixed PortableCraftingGuide to use inventory key set in Terraria config.

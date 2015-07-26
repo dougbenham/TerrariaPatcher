@@ -676,6 +676,7 @@ namespace TerrariaPatcher
             // Loader target methods
             var loader = ModDefinition.Import(typeof(PluginLoader.Loader)).Resolve();
             var onInitialize = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnInitialize"));
+            var onDrawInterface = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnDrawInterface"));
             var onDrawInventory = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnDrawInventory"));
             var onUpdate = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnUpdate"));
             var onUpdateTime = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnUpdateTime"));
@@ -709,6 +710,7 @@ namespace TerrariaPatcher
 
             // Methods
             var initialize = IL.GetMethodDefinition(main, "Initialize");
+            var drawInterface = IL.GetMethodDefinition(main, "DrawInterface");
             var drawInventory = IL.GetMethodDefinition(main, "DrawInventory");
             var update = IL.GetMethodDefinition(main, "Update");
             var updateTime = IL.GetMethodDefinition(main, "UpdateTime");
@@ -742,6 +744,15 @@ namespace TerrariaPatcher
                 IL.MethodAppend(drawInventory, drawInventory.Body.Instructions.Count - 1, 1, new[]
                 {
                     Instruction.Create(OpCodes.Call, onDrawInventory),
+                    Instruction.Create(OpCodes.Ret)
+                });
+            }
+
+            {
+                // Main.DrawInterface post hook
+                IL.MethodAppend(drawInterface, drawInterface.Body.Instructions.Count - 1, 1, new[]
+                {
+                    Instruction.Create(OpCodes.Call, onDrawInterface),
                     Instruction.Create(OpCodes.Ret)
                 });
             }

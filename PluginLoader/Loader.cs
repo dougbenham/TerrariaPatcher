@@ -269,6 +269,12 @@ namespace PluginLoader
                 plugin.OnDrawInventory();
         }
 
+        public static void OnDrawInterface()
+        {
+            foreach (var plugin in loadedPlugins.OfType<IPluginDrawInterface>())
+                plugin.OnDrawInterface();
+        }
+
         public static void OnUpdate()
         {
             if (!ingame)
