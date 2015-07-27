@@ -25,7 +25,7 @@ namespace YellowAfterlifePlugins
         public int? crit;
         public int? defense;
         public int? useTime; // item "use time"/cooldown, in frames
-        public int? useTime2; // secondary use time (used by weapons with two attacks)
+        public int? useAnimation;
         public int? holdStyle;
         public int? useStyle;
         public int? maxStack;
@@ -98,7 +98,7 @@ namespace YellowAfterlifePlugins
                         crit = LoadInt(section, "crit"),
                         defense = LoadInt(section, "defense"),
                         useTime = LoadInt(section, "useTime"),
-                        useTime2 = LoadInt(section, "useTime2"),
+                        useAnimation = LoadInt(section, "useAnimation"),
                         holdStyle = LoadInt(section, "holdStyle"),
                         useStyle = LoadInt(section, "useStyle"),
                         maxStack = LoadInt(section, "maxStack"),
@@ -120,10 +120,10 @@ namespace YellowAfterlifePlugins
                 if (r.autoReuse != null) item.autoReuse = (bool)r.autoReuse;
                 if (r.damage != null) item.damage = (int)r.damage;
                 if (r.knockback != null) item.knockBack = (float)r.knockback;
-                if (r.crit != null) item.crit = (int)r.crit - 4;
+                if (r.crit != null) item.crit = (int)r.crit;
                 if (r.defense != null) item.defense = (int)r.defense;
-                if (r.useTime != null) item.useAnimation = (int)r.useTime;
-                if (r.useTime2 != null) item.useTime = (int)r.useTime2;
+                if (r.useTime != null) item.useTime = (int)r.useTime;
+                if (r.useAnimation != null) item.useAnimation = (int)r.useAnimation;
                 if (r.holdStyle != null) item.holdStyle = (int)r.holdStyle;
                 if (r.useStyle != null) item.useStyle = (int)r.useStyle;
                 if (r.maxStack != null) item.maxStack = (int)r.maxStack;

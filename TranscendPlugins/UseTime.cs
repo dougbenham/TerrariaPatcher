@@ -9,6 +9,7 @@ namespace TranscendPlugins
 {
     public class UseTime : MarshalByRefObject, IPluginItemSetDefaults, IPluginPlayerUpdateBuffs, IPluginChatCommand
     {
+        private string confPath = Environment.CurrentDirectory + "\\ItemConfig.ini";
         private int initialTileRangeX, initialTileRangeY, initialDefaultItemGrabRange;
         private bool maxTileSpeed, maxWallSpeed, maxPickSpeed, maxReachRange, maxItemPickupRange;
         private bool builderBuffWarning = false, resetUseTime = false;
@@ -122,6 +123,8 @@ namespace TranscendPlugins
                         }
 
                         item.useTime = num;
+
+                        IniAPI.WriteIni("item" + item.type, "useTime", num.ToString(), confPath);
                     }
                     else
                     {
@@ -137,6 +140,8 @@ namespace TranscendPlugins
                         item.autoReuse = autoreuse;
                         item.stack = stack;
                         item.favorited = favorited;
+
+                        IniAPI.WriteIni("item" + item.type, "useTime", null, confPath);
                     }
 
                     Main.NewText("UseTime = " + item.useTime);
@@ -144,6 +149,8 @@ namespace TranscendPlugins
                 case "autoreuse":
                     item.autoReuse = !item.autoReuse;
                     Main.NewText("AutoReuse = " + item.autoReuse);
+
+                    IniAPI.WriteIni("item" + item.type, "autoReuse", item.autoReuse.ToString(), confPath);
                     break;
                 case "range":
                     IniAPI.WriteIni("UseTime", "MaxReachRange", (maxReachRange = !maxReachRange).ToString());
