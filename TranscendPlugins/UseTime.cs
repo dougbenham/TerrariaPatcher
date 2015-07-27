@@ -125,13 +125,18 @@ namespace TranscendPlugins
                     }
                     else
                     {
+                        // Clone item (preserve stack/favorited/prefix/auto-reuse)
                         var stack = item.stack;
+                        bool favorited = item.favorited;
                         var prefix = item.prefix;
+                        var autoreuse = item.autoReuse;
                         resetUseTime = true;
-                        item.netDefaults(item.type);
+                        item.netDefaults(item.netID);
                         resetUseTime = false;
                         item.Prefix(prefix);
+                        item.autoReuse = autoreuse;
                         item.stack = stack;
+                        item.favorited = favorited;
                     }
 
                     Main.NewText("UseTime = " + item.useTime);

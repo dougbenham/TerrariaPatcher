@@ -1,4 +1,8 @@
-v1.2.0.14:	Fixed EnhancedCellPhone plugin with better right-click interception.
+v1.2.0.14:	Added '/prefix keep' command to ItemPrefix plugin.
+		Fixed '/usetime' command to preserve autoreuse/favorite status when resetting item.
+		Fixed modifier hotkey issue.
+		Fixed PortableCraftingGuide plugin to properly read inventory key.
+		Fixed EnhancedCellPhone plugin with better right-click interception.
 v1.2.0.13:	Added Bind plugin.
 		Added 2nd proc of Luminite Arrows to HomingPlugins plugin exclusions.
 		Fixed PortableCraftingGuide to use inventory key set in Terraria config.

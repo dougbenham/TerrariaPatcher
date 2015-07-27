@@ -6,6 +6,8 @@ namespace TranscendPlugins
 {
     public class ItemPrefix : MarshalByRefObject, IPluginChatCommand
     {
+        private bool keepStats = false;
+
         public bool OnChatCommand(string command, string[] args)
         {
             if (command != "prefix") return false;
@@ -15,9 +17,17 @@ namespace TranscendPlugins
                 Main.NewText("Usage:");
                 Main.NewText("   /prefix name");
                 Main.NewText("   /prefix id");
+                Main.NewText("   /prefix keep");
                 Main.NewText("   /prefix help");
                 Main.NewText("Example:");
                 Main.NewText("   /prefix mythical");
+                return true;
+            }
+
+            if (args[0] == "keep")
+            {
+                keepStats = !keepStats;
+                Main.NewText("Using /prefix will now " + (keepStats ? "keep" : "reset") + " existing stats.");
                 return true;
             }
 
@@ -33,6 +43,7 @@ namespace TranscendPlugins
                     return true;
                 }
             }
+
 
             int prefixId;
             if (!int.TryParse(args[0], out prefixId))
@@ -52,14 +63,21 @@ namespace TranscendPlugins
                 }
             }
 
-            if (prefixId == 0)
+            if (!keepStats)
             {
+                // Clone item (preserve stack/favorited)
                 var stack = item.stack;
-                item.netDefaults(item.type);
+                bool favorited = item.favorited;
+                item.netDefaults(item.netID);
                 item.stack = stack;
+                item.favorited = favorited;
             }
-            else if (!item.Prefix(prefixId))
+
+            if (prefixId != 0 && !item.Prefix(prefixId))
                 Main.NewText("Invalid prefix ID for this item type.");
+            else
+                Main.NewText("Item reset (including usetime / autoreuse).");
+
             return true;
         }
     }

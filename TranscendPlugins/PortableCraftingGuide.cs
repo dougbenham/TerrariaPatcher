@@ -5,12 +5,12 @@ using Terraria;
 
 namespace TranscendPlugins
 {
-    public class PortableCraftingGuide : MarshalByRefObject, IPluginUpdate, IPluginPlaySound
+    public class PortableCraftingGuide : MarshalByRefObject, IPluginUpdate, IPluginPlaySound, IPluginInitialize
     {
         private bool pcg;
         private Keys pcgKey;
 
-        public PortableCraftingGuide()
+        public void OnInitialize()
         {
             if (!Keys.TryParse(IniAPI.ReadIni("PortableCraftingGuide", "ToggleKey", "C", writeIt: true), out pcgKey))
                 pcgKey = Keys.C;

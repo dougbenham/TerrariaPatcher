@@ -8,21 +8,22 @@ namespace PluginLoader
         public bool Control { get; set; }
         public bool Shift { get; set; }
         public bool Alt { get; set; }
-        public bool IgnoreModifierKeys { get; set; }
 
-        private Keys _key;
-        public Keys Key
+        private bool _ignoreModifierKeys;
+        public bool IgnoreModifierKeys
         {
-            get { return _key; }
-            set
+            get
             {
-                _key = value;
-                if (_key == Keys.LeftControl || _key == Keys.RightControl ||
-                    _key == Keys.LeftAlt || _key == Keys.RightAlt ||
-                    _key == Keys.LeftShift || _key == Keys.RightShift)
-                    IgnoreModifierKeys = true;
+                if (Key == Keys.LeftControl || Key == Keys.RightControl ||
+                    Key == Keys.LeftAlt || Key == Keys.RightAlt ||
+                    Key == Keys.LeftShift || Key == Keys.RightShift)
+                    return true;
+                return _ignoreModifierKeys;
             }
+            set { _ignoreModifierKeys = value; }
         }
+
+        public Keys Key { get; set; }
 
         public Action Action { get; set; }
 
