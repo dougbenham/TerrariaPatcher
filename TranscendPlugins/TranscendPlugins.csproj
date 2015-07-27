@@ -50,7 +50,7 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="Terraria">
-      <HintPath>..\bin\Terraria.exe</HintPath>
+      <HintPath>..\bin\Debug\Terraria.exe</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -76,12 +76,14 @@
     <Compile Include="InventoryEnhancements\Inventory_Enhancements.cs" />
     <Compile Include="InventoryEnhancements\Inventory_EnhancementsPlugin.cs" />
     <Compile Include="InventoryEnhancements\Inventory_Enhancements_UI.cs" />
+    <Compile Include="ItemConfig.cs" />
     <Compile Include="ItemPrefix.cs" />
     <Compile Include="LoadoutSwap.cs" />
     <Compile Include="InventoryEnhancements\SortingSet.cs" />
     <Compile Include="InventoryEnhancements\Sorting\Sets.cs" />
     <Compile Include="InventoryEnhancements\Sorting\SortingManager.cs" />
     <Compile Include="PortableCraftingGuide.cs" />
+    <Compile Include="SavePosition.cs" />
     <Compile Include="Shared\UI\Button.cs" />
     <Compile Include="InventoryEnhancements\Utils\Input.cs" />
     <Compile Include="InventoryEnhancements\Utils\Json.cs" />

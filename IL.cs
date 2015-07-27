@@ -16,9 +16,12 @@ namespace TerrariaPatcher
 
         public static void MethodPrepend(MethodDefinition method, IEnumerable<Instruction> instructions)
         {
-            var il = method.Body.GetILProcessor();
-            var first = il.Body.Instructions.FirstOrDefault();
-            MethodPrepend(il, first, instructions);
+            MethodPrepend(method, method.Body.Instructions.FirstOrDefault(), instructions);
+        }
+
+        public static void MethodPrepend(MethodDefinition method, Instruction first, IEnumerable<Instruction> instructions)
+        {
+            MethodPrepend(method.Body.GetILProcessor(), first, instructions);
         }
 
         public static void MethodPrepend(ILProcessor il, Instruction first, IEnumerable<Instruction> instructions)

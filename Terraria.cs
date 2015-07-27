@@ -656,7 +656,7 @@ namespace TerrariaPatcher
             var wingsLogic = IL.GetFieldDefinition(player, "wingsLogic");
             var wingTimeMax = IL.GetFieldDefinition(player, "wingTimeMax");
 
-            IL.MethodAppend(updatePlayerEquips.Body.GetILProcessor(), updatePlayerEquips.Body.Instructions.Count - 1, 1, new[]
+            IL.MethodAppend(updatePlayerEquips, updatePlayerEquips.Body.Instructions.Count - 1, 1, new[]
             {
                 Instruction.Create(OpCodes.Ldarg_0),
                 Instruction.Create(OpCodes.Ldc_I4, 32),
@@ -681,6 +681,10 @@ namespace TerrariaPatcher
             var onUpdate = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnUpdate"));
             var onUpdateTime = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnUpdateTime"));
             var onPlaySound = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlaySound"));
+            var onPlayerPreSpawn = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerPreSpawn"));
+            var onPlayerSpawn = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerSpawn"));
+            var onPlayerLoad = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerLoad"));
+            var onPlayerSave = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerSave"));
             var onPlayerPreUpdate = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerPreUpdate"));
             var onPlayerUpdate = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerUpdate"));
             var onPlayerUpdateBuffs = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerUpdateBuffs"));
@@ -715,6 +719,9 @@ namespace TerrariaPatcher
             var update = IL.GetMethodDefinition(main, "Update");
             var updateTime = IL.GetMethodDefinition(main, "UpdateTime");
             var playSound = IL.GetMethodDefinition(main, "PlaySound", 4);
+            var spawn = IL.GetMethodDefinition(player, "Spawn");
+            var loadPlayer = IL.GetMethodDefinition(player, "LoadPlayer");
+            var savePlayer = IL.GetMethodDefinition(player, "SavePlayer");
             var updatePlayer = IL.GetMethodDefinition(player, "Update");
             var updatePlayerBuffs = IL.GetMethodDefinition(player, "UpdateBuffs");
             var killMe = IL.GetMethodDefinition(player, "KillMe");
@@ -803,6 +810,73 @@ namespace TerrariaPatcher
                     Instruction.Create(OpCodes.Ldarg_3), // style
                     Instruction.Create(OpCodes.Call, onPlaySound),
                     Instruction.Create(OpCodes.Brfalse_S, firstInstr),
+                    Instruction.Create(OpCodes.Ret)
+                });
+            }
+
+            {
+                // Player.LoadPlayer inline hook
+
+                var binaryReader = loadPlayer.Body.Variables.FirstOrDefault(definition => definition.VariableType.Name == "BinaryReader");
+                var playerVar = loadPlayer.Body.Variables.FirstOrDefault(definition => definition.VariableType.Name == "Player");
+                var playerFileData = loadPlayer.Body.Variables.FirstOrDefault(definition => definition.VariableType.Name == "PlayerFileData");
+                var instr = Instruction.Create(OpCodes.Ldloc_S, playerFileData);
+                int spot = IL.ScanForOpcodePattern(loadPlayer, (i, instruction) =>
+                {
+                    var fieldReference = instruction.Operand as FieldReference;
+                    return loadPlayer.Body.Instructions[i - 2].OpCode.ToString().Contains("ldloc") &&
+                           loadPlayer.Body.Instructions[i - 1].OpCode.ToString().Contains("ldloc") &&
+                           fieldReference != null && fieldReference.Name == "skinVariant";
+                }, OpCodes.Ldfld);
+
+                foreach (var instruction in loadPlayer.Body.Instructions)
+                {
+                    if (instruction.Operand == loadPlayer.Body.Instructions[spot - 2])
+                        instruction.Operand = instr;
+                }
+
+                IL.MethodPrepend(loadPlayer, loadPlayer.Body.Instructions[spot - 2], new[]
+                {
+                    instr, 
+                    Instruction.Create(OpCodes.Ldloc_S, playerVar),
+                    Instruction.Create(OpCodes.Ldloc_S, binaryReader),
+                    Instruction.Create(OpCodes.Call, onPlayerLoad)
+                });
+            }
+
+            {
+                // Player.SavePlayer inline hook
+                int spot = IL.ScanForOpcodePattern(savePlayer, (i, instruction) =>
+                {
+                    var methodReference = savePlayer.Body.Instructions[i + 1].Operand as MethodReference;
+                    return methodReference != null && methodReference.Name == "Flush";
+                },
+                    OpCodes.Ldloc_S,
+                    OpCodes.Callvirt);
+
+                var binaryWriter = savePlayer.Body.Variables.FirstOrDefault(definition => definition.VariableType.Name == "BinaryWriter");
+
+                IL.MethodPrepend(savePlayer, savePlayer.Body.Instructions[spot], new[]
+                {
+                    Instruction.Create(OpCodes.Ldarg_0), // playerFile
+                    Instruction.Create(OpCodes.Ldloc_S, binaryWriter), // binaryWriter
+                    Instruction.Create(OpCodes.Call, onPlayerSave)
+                });
+            }
+
+            {
+                // Player.Spawn pre hook
+                IL.MethodPrepend(spawn, new[]
+                {
+                    Instruction.Create(OpCodes.Ldarg_0),
+                    Instruction.Create(OpCodes.Call, onPlayerPreSpawn)
+                });
+
+                // Player.Spawn post hook
+                IL.MethodAppend(spawn, spawn.Body.Instructions.Count - 1, 1, new[]
+                {
+                    Instruction.Create(OpCodes.Ldarg_0),
+                    Instruction.Create(OpCodes.Call, onPlayerSpawn),
                     Instruction.Create(OpCodes.Ret)
                 });
             }

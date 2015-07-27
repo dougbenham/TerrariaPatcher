@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using Microsoft.CSharp;
 using Microsoft.Xna.Framework;
 using Terraria;
+using Terraria.IO;
 using Keys = Microsoft.Xna.Framework.Input.Keys;
 
 namespace PluginLoader
@@ -325,6 +326,30 @@ namespace PluginLoader
         #endregion
 
         #region Player
+
+        public static void OnPlayerPreSpawn(Player player)
+        {
+            foreach (var plugin in loadedPlugins.OfType<IPluginPlayerPreSpawn>())
+                plugin.OnPlayerPreSpawn(player);
+        }
+
+        public static void OnPlayerSpawn(Player player)
+        {
+            foreach (var plugin in loadedPlugins.OfType<IPluginPlayerSpawn>())
+                plugin.OnPlayerSpawn(player);
+        }
+
+        public static void OnPlayerLoad(PlayerFileData playerFileData, Player player, BinaryReader binaryReader)
+        {
+            foreach (var plugin in loadedPlugins.OfType<IPluginPlayerLoad>())
+                plugin.OnPlayerLoad(playerFileData, player, binaryReader);
+        }
+
+        public static void OnPlayerSave(PlayerFileData playerFileData, BinaryWriter binaryWriter)
+        {
+            foreach (var plugin in loadedPlugins.OfType<IPluginPlayerSave>())
+                plugin.OnPlayerSave(playerFileData, binaryWriter);
+        }
 
         public static void OnPlayerUpdate(Player player)
         {

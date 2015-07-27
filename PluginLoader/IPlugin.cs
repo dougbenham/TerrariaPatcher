@@ -1,5 +1,7 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System.IO;
+using Microsoft.Xna.Framework;
 using Terraria;
+using Terraria.IO;
 
 namespace PluginLoader
 {
@@ -43,6 +45,22 @@ namespace PluginLoader
 
     #region Player
 
+    public interface IPluginPlayerPreSpawn : IPlugin
+    {
+        void OnPlayerPreSpawn(Player player);
+    }
+    public interface IPluginPlayerSpawn : IPlugin
+    {
+        void OnPlayerSpawn(Player player);
+    }
+    public interface IPluginPlayerLoad : IPlugin
+    {
+        void OnPlayerLoad(PlayerFileData playerFileData, Player player, BinaryReader binaryReader);
+    }
+    public interface IPluginPlayerSave : IPlugin
+    {
+        void OnPlayerSave(PlayerFileData playerFileData, BinaryWriter binaryWriter);
+    }
     public interface IPluginPlayerUpdate : IPlugin
     {
         void OnPlayerUpdate(Player player);
