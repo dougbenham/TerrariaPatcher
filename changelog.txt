@@ -1,6 +1,6 @@
 v1.2.0.15:	Added SavePosition plugin.
-		Added ItemPrefix plugin.
-		Updated /usetime and /autoreuse commands to persist changes if you have ItemPrefix plugin installed.
+		Added ItemConfig plugin.
+		Updated /usetime and /autoreuse commands to persist changes if you have ItemConfig plugin installed.
 v1.2.0.14:	Added '/prefix keep' command to ItemPrefix plugin.
 		Fixed '/usetime' command to preserve autoreuse/favorite status when resetting item.
 		Fixed modifier hotkey issue.

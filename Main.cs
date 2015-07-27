@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Reflection;
@@ -16,6 +17,12 @@ namespace TerrariaPatcher
 {
     public partial class Main : Form
     {
+        private static string changelogURL = "https://raw.githubusercontent.com/dougbenham/TerrariaPatcher/master/changelog.txt";
+#if PUBLIC
+        private static string updateURL = "https://github.com/dougbenham/TerrariaPatcher/raw/master/TerrariaPatcher.public.zip";
+#else
+        private static string updateURL = "https://github.com/dougbenham/TerrariaPatcher/raw/master/TerrariaPatcher.zip";
+#endif
         private static List<Buff> buffs;
         public static string ConfigPath = Environment.CurrentDirectory + "\\TerrariaPatcher.ini";
         private bool loading = false;
@@ -33,15 +40,47 @@ namespace TerrariaPatcher
             {
                 try
                 {
-                    var version = GetLatestVersion();
-                    if (version != asmName.Version.ToString())
+                    // Delete leftover update files
+                    foreach (var tmp in Directory.GetFiles(Environment.CurrentDirectory, "*.tmp"))
+                        File.Delete(tmp);
+
+                    var str = new WebClient().DownloadString(changelogURL);
+                    var version = str.Substring(1, str.IndexOf(':') - 1);
+                    if (true || version != asmName.Version.ToString())
                     {
-                        while (!this.IsHandleCreated) Thread.Sleep(10);
-                        this.Invoke(new Action(() =>
+                        if (MessageBox.Show(version + " is available. Would you like to automatically update?", Program.AssemblyName, MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation) == DialogResult.Yes)
                         {
-                            versionWarning.Text = "(Version " + version + " is now available!)";
-                            versionWarning.Left = linkLabel.Right - versionWarning.Width;
-                        }));
+                            // Download the update
+                            var zip = "update.tmp";
+                            new WebClient().DownloadFile(updateURL, zip);
+
+                            // Rename the currently executing TerrariaPatcher.exe / PluginLoader.dll / Mono.Cecil.dll so that we can update
+                            var location = Path.Combine(Environment.CurrentDirectory, "TerrariaPatcher.exe");
+                            File.Move(location, location.Replace("exe", "tmp"));
+                            location = Path.Combine(Environment.CurrentDirectory, "PluginLoader.dll");
+                            File.Move(location, location.Replace("dll", "tmp"));
+                            location = Path.Combine(Environment.CurrentDirectory, "Mono.Cecil.dll");
+                            File.Move(location, location.Replace("dll", "tmp"));
+
+                            // Extract the update
+                            using (var archive = ZipFile.OpenRead(zip))
+                            {
+                                foreach (ZipArchiveEntry file in archive.Entries)
+                                {
+                                    string completeFileName = Path.Combine(Environment.CurrentDirectory, file.FullName);
+                                    string directory = Path.GetDirectoryName(completeFileName);
+
+                                    if (!Directory.Exists(directory))
+                                        Directory.CreateDirectory(directory);
+
+                                    if (file.Name != "")
+                                        file.ExtractToFile(completeFileName, true);
+                                }
+                            }
+
+                            // Restart
+                            Application.Restart();
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -94,17 +133,7 @@ namespace TerrariaPatcher
                 Environment.Exit(0);
             }
         }
-
-        private string GetLatestVersion()
-        {
-            var str = new WebClient().DownloadString(linkLabel.Text);
-            var search = "<span class=\"prefix prefixSecondary\">Released</span>";
-            var start = str.IndexOf(search) + search.Length;
-            search = "TerrariaPatcher v";
-            start = str.IndexOf(search, start) + search.Length;
-            return str.Substring(start, str.IndexOf(" (", start) - start);
-        }
-
+        
         public void LoadConfig()
         {
             loading = true;

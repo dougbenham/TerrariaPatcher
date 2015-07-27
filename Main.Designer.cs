@@ -51,6 +51,8 @@
             this.removePotionSickness = new System.Windows.Forms.CheckBox();
             this.removeRodBuffEnabled = new System.Windows.Forms.CheckBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.filterBuffsIn = new System.Windows.Forms.TextBox();
+            this.filterBuffsOut = new System.Windows.Forms.TextBox();
             this.allOut = new System.Windows.Forms.Button();
             this.buffsInCount = new System.Windows.Forms.Label();
             this.buffsOutCount = new System.Windows.Forms.Label();
@@ -70,9 +72,6 @@
             this.groupBox6 = new System.Windows.Forms.GroupBox();
             this.spectreHealingRate = new System.Windows.Forms.NumericUpDown();
             this.linkLabel = new System.Windows.Forms.LinkLabel();
-            this.versionWarning = new System.Windows.Forms.Label();
-            this.filterBuffsOut = new System.Windows.Forms.TextBox();
-            this.filterBuffsIn = new System.Windows.Forms.TextBox();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.spawnRateVoodoo)).BeginInit();
             this.groupBox2.SuspendLayout();
@@ -381,6 +380,22 @@
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Persistent Buffs:";
             // 
+            // filterBuffsIn
+            // 
+            this.filterBuffsIn.Location = new System.Drawing.Point(172, 19);
+            this.filterBuffsIn.Name = "filterBuffsIn";
+            this.filterBuffsIn.Size = new System.Drawing.Size(130, 20);
+            this.filterBuffsIn.TabIndex = 8;
+            this.filterBuffsIn.TextChanged += new System.EventHandler(this.filterBuffsIn_TextChanged);
+            // 
+            // filterBuffsOut
+            // 
+            this.filterBuffsOut.Location = new System.Drawing.Point(8, 19);
+            this.filterBuffsOut.Name = "filterBuffsOut";
+            this.filterBuffsOut.Size = new System.Drawing.Size(128, 20);
+            this.filterBuffsOut.TabIndex = 7;
+            this.filterBuffsOut.TextChanged += new System.EventHandler(this.filterBuffsOut_TextChanged);
+            // 
             // allOut
             // 
             this.allOut.Enabled = false;
@@ -588,38 +603,11 @@
             this.linkLabel.Text = "http://www.terrariaonline.com/threads/116592/";
             this.linkLabel.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel_LinkClicked);
             // 
-            // versionWarning
-            // 
-            this.versionWarning.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.versionWarning.AutoSize = true;
-            this.versionWarning.Location = new System.Drawing.Point(948, 350);
-            this.versionWarning.Name = "versionWarning";
-            this.versionWarning.Size = new System.Drawing.Size(0, 13);
-            this.versionWarning.TabIndex = 29;
-            this.versionWarning.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // filterBuffsOut
-            // 
-            this.filterBuffsOut.Location = new System.Drawing.Point(8, 19);
-            this.filterBuffsOut.Name = "filterBuffsOut";
-            this.filterBuffsOut.Size = new System.Drawing.Size(128, 20);
-            this.filterBuffsOut.TabIndex = 7;
-            this.filterBuffsOut.TextChanged += new System.EventHandler(this.filterBuffsOut_TextChanged);
-            // 
-            // filterBuffsIn
-            // 
-            this.filterBuffsIn.Location = new System.Drawing.Point(172, 19);
-            this.filterBuffsIn.Name = "filterBuffsIn";
-            this.filterBuffsIn.Size = new System.Drawing.Size(130, 20);
-            this.filterBuffsIn.TabIndex = 8;
-            this.filterBuffsIn.TextChanged += new System.EventHandler(this.filterBuffsIn_TextChanged);
-            // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(956, 410);
-            this.Controls.Add(this.versionWarning);
             this.Controls.Add(this.linkLabel);
             this.Controls.Add(this.save);
             this.Controls.Add(this.groupBox6);
@@ -691,7 +679,6 @@
         private System.Windows.Forms.CheckBox maxCraftingRange;
         private System.Windows.Forms.CheckBox plugins;
         private System.Windows.Forms.LinkLabel linkLabel;
-        private System.Windows.Forms.Label versionWarning;
         private System.Windows.Forms.TextBox filterBuffsIn;
         private System.Windows.Forms.TextBox filterBuffsOut;
     }
