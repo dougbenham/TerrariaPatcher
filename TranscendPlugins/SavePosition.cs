@@ -6,46 +6,42 @@ using Terraria.IO;
 
 namespace TranscendPlugins
 {
-    public class SavePosition : MarshalByRefObject, IPluginPlayerLoad, IPluginPlayerSave, IPluginPlayerPreSpawn, IPluginPlayerSpawn
+    public class SavePosition : MarshalByRefObject, IPluginPlayerLoad, IPluginPlayerSave, IPluginPlayerSpawn
     {
         private bool justLoadedIn = false;
-        private int originalSpawnX, originalSpawnY;
 
         public void OnPlayerSave(PlayerFileData playerFileData, BinaryWriter binaryWriter)
         {
-            IniAPI.WriteIni("SavePosition", Main.worldID + "," + Main.player[Main.myPlayer].name, (playerFileData.Player.position / 16f).ToString());
+            IniAPI.WriteIni("SavePosition", Main.worldID + "," + Main.player[Main.myPlayer].name, playerFileData.Player.position.ToString());
         }
 
         public void OnPlayerLoad(PlayerFileData playerFileData, Player player, BinaryReader binaryReader)
         {
             justLoadedIn = true;
         }
-
-        public void OnPlayerPreSpawn(Player player)
+        
+        public void OnPlayerSpawn(Player player)
         {
             if (player.whoAmI != Main.myPlayer || !justLoadedIn) return;
-            
+
             var vector = IniAPI.ReadIni("SavePosition", Main.worldID + "," + Main.player[Main.myPlayer].name, null);
             if (!string.IsNullOrEmpty(vector))
             {
-                player.FindSpawn();
-                originalSpawnX = player.SpawnX;
-                originalSpawnY = player.SpawnY;
-
                 int startIndX = vector.IndexOf("X:") + 2;
                 int startIndY = vector.IndexOf("Y:") + 2;
-                player.ChangeSpawn(
-                    (int) float.Parse(vector.Substring(startIndX, vector.IndexOf(" Y") - startIndX)), 
-                    (int) float.Parse(vector.Substring(startIndY, vector.IndexOf("}") - startIndY)));
+                var x = float.Parse(vector.Substring(startIndX, vector.IndexOf(" Y") - startIndX));
+                var y = float.Parse(vector.Substring(startIndY, vector.IndexOf("}") - startIndY));
+
+                player.position.X = x;
+                player.position.Y = y;
+                player.fallStart = (int)(player.position.Y / 16f);
+                player.fallStart2 = player.fallStart;
+                player.oldPosition = player.position;
+                Main.screenPosition.X = player.position.X + player.width / 2 - Main.screenWidth / 2;
+                Main.screenPosition.Y = player.position.Y + player.height / 2 - Main.screenHeight / 2;
             }
 
             justLoadedIn = false;
-        }
-
-        public void OnPlayerSpawn(Player player)
-        {
-            player.SpawnX = originalSpawnX;
-            player.SpawnY = originalSpawnY;
         }
     }
 }
