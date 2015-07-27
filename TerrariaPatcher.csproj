@@ -132,7 +132,7 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties BuildVersion_BuildVersioningStyle="None.None.None.Increment" BuildVersion_UpdateAssemblyVersion="False" BuildVersion_UpdateFileVersion="False" BuildVersion_ConfigurationName="Release" />
+      <UserProperties BuildVersion_ConfigurationName="Release" BuildVersion_UpdateFileVersion="False" BuildVersion_UpdateAssemblyVersion="False" BuildVersion_BuildVersioningStyle="None.None.None.Increment" />
     </VisualStudio>
   </ProjectExtensions>
   <PropertyGroup>
@@ -142,12 +142,13 @@ FINDSTR /C:"[assembly: AssemblyVersion(" %25ASMINFO%25 | $(SolutionDir)sed.exe "
 CALL SetCurrVer.cmd
 DEL SetCurrVer.cmd
 if "$(ConfigurationName)" == "Release" SET zip=$(ProjectDir)bin\TerrariaPatcher.v%25CURRENT_VERSION%25.zip
+if "$(ConfigurationName)" == "Release" SET updatezip=$(ProjectDir)TerrariaPatcher.zip
 if "$(ConfigurationName)" == "Release (Public)" SET zip=$(ProjectDir)bin\TerrariaPatcher.v%25CURRENT_VERSION%25.public.zip
+if "$(ConfigurationName)" == "Release (Public)" SET updatezip=$(ProjectDir)TerrariaPatcher.public.zip
 IF EXIST "%25zip%25" DEL "%25zip%25"
 "C:\Program Files\WinRAR\WINRAR.exe" a -ep1 "%25zip%25" "$(TargetDir)TerrariaPatcher.exe" "$(TargetDir)PluginLoader.dll" "$(TargetDir)Mono.Cecil.dll" "$(ProjectDir)changelog.txt"
 "C:\Program Files\WinRAR\WINRAR.exe" a -ep1 -apPlugins "%25zip%25" "$(ProjectDir)\TranscendPlugins\*.cs"
 "C:\Program Files\WinRAR\WINRAR.exe" a -ep1 -r -apPlugins\Shared "%25zip%25" "$(ProjectDir)\TranscendPlugins\Shared\*.cs"
-SET updatezip=%25%25zip:bin\=%25%25
 COPY /Y "%25zip%25" "%25updatezip%25"
 
 SET zip=$(ProjectDir)bin\TerrariaPatcher.v%25CURRENT_VERSION%25.src.zip

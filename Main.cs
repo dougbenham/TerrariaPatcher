@@ -46,7 +46,7 @@ namespace TerrariaPatcher
 
                     var str = new WebClient().DownloadString(changelogURL);
                     var version = str.Substring(1, str.IndexOf(':') - 1);
-                    if (true || version != asmName.Version.ToString())
+                    if (version != asmName.Version.ToString())
                     {
                         if (MessageBox.Show(version + " is available. Would you like to automatically update?", Program.AssemblyName, MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation) == DialogResult.Yes)
                         {

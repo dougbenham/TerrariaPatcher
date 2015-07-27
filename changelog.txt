@@ -1,3 +1,4 @@
+v1.2.0.16:	Added autoupdate.
 v1.2.0.15:	Added SavePosition plugin.
 		Added ItemConfig plugin.
 		Updated /usetime and /autoreuse commands to persist changes if you have ItemConfig plugin installed.
