@@ -35,6 +35,9 @@
             // 
             // checkedListBox
             // 
+            this.checkedListBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.checkedListBox.CheckOnClick = true;
             this.checkedListBox.FormattingEnabled = true;
             this.checkedListBox.Location = new System.Drawing.Point(0, 30);
@@ -45,7 +48,8 @@
             // 
             // copyButton
             // 
-            this.copyButton.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.copyButton.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.copyButton.Location = new System.Drawing.Point(0, 229);
             this.copyButton.Name = "copyButton";
             this.copyButton.Size = new System.Drawing.Size(284, 23);
@@ -56,6 +60,8 @@
             // 
             // clearExisting
             // 
+            this.clearExisting.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.clearExisting.AutoSize = true;
             this.clearExisting.Checked = true;
             this.clearExisting.CheckState = System.Windows.Forms.CheckState.Checked;
@@ -75,7 +81,7 @@
             this.Controls.Add(this.clearExisting);
             this.Controls.Add(this.copyButton);
             this.Controls.Add(this.checkedListBox);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
             this.Name = "CopyPlugins";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Plugins";

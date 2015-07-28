@@ -678,6 +678,7 @@ namespace TerrariaPatcher
             var onInitialize = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnInitialize"));
             var onDrawInterface = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnDrawInterface"));
             var onDrawInventory = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnDrawInventory"));
+            var onPreUpdate = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPreUpdate"));
             var onUpdate = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnUpdate"));
             var onUpdateTime = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnUpdateTime"));
             var onPlaySound = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlaySound"));
@@ -782,6 +783,12 @@ namespace TerrariaPatcher
             }
 
             {
+                // Main.Update pre hook
+                IL.MethodPrepend(update, new[]
+                {
+                    Instruction.Create(OpCodes.Call, onPreUpdate)
+                });
+
                 // Main.Update post hook
                 IL.MethodAppend(update, update.Body.Instructions.Count - 1, 1, new[]
                 {

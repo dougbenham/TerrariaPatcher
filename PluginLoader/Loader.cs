@@ -276,6 +276,12 @@ namespace PluginLoader
                 plugin.OnDrawInterface();
         }
 
+        public static void OnPreUpdate()
+        {
+            foreach (var plugin in loadedPlugins.OfType<IPluginPreUpdate>())
+                plugin.OnPreUpdate();
+        }
+
         public static void OnUpdate()
         {
             if (!ingame)

@@ -1,0 +1,157 @@
+v1.2.0.16:	Added autoupdate.
+		Added minisharkron to HomingBullets plugin exclusions.
+v1.2.0.15:	Added SavePosition plugin.
+		Added ItemConfig plugin.
+		Updated /usetime and /autoreuse commands to persist changes if you have ItemConfig plugin installed.
+v1.2.0.14:	Added '/prefix keep' command to ItemPrefix plugin.
+		Fixed '/usetime' command to preserve autoreuse/favorite status when resetting item.
+		Fixed modifier hotkey issue.
+		Fixed PortableCraftingGuide plugin to properly read inventory key.
+		Fixed EnhancedCellPhone plugin with better right-click interception.
+v1.2.0.13:	Added Bind plugin.
+		Added 2nd proc of Luminite Arrows to HomingBullets plugin exclusions.
+		Fixed PortableCraftingGuide to use inventory key set in Terraria config.
+		Fixed /usetime command to preserve item prefix when reseting usetime.
+v1.2.0.12:	Added filter for persistent buffs on UI.
+		Sorted persistent buffs alphabetically.
+		Added sync feature to Copy Plugins window, to help delete plugins you deselected.
+		Added ItemPrefix plugin.
+		Added customizable timer to Respawn plugin.
+		Moved Demi-God mod to the GodMode plugin.
+		Renamed EnhancedPDA plugin to EnhancedCellPhone.
+		Added meteors to HomingBullets plugin exclusions.
+v1.2.0.11:	Added command '/usetime' to reset to original value.
+		Fixed hotkey-support for using just CTRL / ALT / SHIFT as a hotkey.
+v1.2.0.10:	Added BuffImmunity plugin.
+		Added Flashlight plugin.
+		Added PortableCraftingGuide plugin.
+		Added EnhancedPDA plugin.
+		Added Electrosphere Launcher to HomingBullets plugin exclusions.
+		Updated DropRates plugin with Rare-only drop rate toggle.
+		Added plugin support for IPluginPlaySound.
+v1.2.0.9:	Fixed Newtonsoft.Json.dll extraction issue with Terraria 1.3.0.7.
+v1.2.0.8:	Added DropRates plugin.
+v1.2.0.7:	Added Season plugin.
+		Added ShopSellsScalingPotions plugin.
+		Added InfiniteSundial plugin.
+		Added ChestSearch plugin.
+		Added LoadoutSwap plugin.
+		Added administrator privileges warning when patching.
+		Added new 'spawn at cursor' command for NPC plugin.
+		Added /range command to UseTime plugin.
+		Added /plugins command to loader.
+		Added new hotkey-command bindings. Check plugin notes.
+		Added new Shared folder for shared plugin source code.
+		Added plugin support for IPluginInitialize, IPluginDrawInventory, IPluginUpdateTime.
+		Fixed bug with plugin support for Newtonsoft.Json.dll.
+v1.2.0.6:	Added plugin support for IPluginNPCLoot.
+		Fixed NPC plugin to work when spawning negative IDs (special slimes).
+v1.2.0.5:	Added plugin support for IPluginPlayerQuickBuff.
+v1.2.0.4:	Changed blocks/walls/wires to use usetime 1 instead of 0.
+		Added plugin support for Newtonsoft.Json.dll.
+v1.2.0.3:	Added plugin support for IPluginChestSetupShop.
+v1.2.0.2:	Moved Full Bright to a plugin with toggleable key.
+		Added '/teleport plantera' and '/teleport strangeplant' commands to teleport plugin. Removed teleport plantera hotkey.
+		Changed Teleport plugin method.
+		Changed UseTime plugin to use 0 instead of 1 for picks/drills/axes/blocks/walls/wires.
+		Added Builder buff / UseTime plugin warning.
+		Reverted Reveal plugin changes.. Causing memory issues.
+		Added ability to load plugins from subfolders with group compilation (allows for larger plugins).
+		Added plugin support for IPluginPlayerGetItem.
+v1.2.0.1:	Added SkipSplash plugin.
+		Fixed UseTime (autoreuse) command bug.
+		Fixed Respawn plugin.
+		Fixed GodMode plugin to use statLifeMax2 instead of statLifeMax.
+		Fixed Reveal plugin to use UpdateLighting instead of Update method.
+		Changed Teleport plugin to use friendly teleport method.
+v1.2.0.0:	Updated for Terraria 1.3.0.5.
+		Added IPluginChatCommand.
+		Added command functionality to ItemSpawner, NPC, Time, and UseTime plugins.
+		Various bug fixes.
+v1.1.0.12:	Changed UseTime to use [UseTime] category in Plugins.ini.
+		Added Actuators to UseTime plugin.
+		Added many warnings to patcher.
+		Added dialog to copy plugins over to Terraria folder after done patching.
+v1.1.0.11:	Added GodMode plugin.
+		Added InfiniteFlight.
+		Moved Coin Gun to a plugin.
+		Moved Max Tile Speed, Max Wall Speed, Max Pick Speed, Max Reach Range and Max Item Pickup Range to UseTime plugin.
+		Updated UseTime plugin to work for Wrench, Green Wrench, Blue Wrench, and Wire Cutter.
+		Fixed HomingBullets plugin for when you have Pygmy or Twin minions.
+		Fixed NPC plugin, specifically spawn rate modification.
+		Fixed BuffRates plugin, specifically rage.
+		Various performance improvements.
+v1.1.0.10:	Fixed another plugin hotkey bug.
+v1.1.0.9:	Added thread link & update warning on main UI of patcher.
+		Fixed plugin hotkey bug.
+v1.1.0.8:	Fixed ItemSpawner to spawn items on yourself instead of player 1.
+		Fixed MoreAccessorySlots plugin.
+		Fixed Weather plugin.
+		Moved spawn rate/limit to NPC plugin and allows dynamic adjustment of the values.
+		Added endurance buff and ice barrier (from Frozen Turtle Shell) to BuffRates plugin.
+		Added Minions plugin.
+		Added Respawn plugin.
+v1.1.0.7:	Converted Item Replication to a plugin.
+		Updated IPluginPlayerUpdate signature.
+		Added IPluginUpdate.
+v1.1.0.6:	Added MoreAccessorySlots plugin.
+		Added ItemSpawner plugin.
+		Updated plugin hotkeys to only work when chat/chest edit/sign edit windows are closed.
+		Updated Events plugin Moon Lord to use separate hotkey instead of CTRL modifier so that ItemSpawner doesn't conflict.
+		Fixed bugs in HomingBullets plugin.
+		Fixed typo in BuffRates plugin.
+		Fixed permanent buffs mod to only give the user the buffs instead of all players.
+v1.1.0.5:	Added BuffRates plugin (archery, magic, wrath, rage).
+		Converted 'Infinite Healing' into a plugin called InfiniteLifeSteal.
+		Added teleport to cursor functionality to Teleport plugin.
+v1.1.0.4:	Added Weather plugin.
+		Added Events plugin.
+		Added HomingBullets plugin.
+		Updated plugin-functionality with better hotkey support.
+v1.1.0.3:	Fixed bug with angler quest limit mod.
+v1.1.0.2:	Added NPC plugin.
+v1.1.0.1:	Fix for languages that use commas instead of periods in their decimal format.
+v1.1.0.0:	Added config save/load functionality (all UI changes are persistent now).
+		Added plugin functionality.
+		Added Reveal plugin.
+		Added Teleport plugin.
+		Added UseTime plugin.
+		Added Time plugin.
+v1.0.4.2:	Fixed 'Remove Mana Costs' for channeled items.
+v1.0.4.1:	Added 'Full Bright'.
+		Updated 'Inventory Item Replication' by Ryan.
+		Changed UI to be more horizontal and is now resizable.
+		Fixed mutual exclusivity of wings/cloud jump checkboxes.
+v1.0.4.0:	Updated to work with Terraria v1.3.0.2.
+		Removed tUnlocker since dev items are allowed now.
+		Added 'Max Tile Placement Speed'.
+		Added 'Max Wall Placement Speed'.
+		Added 'Max Pick Speed'.
+		Added 'Max Reach Range'.
+		Added 'Max Item Pickup Range'.
+		Added 'Max Crafting Range'.
+v1.0.3.6:	Changed 'Infinite Split Stacks' to 'Inventory Item Replication (R + Right-click)'.
+v1.0.3.5:	Added 'Infinite Cloud Jumps', 'Remove 2 hearts/second healing limit', 'Vampiric Knives Healing Rate', and 'Spectre Armor Healing Rate'.
+v1.0.3.4:	Added accessory preference for 'Always Roll Best Prefixes'.
+v1.0.3.3:	Added 'Always Roll Best Prefixes'.
+v1.0.3.2:	Added 'Infinite Ammo' by Ryan S.
+v1.0.3.1:	Added 'Infinite Split Stacks' by Ryan S.
+v1.0.3.0:	Added 'Remove Drowning', 'Demigod Mode', 'One Hit Kill'.
+		Set defaults to my personal preferences.
+v1.0.2.2: 	Disabled 'Thorns Buff' since it was causing issues.
+		Increased the 'Persistent Buffs' limit to 22 since that is the actual limit in Terraria now.
+		Added 'Remove Angler Quest Limit Per Day'.
+		Fixed some other small issues as well.
+v1.0.2.1: 	Updated to match the 1.2.4 buffs.
+v1.0.2.0: 	Updated to work with Terraria v1.2.4.
+		Added 'Display Time', 'Remove Potion Sickness Debuff', 'Remove Mana Costs', 'Permanent Red Wings', 'Coin Gun Modifications'.
+v1.0.1.3: 	Updated to work with Terraria v1.2.3.1 and its new buffs (Ammo Box, etc).
+		Removed InventoryManager since you can use the Gameiki Mod to add this functionality.
+v1.0.1.2: 	Updated InventoryManager to 2.0.4
+		Added 'Magic Power Buff' damage rate modification.
+		Added 'Thorns Buff' damage rate modification.
+v1.0.1.1: 	Small fix to detect newer InventoryManager.dll and copy it over for the user.
+v1.0.1.0: 	Updated 'Spawn rate for Demon Voodoo' to work with 1.2.1.2.
+		Updated InventoryManager to 2.0.2.
+		Added 'Remove Rod of Discord Buff'.
+v1.0.0.0: 	Initial release.

@@ -28,6 +28,10 @@ namespace PluginLoader
     {
         void OnDrawInventory();
     }
+    public interface IPluginPreUpdate : IPlugin
+    {
+        void OnPreUpdate();
+    }
     public interface IPluginUpdate : IPlugin
     {
         void OnUpdate();

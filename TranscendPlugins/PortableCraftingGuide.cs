@@ -1,7 +1,7 @@
 ﻿using System;
-using Microsoft.Xna.Framework.Input;
 using PluginLoader;
 using Terraria;
+using Keys = Microsoft.Xna.Framework.Input.Keys;
 
 namespace TranscendPlugins
 {
