@@ -278,12 +278,6 @@ namespace PluginLoader
 
         public static void OnPreUpdate()
         {
-            foreach (var plugin in loadedPlugins.OfType<IPluginPreUpdate>())
-                plugin.OnPreUpdate();
-        }
-
-        public static void OnUpdate()
-        {
             if (!ingame)
             {
                 ingame = true;
@@ -310,6 +304,12 @@ namespace PluginLoader
                 fresh = !anyPresses;
             }
 
+            foreach (var plugin in loadedPlugins.OfType<IPluginPreUpdate>())
+                plugin.OnPreUpdate();
+        }
+
+        public static void OnUpdate()
+        {
             foreach (var plugin in loadedPlugins.OfType<IPluginUpdate>())
                 plugin.OnUpdate();
         }
@@ -318,6 +318,26 @@ namespace PluginLoader
         {
             foreach (var plugin in loadedPlugins.OfType<IPluginUpdateTime>())
                 plugin.OnUpdateTime();
+        }
+
+        public static bool OnCheckXmas()
+        {
+            var ret = false;
+
+            foreach (var plugin in loadedPlugins.OfType<IPluginCheckSeason>())
+                ret = plugin.OnCheckXmas() || ret;
+
+            return ret;
+        }
+
+        public static bool OnCheckHalloween()
+        {
+            var ret = false;
+
+            foreach (var plugin in loadedPlugins.OfType<IPluginCheckSeason>())
+                ret = plugin.OnCheckHalloween() || ret;
+
+            return ret;
         }
 
         public static bool OnPlaySound(int type, int x, int y, int style)
@@ -547,6 +567,5 @@ namespace PluginLoader
         }
 
         #endregion
-
     }
 }

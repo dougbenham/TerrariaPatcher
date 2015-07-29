@@ -681,6 +681,8 @@ namespace TerrariaPatcher
             var onPreUpdate = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPreUpdate"));
             var onUpdate = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnUpdate"));
             var onUpdateTime = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnUpdateTime"));
+            var onCheckXmas = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnCheckXmas"));
+            var onCheckHalloween = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnCheckHalloween"));
             var onPlaySound = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlaySound"));
             var onPlayerPreSpawn = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerPreSpawn"));
             var onPlayerSpawn = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerSpawn"));
@@ -719,6 +721,8 @@ namespace TerrariaPatcher
             var drawInventory = IL.GetMethodDefinition(main, "DrawInventory");
             var update = IL.GetMethodDefinition(main, "Update");
             var updateTime = IL.GetMethodDefinition(main, "UpdateTime");
+            var checkXmas = IL.GetMethodDefinition(main, "checkXMas");
+            var checkHalloween = IL.GetMethodDefinition(main, "checkHalloween");
             var playSound = IL.GetMethodDefinition(main, "PlaySound", 4);
             var spawn = IL.GetMethodDefinition(player, "Spawn");
             var loadPlayer = IL.GetMethodDefinition(player, "LoadPlayer");
@@ -802,6 +806,26 @@ namespace TerrariaPatcher
                 IL.MethodAppend(updateTime, updateTime.Body.Instructions.Count - 1, 1, new[]
                 {
                     Instruction.Create(OpCodes.Call, onUpdateTime),
+                    Instruction.Create(OpCodes.Ret)
+                });
+            }
+
+            {
+                // Main.checkXMas pre hook
+                var firstInstr = checkXmas.Body.Instructions.FirstOrDefault();
+                IL.MethodPrepend(checkXmas, new[]
+                {
+                    Instruction.Create(OpCodes.Call, onCheckXmas),
+                    Instruction.Create(OpCodes.Brfalse_S, firstInstr),
+                    Instruction.Create(OpCodes.Ret)
+                });
+
+                // Main.checkHalloween pre hook
+                firstInstr = checkHalloween.Body.Instructions.FirstOrDefault();
+                IL.MethodPrepend(checkHalloween, new[]
+                {
+                    Instruction.Create(OpCodes.Call, onCheckHalloween),
+                    Instruction.Create(OpCodes.Brfalse_S, firstInstr),
                     Instruction.Create(OpCodes.Ret)
                 });
             }

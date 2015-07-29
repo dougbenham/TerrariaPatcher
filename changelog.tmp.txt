@@ -1,4 +1,6 @@
 v1.2.0.16:	Added autoupdate.
+		Fixed using hotkeys while game is paused (PortableCraftingGuide, ChestSearch, etc).
+		Fixed Season plugin, works on load now.
 		Added minisharkron to HomingBullets plugin exclusions.
 v1.2.0.15:	Added SavePosition plugin.
 		Added ItemConfig plugin.

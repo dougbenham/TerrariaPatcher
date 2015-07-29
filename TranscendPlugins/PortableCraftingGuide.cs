@@ -5,7 +5,7 @@ using Keys = Microsoft.Xna.Framework.Input.Keys;
 
 namespace TranscendPlugins
 {
-    public class PortableCraftingGuide : MarshalByRefObject, IPluginUpdate, IPluginPlaySound, IPluginInitialize
+    public class PortableCraftingGuide : MarshalByRefObject, IPluginPreUpdate, IPluginUpdate, IPluginPlaySound, IPluginInitialize
     {
         private bool pcg;
         private Keys pcgKey;
@@ -18,6 +18,11 @@ namespace TranscendPlugins
             Loader.RegisterHotkey(() =>
             {
                 pcg = !pcg;
+                if (!pcg)
+                {
+                    Main.craftGuide = false;
+                    Main.player[Main.myPlayer].talkNPC = -1;
+                }
             }, pcgKey);
 
             Keys invKey;
@@ -28,7 +33,17 @@ namespace TranscendPlugins
             }, invKey);
         }
 
+        public void OnPreUpdate()
+        {
+            Set();
+        }
+
         public void OnUpdate()
+        {
+            Set();
+        }
+
+        private void Set()
         {
             if (pcg)
             {

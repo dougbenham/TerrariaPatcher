@@ -5,7 +5,7 @@ using Terraria;
 
 namespace GTRPlugins
 {
-    public class InventoryEnhancementPlugin : MarshalByRefObject, IPluginInitialize, IPluginDrawInventory, IPluginUpdate, IPluginPlayerQuickBuff, IPluginPlayerGetItem
+    public class InventoryEnhancementPlugin : MarshalByRefObject, IPluginInitialize, IPluginDrawInventory, IPluginPreUpdate, IPluginPlayerQuickBuff, IPluginPlayerGetItem
     {
         public void OnInitialize()
         {
@@ -18,7 +18,7 @@ namespace GTRPlugins
             Inventory_Enhancements_UI.DrawInventory(null, null);
         }
 
-        public void OnUpdate()
+        public void OnPreUpdate()
         {
             Inventory_Enhancements.Update(null, null);
             Inventory_Enhancements_UI.Update(null, null);

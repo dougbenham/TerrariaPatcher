@@ -4,7 +4,7 @@ using Terraria;
 
 namespace TranscendPlugins
 {
-    public class Season : MarshalByRefObject, IPluginUpdateTime, IPluginChatCommand
+    public class Season : MarshalByRefObject, IPluginCheckSeason, IPluginChatCommand
     {
         private bool xmas, halloween;
 
@@ -16,10 +16,16 @@ namespace TranscendPlugins
                 halloween = false;
         }
 
-        public void OnUpdateTime()
+        public bool OnCheckXmas()
         {
             Main.xMas = xmas;
+            return true;
+        }
+
+        public bool OnCheckHalloween()
+        {
             Main.halloween = halloween;
+            return true;
         }
 
         public bool OnChatCommand(string command, string[] args)

@@ -22,12 +22,10 @@ namespace GTRPlugins
         {
             if (Main.npcShop == 0)
             {
-                if (Main.player[Main.myPlayer].chest != -1)
-                {
+                if (Main.player[Main.myPlayer].chest == -1)
+                    btnChestSort.Position = new Vector2(405f, 258f);
+                else
                     btnChestSort.Position = new Vector2(413f, 428f);
-                    return;
-                }
-                btnChestSort.Position = new Vector2(405f, 258f);
             }
         }
         public static void DrawInventory(object sender, EventArgs e)

@@ -1,4 +1,7 @@
 v1.2.0.16:	Added autoupdate.
+		Fixed using hotkeys while game is paused (PortableCraftingGuide, ChestSearch, etc).
+		Fixed Season plugin, works on load now.
+		Added minisharkron to HomingBullets plugin exclusions.
 v1.2.0.15:	Added SavePosition plugin.
 		Added ItemConfig plugin.
 		Updated /usetime and /autoreuse commands to persist changes if you have ItemConfig plugin installed.
@@ -8,7 +11,7 @@ v1.2.0.14:	Added '/prefix keep' command to ItemPrefix plugin.
 		Fixed PortableCraftingGuide plugin to properly read inventory key.
 		Fixed EnhancedCellPhone plugin with better right-click interception.
 v1.2.0.13:	Added Bind plugin.
-		Added 2nd proc of Luminite Arrows to HomingPlugins plugin exclusions.
+		Added 2nd proc of Luminite Arrows to HomingBullets plugin exclusions.
 		Fixed PortableCraftingGuide to use inventory key set in Terraria config.
 		Fixed /usetime command to preserve item prefix when reseting usetime.
 v1.2.0.12:	Added filter for persistent buffs on UI.

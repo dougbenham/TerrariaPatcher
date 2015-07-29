@@ -12,7 +12,7 @@ namespace GTRPlugins
     {
         public static Config config;
         public static bool _notInGame;
-        public static string version = "1.1.4.3";
+        public static string version = "1.1.4.5";
 
         public static void Init(object sender, EventArgs e)
         {

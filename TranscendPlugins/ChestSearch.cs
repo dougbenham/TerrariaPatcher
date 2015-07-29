@@ -10,7 +10,7 @@ using Terraria.UI.Chat;
 
 namespace GTRPlugins
 {
-    public class ChestSearch : IPluginUpdate, IPluginDrawInventory
+    public class ChestSearch : IPluginPreUpdate, IPluginDrawInventory
     {
         private class ChestItem : IComparable<ChestItem>
         {
@@ -108,7 +108,7 @@ namespace GTRPlugins
             SearchTextFocus = true;
         }
 
-        public void OnUpdate()
+        public void OnPreUpdate()
         {
             // Hide chest search when conflicting interfaces are displayed
             if ((Main.chatMode || Main.editSign || Main.editChest || Main.recBigList || Main.player[Main.myPlayer].chest != -1 || !Main.playerInventory) && ShowChestSearch)

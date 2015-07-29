@@ -40,6 +40,11 @@ namespace PluginLoader
     {
         void OnUpdateTime();
     }
+    public interface IPluginCheckSeason : IPlugin
+    {
+        bool OnCheckXmas();
+        bool OnCheckHalloween();
+    }
     public interface IPluginPlaySound : IPlugin
     {
         bool OnPlaySound(int type, int x, int y, int style);
