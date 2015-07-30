@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using System.Windows.Forms;
+using PluginLoader;
 
 namespace TerrariaPatcher
 {
@@ -13,6 +14,12 @@ namespace TerrariaPatcher
         static void Main()
         {
             AssemblyName = Assembly.GetExecutingAssembly().GetName().Name;
+
+            if (!Utils.IsAdministrator())
+            {
+                ShowErrorMessage("Please run with administrator privileges.");
+                return;
+            }
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);

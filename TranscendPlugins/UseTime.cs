@@ -128,6 +128,8 @@ namespace TranscendPlugins
                     }
                     else
                     {
+                        IniAPI.WriteIni("item" + item.type, "useTime", null, confPath);
+
                         // Clone item (preserve stack/favorited/prefix/auto-reuse)
                         var stack = item.stack;
                         bool favorited = item.favorited;
@@ -140,8 +142,6 @@ namespace TranscendPlugins
                         item.autoReuse = autoreuse;
                         item.stack = stack;
                         item.favorited = favorited;
-
-                        IniAPI.WriteIni("item" + item.type, "useTime", null, confPath);
                     }
 
                     Main.NewText("UseTime = " + item.useTime);

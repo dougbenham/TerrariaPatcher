@@ -34,6 +34,34 @@ namespace PluginLoader
             if (!loaded)
             {
                 loaded = true;
+                
+                var pluginsFolder = @".\Plugins\";
+                var sharedFolder = Path.Combine(pluginsFolder, "Shared");
+
+                if (!Utils.IsAdministrator())
+                {
+                    MessageBox.Show("Please restart Terraria with administrator privileges. If you are running via Steam, please start Steam with administrator privileges.", "Terraria",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    Environment.Exit(0);
+                }
+                if (Utils.IsFileLocked(new FileInfo("Shared.dll")))
+                {
+                    MessageBox.Show("You can only have a single instance of Terraria running at once. Please use Task Manager to close any extra Terraria processes and try again.", "Terraria",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    Environment.Exit(0);
+                }
+                if (!Directory.Exists(pluginsFolder))
+                {
+                    MessageBox.Show(@"Your Terraria\Plugins folder is missing.", "Terraria",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    Environment.Exit(0);
+                }
+                if (!Directory.Exists(sharedFolder))
+                {
+                    MessageBox.Show(@"Your Terraria\Plugins\Shared folder is missing.", "Terraria",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    Environment.Exit(0);
+                }
 
                 var references = AppDomain.CurrentDomain
                     .GetAssemblies()
@@ -65,13 +93,15 @@ namespace PluginLoader
                     references.Add(newtonsoftFileName);
                 }
 
-                references.Add(Generate("Shared.dll", references.ToArray(), Directory.EnumerateFiles(@".\Plugins\Shared\", "*.cs", SearchOption.AllDirectories).ToArray()));
-                var referencesArray = references.ToArray();
+                var sharedSource = Directory.EnumerateFiles(sharedFolder, "*.cs", SearchOption.AllDirectories).ToArray();
+                if (sharedSource.Length > 0)
+                    references.Add(Generate("Shared.dll", references.ToArray(), sharedSource));
 
-                foreach (var filename in Directory.EnumerateFiles(@".\Plugins\", "*.cs"))
+                var referencesArray = references.ToArray();
+                foreach (var filename in Directory.EnumerateFiles(pluginsFolder, "*.cs"))
                     Load(Path.GetFileNameWithoutExtension(filename), referencesArray, filename);
 
-                foreach (var folder in Directory.EnumerateDirectories(@".\Plugins\"))
+                foreach (var folder in Directory.EnumerateDirectories(pluginsFolder))
                 {
                     var name = Path.GetFileName(folder);
                     if (name == "Shared") continue;

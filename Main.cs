@@ -301,7 +301,7 @@ namespace TerrariaPatcher
                     return;
             }
 
-            if (!IsAdministrator() && plugins.Checked && !steamFixEnabled.Checked)
+            if (!Utils.IsAdministrator() && plugins.Checked && !steamFixEnabled.Checked)
             {
                 MessageBox.Show("Warning, your account does not have administrator privileges. After patching, you might need to run Steam with administrator privileges before running Terraria.", Program.AssemblyName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
@@ -339,7 +339,7 @@ namespace TerrariaPatcher
                         File.Move(saveFileDialog.FileName + ".bak", saveFileDialog.FileName);
                     }
                 }
-
+                
                 if (File.Exists(saveFileDialog.FileName))
                 {
                     if (MessageBox.Show("Would you like to backup the existing file?", Program.AssemblyName, MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
@@ -374,24 +374,32 @@ namespace TerrariaPatcher
                 try
                 {
                     Terraria.Patch(original, saveFileDialog.FileName, details);
+
+                    if (details.Plugins)
+                    {
+                        var targetFolder = Path.GetDirectoryName(saveFileDialog.FileName);
+                        var target = targetFolder + @"\PluginLoader.dll";
+
+                        var pluginLoaderInfo = new FileInfo(target);
+                        while (Utils.IsFileLocked(pluginLoaderInfo))
+                        {
+                            var result = MessageBox.Show(target + " is in use. Please close Terraria then hit OK.", Program.AssemblyName, MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
+                            if (result == DialogResult.Cancel) return;
+                        }
+
+                        File.Copy("PluginLoader.dll", target, true);
+
+                        if (!Directory.Exists(@".\Plugins"))
+                            MessageBox.Show("Plugins folder is missing from TerrariaPatcher folder. Please re-download.", Program.AssemblyName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        else if (!Directory.Exists(@".\Plugins\Shared"))
+                            MessageBox.Show(@"Plugins\Shared folder is missing from TerrariaPatcher folder. Please re-download.", Program.AssemblyName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        else
+                            new CopyPlugins(targetFolder).ShowDialog();
+                    }
                 }
                 catch (Exception ex)
                 {
                     Program.ShowErrorMessage("An error occurred, you possibly have already patched this exe or it is an incompatible version.\n\n" + ex.ToString());
-                }
-                
-                if (details.Plugins)
-                {
-                    var targetFolder = Path.GetDirectoryName(saveFileDialog.FileName);
-                    var target = targetFolder + @"\PluginLoader.dll";
-                    File.Copy("PluginLoader.dll", target, true);
-
-                    if (!Directory.Exists(@".\Plugins"))
-                        MessageBox.Show("Plugins folder is missing from TerrariaPatcher folder. Please re-download.", Program.AssemblyName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    else if (!Directory.Exists(@".\Plugins\Shared"))
-                        MessageBox.Show(@"Plugins\Shared folder is missing from TerrariaPatcher folder. Please re-download.", Program.AssemblyName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    else
-                        new CopyPlugins(targetFolder).ShowDialog();
                 }
 
                 MessageBox.Show("Done.", Program.AssemblyName);
@@ -489,18 +497,6 @@ namespace TerrariaPatcher
             }
 
             buffs_Update(null, null);
-        }
-
-        private static bool IsAdministrator()
-        {
-            try
-            {
-                return new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator);
-            }
-            catch
-            {
-                return false;
-            }
         }
     }
     class Buff : IComparable<Buff>

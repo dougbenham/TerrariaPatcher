@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using PluginLoader;
 using Terraria;
 
-/// Updated July 24, 2015
-/// Updates: https://gist.github.com/YellowAfterlife/1edaa4060191823ee366
+/// Original taken from: https://gist.github.com/YellowAfterlife/1edaa4060191823ee366
 namespace YellowAfterlifePlugins
 {
     /// Item modification rules are defined as following:
@@ -16,27 +14,23 @@ namespace YellowAfterlifePlugins
     /// "float" is any number
     ///	"int" is "rounded" number (1,2,3,...)
     ///	"bool" is toggle ("true"/"false")
-    public class ItemConfigRule
-    {
-        public string name;
-        public bool? autoReuse; // aka "auto-swing" for weapons
-        public int? damage;
-        public float? knockback;
-        public int? crit;
-        public int? defense;
-        public int? useTime; // item "use time"/cooldown, in frames
-        public int? useAnimation;
-        public int? holdStyle;
-        public int? useStyle;
-        public int? maxStack;
-        public float? scale; // size (1.0 is normal)
-        public string toolTip;
-        public string toolTip2;
-    }
+    /// 
+    /// string name;
+    /// bool? autoReuse; // aka "auto-swing" for weapons
+    /// int? damage;
+    /// float? knockback;
+    /// int? crit;
+    /// int? defense;
+    /// int? useTime; // item "use time"/cooldown, in frames
+    /// int? useAnimation;
+    /// int? holdStyle;
+    /// int? useStyle;
+    /// int? maxStack;
+    /// float? scale; // size (1.0 is normal)
+    /// string toolTip;
+    /// string toolTip2;
     public class ItemConfig : IPluginItemSetDefaults
     {
-        Dictionary<int, ItemConfigRule> rules;
-
         #region Read INI
 
         private string confPath = Environment.CurrentDirectory + "\\ItemConfig.ini";
@@ -82,55 +76,41 @@ namespace YellowAfterlifePlugins
 
         public ItemConfig()
         {
-            rules = new Dictionary<int, ItemConfigRule>();
             IniAPI.WriteIni("header", "hint", "Add rules below; See ItemConfig.cs for instructions.", confPath);
-            foreach (string section in IniAPI.GetIniSections(confPath))
-            {
-                if (section.ToLower().StartsWith("item"))
-                {
-                    int id = int.Parse(section.Substring(4));
-                    var r = new ItemConfigRule
-                    {
-                        name = LoadString(section, "name"),
-                        autoReuse = LoadBool(section, "autoReuse"),
-                        damage = LoadInt(section, "damage"),
-                        knockback = LoadFloat(section, "knockback"),
-                        crit = LoadInt(section, "crit"),
-                        defense = LoadInt(section, "defense"),
-                        useTime = LoadInt(section, "useTime"),
-                        useAnimation = LoadInt(section, "useAnimation"),
-                        holdStyle = LoadInt(section, "holdStyle"),
-                        useStyle = LoadInt(section, "useStyle"),
-                        maxStack = LoadInt(section, "maxStack"),
-                        scale = LoadFloat(section, "scale"),
-                        toolTip = LoadString(section, "toolTip"),
-                        toolTip2 = LoadString(section, "toolTip2")
-                    };
-                    rules[id] = r;
-                }
-            }
         }
 
         public void OnItemSetDefaults(Item item)
         {
-            ItemConfigRule r;
-            if (rules.TryGetValue(item.type, out r))
-            {
-                if (r.name != null) item.name = r.name;
-                if (r.autoReuse != null) item.autoReuse = (bool)r.autoReuse;
-                if (r.damage != null) item.damage = (int)r.damage;
-                if (r.knockback != null) item.knockBack = (float)r.knockback;
-                if (r.crit != null) item.crit = (int)r.crit;
-                if (r.defense != null) item.defense = (int)r.defense;
-                if (r.useTime != null) item.useTime = (int)r.useTime;
-                if (r.useAnimation != null) item.useAnimation = (int)r.useAnimation;
-                if (r.holdStyle != null) item.holdStyle = (int)r.holdStyle;
-                if (r.useStyle != null) item.useStyle = (int)r.useStyle;
-                if (r.maxStack != null) item.maxStack = (int)r.maxStack;
-                if (r.scale != null) item.scale = (float)r.scale;
-                if (r.toolTip != null) item.toolTip = r.toolTip;
-                if (r.toolTip2 != null) item.toolTip2 = r.toolTip2;
-            }
+            var section = "item" + item.type;
+            var name = LoadString(section, "name");
+            var autoReuse = LoadBool(section, "autoReuse");
+            var damage = LoadInt(section, "damage");
+            var knockback = LoadFloat(section, "knockback");
+            var crit = LoadInt(section, "crit");
+            var defense = LoadInt(section, "defense");
+            var useTime = LoadInt(section, "useTime");
+            var useAnimation = LoadInt(section, "useAnimation");
+            var holdStyle = LoadInt(section, "holdStyle");
+            var useStyle = LoadInt(section, "useStyle");
+            var maxStack = LoadInt(section, "maxStack");
+            var scale = LoadFloat(section, "scale");
+            var toolTip = LoadString(section, "toolTip");
+            var toolTip2 = LoadString(section, "toolTip2");
+
+            if (name != null) item.name = name;
+            if (autoReuse != null) item.autoReuse = (bool) autoReuse;
+            if (damage != null) item.damage = (int) damage;
+            if (knockback != null) item.knockBack = (float) knockback;
+            if (crit != null) item.crit = (int) crit;
+            if (defense != null) item.defense = (int) defense;
+            if (useTime != null) item.useTime = (int) useTime;
+            if (useAnimation != null) item.useAnimation = (int) useAnimation;
+            if (holdStyle != null) item.holdStyle = (int) holdStyle;
+            if (useStyle != null) item.useStyle = (int) useStyle;
+            if (maxStack != null) item.maxStack = (int) maxStack;
+            if (scale != null) item.scale = (float) scale;
+            if (toolTip != null) item.toolTip = toolTip;
+            if (toolTip2 != null) item.toolTip2 = toolTip2;
         }
     }
 }
