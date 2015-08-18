@@ -126,6 +126,7 @@ namespace PluginLoader
 
         private static void Load(string name, string[] references, params string[] sources)
         {
+            // http://ayende.com/blog/1376/solving-the-assembly-load-context-problem
             var compilerParams = new CompilerParameters();
             compilerParams.GenerateInMemory = true;
             compilerParams.GenerateExecutable = false;

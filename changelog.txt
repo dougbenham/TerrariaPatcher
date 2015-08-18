@@ -1,3 +1,7 @@
+v1.2.0.17:	Added many different warnings about running as admin, files being in use, and files missing.
+		Added Terraria.exe.config to help people who don't have .NET Framework 4.5 installed.
+		Fixed infamous tile/wall issue when using UseTime plugin with Builder potion or items like Architect Gizmo Pack.
+		Fixed ItemConfig & UseTime plugin to work better together.
 v1.2.0.16:	Added autoupdate.
 		Fixed using hotkeys while game is paused (PortableCraftingGuide, ChestSearch, etc).
 		Fixed Season plugin, works on load now.
