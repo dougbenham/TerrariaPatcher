@@ -55,7 +55,7 @@ namespace TerrariaPatcher
                         {
                             // Download the update
                             var zip = "update.tmp";
-                            new WebClient().DownloadFile(updateURL, zip);
+                            client.DownloadFile(updateURL, zip);
 
                             // Rename the currently executing TerrariaPatcher.exe / PluginLoader.dll / Mono.Cecil.dll so that we can update
                             var location = Path.Combine(Environment.CurrentDirectory, "TerrariaPatcher.exe");
