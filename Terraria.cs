@@ -945,7 +945,7 @@ namespace TerrariaPatcher
 
             {
                 // Player.UpdateEquips post hook
-                IL.MethodAppend(updatePlayerBuffs, updatePlayerEquips.Body.Instructions.Count - 1, 1, new[]
+                IL.MethodAppend(updatePlayerEquips, updatePlayerEquips.Body.Instructions.Count - 1, 1, new[]
                 {
                     Instruction.Create(OpCodes.Ldarg_0),
                     Instruction.Create(OpCodes.Call, onPlayerUpdateEquips),
@@ -955,7 +955,7 @@ namespace TerrariaPatcher
 
             {
                 // Player.UpdateArmorSets post hook
-                IL.MethodAppend(updatePlayerBuffs, updatePlayerArmorSets.Body.Instructions.Count - 1, 1, new[]
+                IL.MethodAppend(updatePlayerArmorSets, updatePlayerArmorSets.Body.Instructions.Count - 1, 1, new[]
                 {
                     Instruction.Create(OpCodes.Ldarg_0),
                     Instruction.Create(OpCodes.Call, onPlayerUpdateArmorSets),
