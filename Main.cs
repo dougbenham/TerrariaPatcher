@@ -6,6 +6,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
+using System.Net.Cache;
 using System.Reflection;
 using System.Security.Principal;
 using System.Threading;
@@ -44,7 +45,9 @@ namespace TerrariaPatcher
                     foreach (var tmp in Directory.GetFiles(Environment.CurrentDirectory, "*.tmp"))
                         File.Delete(tmp);
 
-                    var str = new WebClient().DownloadString(changelogURL);
+                    var client = new WebClient();
+                    client.CachePolicy = new RequestCachePolicy(RequestCacheLevel.NoCacheNoStore);
+                    var str = client.DownloadString(changelogURL);
                     var version = str.Substring(1, str.IndexOf(':') - 1);
                     if (version != asmName.Version.ToString())
                     {
