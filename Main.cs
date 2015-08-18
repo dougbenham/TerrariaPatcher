@@ -295,12 +295,6 @@ namespace TerrariaPatcher
                 return;
             }
 
-            if (buffs.Any(buff => buff.Active && buff.Name == "Builder"))
-            {
-                if (MessageBox.Show("You have the Builder buff turned on in the Persistent Buffs section. This has been reported to have negative effects when used in conjunction with the UseTime plugin. Please disable one or the other.", Program.AssemblyName, MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) != DialogResult.OK)
-                    return;
-            }
-
             if (!Utils.IsAdministrator() && plugins.Checked && !steamFixEnabled.Checked)
             {
                 MessageBox.Show("Warning, your account does not have administrator privileges. After patching, you might need to run Steam with administrator privileges before running Terraria.", Program.AssemblyName, MessageBoxButtons.OK, MessageBoxIcon.Warning);

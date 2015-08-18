@@ -691,6 +691,8 @@ namespace TerrariaPatcher
             var onPlayerPreUpdate = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerPreUpdate"));
             var onPlayerUpdate = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerUpdate"));
             var onPlayerUpdateBuffs = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerUpdateBuffs"));
+            var onPlayerUpdateEquips = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerUpdateEquips"));
+            var onPlayerUpdateArmorSets = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerUpdateArmorSets"));
             var onPlayerKillMe = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerKillMe"));
             var onPlayerHurt = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerHurt"));
             var onPlayerPickAmmo = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerPickAmmo"));
@@ -729,6 +731,8 @@ namespace TerrariaPatcher
             var savePlayer = IL.GetMethodDefinition(player, "SavePlayer");
             var updatePlayer = IL.GetMethodDefinition(player, "Update");
             var updatePlayerBuffs = IL.GetMethodDefinition(player, "UpdateBuffs");
+            var updatePlayerEquips = IL.GetMethodDefinition(player, "UpdateEquips");
+            var updatePlayerArmorSets = IL.GetMethodDefinition(player, "UpdateArmorSets");
             var killMe = IL.GetMethodDefinition(player, "KillMe");
             var hurt = IL.GetMethodDefinition(player, "Hurt");
             var pickAmmo = IL.GetMethodDefinition(player, "PickAmmo");
@@ -935,6 +939,26 @@ namespace TerrariaPatcher
                 {
                     Instruction.Create(OpCodes.Ldarg_0),
                     Instruction.Create(OpCodes.Call, onPlayerUpdateBuffs),
+                    Instruction.Create(OpCodes.Ret)
+                });
+            }
+
+            {
+                // Player.UpdateEquips post hook
+                IL.MethodAppend(updatePlayerBuffs, updatePlayerEquips.Body.Instructions.Count - 1, 1, new[]
+                {
+                    Instruction.Create(OpCodes.Ldarg_0),
+                    Instruction.Create(OpCodes.Call, onPlayerUpdateEquips),
+                    Instruction.Create(OpCodes.Ret)
+                });
+            }
+
+            {
+                // Player.UpdateArmorSets post hook
+                IL.MethodAppend(updatePlayerBuffs, updatePlayerArmorSets.Body.Instructions.Count - 1, 1, new[]
+                {
+                    Instruction.Create(OpCodes.Ldarg_0),
+                    Instruction.Create(OpCodes.Call, onPlayerUpdateArmorSets),
                     Instruction.Create(OpCodes.Ret)
                 });
             }

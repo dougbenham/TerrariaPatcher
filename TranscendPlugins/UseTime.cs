@@ -1,18 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Windows.Forms;
 using PluginLoader;
 using Terraria;
 using Terraria.ID;
 
 namespace TranscendPlugins
 {
-    public class UseTime : MarshalByRefObject, IPluginItemSetDefaults, IPluginPlayerUpdateBuffs, IPluginChatCommand
+    public class UseTime : MarshalByRefObject, IPluginItemSetDefaults, IPluginPlayerUpdateBuffs, IPluginPlayerUpdateArmorSets, IPluginChatCommand
     {
         private string confPath = Environment.CurrentDirectory + "\\ItemConfig.ini";
         private int initialTileRangeX, initialTileRangeY, initialDefaultItemGrabRange;
         private bool maxTileSpeed, maxWallSpeed, maxPickSpeed, maxReachRange, maxItemPickupRange;
-        private bool builderBuffWarning = false, resetUseTime = false;
+        private bool resetUseTime = false;
         
         public UseTime()
         {
@@ -53,18 +51,6 @@ namespace TranscendPlugins
         {
             if (player.whoAmI == Main.myPlayer)
             {
-                if (!builderBuffWarning)
-                {
-                    for (int k = 0; k < 22; k++)
-                    {
-                        if (player.buffType[k] == BuffID.Builder && player.buffTime[k] > 0)
-                        {
-                            builderBuffWarning = true;
-                            MessageBox.Show("Please disable the Builder buff, it causes issues with the UseTime plugin.");
-                        }
-                    }
-                }
-
                 if (maxReachRange)
                 {
                     Player.tileRangeX = 100;
@@ -77,6 +63,16 @@ namespace TranscendPlugins
                 }
 
                 Player.defaultItemGrabRange = maxItemPickupRange ? 700 : initialDefaultItemGrabRange;
+            }
+        }
+
+        public void OnPlayerUpdateArmorSets(Player player)
+        {
+            if (player.whoAmI == Main.myPlayer)
+            {
+                // Disables effects of Builder Buff and the following items: Architect Gizmo Pack, Brick Layer, Portable Cement Mixer
+                player.tileSpeed = 1;
+                player.wallSpeed = 1;
             }
         }
 

@@ -425,6 +425,18 @@ namespace PluginLoader
                 plugin.OnPlayerUpdateBuffs(player);
         }
 
+        public static void OnPlayerUpdateEquips(Player player)
+        {
+            foreach (var plugin in loadedPlugins.OfType<IPluginPlayerUpdateEquips>())
+                plugin.OnPlayerUpdateEquips(player);
+        }
+
+        public static void OnPlayerUpdateArmorSets(Player player)
+        {
+            foreach (var plugin in loadedPlugins.OfType<IPluginPlayerUpdateArmorSets>())
+                plugin.OnPlayerUpdateArmorSets(player);
+        }
+
         public static bool OnPlayerHurt(Player player, int damage, int hitDirection, bool pvp, bool quiet, string deathText, bool crit, out double result)
         {
             result = 0.0;

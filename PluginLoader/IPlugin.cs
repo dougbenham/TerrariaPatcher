@@ -82,6 +82,14 @@ namespace PluginLoader
     {
         void OnPlayerUpdateBuffs(Player player);
     }
+    public interface IPluginPlayerUpdateEquips : IPlugin
+    {
+        void OnPlayerUpdateEquips(Player player);
+    }
+    public interface IPluginPlayerUpdateArmorSets : IPlugin
+    {
+        void OnPlayerUpdateArmorSets(Player player);
+    }
     public interface IPluginPlayerHurt : IPlugin
     {
         bool OnPlayerHurt(Player player, int damage, int hitDirection, bool pvp, bool quiet, string deathText, bool crit, out double result);
