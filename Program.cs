@@ -15,9 +15,9 @@ namespace TerrariaPatcher
         {
             AssemblyName = Assembly.GetExecutingAssembly().GetName().Name;
 
-            if (!Utils.IsAdministrator())
+            if (!Utils.IsProcessElevated)
             {
-                ShowErrorMessage("Please run with administrator privileges.");
+                ShowErrorMessage("Please run with elevated administrator privileges.");
                 return;
             }
 
