@@ -127,6 +127,9 @@ namespace PluginLoader
         
         public static bool IsFileLocked(FileInfo file)
         {
+            if (file == null || 
+                !file.Exists) return false;
+
             FileStream stream = null;
 
             try
