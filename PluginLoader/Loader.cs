@@ -38,9 +38,9 @@ namespace PluginLoader
                 var pluginsFolder = @".\Plugins\";
                 var sharedFolder = Path.Combine(pluginsFolder, "Shared");
 
-                if (!Utils.IsAdministrator())
+                if (!Utils.IsProcessElevated)
                 {
-                    MessageBox.Show("Please restart Terraria with administrator privileges. If you are running via Steam, please start Steam with administrator privileges.", "Terraria",
+                    MessageBox.Show("Please restart Terraria with elevated administrator privileges. If you are running via Steam, please start Steam with elevated administrator privileges.", "Terraria",
                         MessageBoxButtons.OK, MessageBoxIcon.Error);
                     Environment.Exit(0);
                 }

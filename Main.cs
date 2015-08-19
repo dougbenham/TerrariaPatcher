@@ -295,9 +295,9 @@ namespace TerrariaPatcher
                 return;
             }
 
-            if (!Utils.IsAdministrator() && plugins.Checked && !steamFixEnabled.Checked)
+            if (!Utils.IsProcessElevated && plugins.Checked && !steamFixEnabled.Checked)
             {
-                MessageBox.Show("Warning, your account does not have administrator privileges. After patching, you might need to run Steam with administrator privileges before running Terraria.", Program.AssemblyName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Warning, your account does not have elevated administrator privileges. After patching, you might need to run Steam with elevated administrator privileges before running Terraria.", Program.AssemblyName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
 
             CheckInstallationFolder();
