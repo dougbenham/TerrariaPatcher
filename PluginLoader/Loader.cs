@@ -40,9 +40,8 @@ namespace PluginLoader
 
                 if (!Utils.IsProcessElevated)
                 {
-                    MessageBox.Show("Please restart Terraria with elevated administrator privileges. If you are running via Steam, please start Steam with elevated administrator privileges.", "Terraria",
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    Environment.Exit(0);
+                    MessageBox.Show("Elevated administrator privileges not detected, you may run into issues! If you are running via Steam, please start Steam with elevated administrator privileges.", "Terraria",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
                 if (Utils.IsFileLocked(new FileInfo("Shared.dll")))
                 {

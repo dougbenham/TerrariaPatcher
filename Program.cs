@@ -16,10 +16,7 @@ namespace TerrariaPatcher
             AssemblyName = Assembly.GetExecutingAssembly().GetName().Name;
 
             if (!Utils.IsProcessElevated)
-            {
-                ShowErrorMessage("Please run with elevated administrator privileges.");
-                return;
-            }
+                MessageBox.Show("Elevated administrator privileges not detected, you could run into issues!", AssemblyName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
