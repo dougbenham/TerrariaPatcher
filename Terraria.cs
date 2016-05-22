@@ -470,7 +470,7 @@ namespace TerrariaPatcher
 		            var i1 = quickHeal.Body.Instructions[i + 1].Operand as FieldReference;
 		            return i1 != null && i1.Name == "potion";
 		        },
-		        OpCodes.Ldloc_1,
+		        OpCodes.Ldloc_0,
 		        OpCodes.Ldfld,
 		        OpCodes.Brfalse_S);
 
@@ -780,7 +780,7 @@ namespace TerrariaPatcher
                     var f0 = instruction.Operand as FieldReference;
                     var result0 = f0 != null && f0.Name == "netMode";
                     var f33 = update.Body.Instructions[i + 33].Operand as FieldReference;
-                    var result33 = f33 != null && f33.Name == "chatMode";
+                    var result33 = f33 != null && f33.Name == "drawingPlayerChat";
                     return result0 && result33;
                 }, OpCodes.Ldsfld,
                     OpCodes.Ldc_I4_1);

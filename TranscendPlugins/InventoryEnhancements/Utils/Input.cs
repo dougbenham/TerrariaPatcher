@@ -10,7 +10,7 @@ namespace GTRPlugins.Utils
         {
             get
             {
-                return !Main.blockInput && !Main.editChest && !Main.editSign && !Main.chatMode;
+                return !Main.blockInput && !Main.editChest && !Main.editSign && !Main.drawingPlayerChat;
             }
         }
         public static Vector2 MousePosition

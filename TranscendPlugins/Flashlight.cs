@@ -26,7 +26,7 @@ namespace MrBlueSLPlugins
         {
             if (flashlight)
             {
-                Lighting.AddLight((int)(Main.mouseState.X + Main.screenPosition.X + (double)(Player.defaultWidth / 2)) / 16, (int)(Main.mouseState.Y + Main.screenPosition.Y + (double)(Player.defaultHeight / 2)) / 16, 1f, 1f, 1f);
+                Lighting.AddLight((int)(Main.mouseX + Main.screenPosition.X + (double)(Player.defaultWidth / 2)) / 16, (int)(Main.mouseY + Main.screenPosition.Y + (double)(Player.defaultHeight / 2)) / 16, 1f, 1f, 1f);
             }
         }
     }

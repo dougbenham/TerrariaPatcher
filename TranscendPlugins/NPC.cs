@@ -188,8 +188,8 @@ namespace TranscendPlugins
             int x, y;
             if (cnpc)
             {
-                x = (int)(Main.mouseState.X + Main.screenPosition.X);
-                y = (int)(Main.mouseState.Y + Main.screenPosition.Y);
+                x = (int)(Main.mouseX + Main.screenPosition.X);
+                y = (int)(Main.mouseY + Main.screenPosition.Y);
             }
             else
             {

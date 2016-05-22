@@ -314,7 +314,7 @@ namespace PluginLoader
                 Main.NewText("Loaded " + loadedPlugins.Count + " plugins", Color.Purple.R, Color.Purple.G, Color.Purple.B, false);
             }
 
-            if (!Main.blockInput && !Main.chatMode && !Main.editSign && !Main.editChest)
+            if (!Main.blockInput && !Main.drawingPlayerChat && !Main.editSign && !Main.editChest)
             {
                 keysdown = Main.keyState.GetPressedKeys();
                 control = keysdown.Contains(Keys.LeftControl) || keysdown.Contains(Keys.RightControl);

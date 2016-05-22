@@ -1,3 +1,4 @@
+v1.2.0.20:	Changed admin checks to warnings instead of halting.
 v1.2.0.19:	Attempt to fix administrator warning.
 v1.2.0.18:	Fixed bug with checking when files are locked.
 v1.2.0.17:	Added many different warnings about running as admin, files being in use, and files missing.

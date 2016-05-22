@@ -86,7 +86,7 @@ namespace GTRPlugins
 
         private static void Open()
         {
-            Main.chatMode = false;
+            Main.drawingPlayerChat = false;
             Main.editSign = false;
             Main.editChest = false;
             Main.recBigList = false;
@@ -111,7 +111,7 @@ namespace GTRPlugins
         public void OnPreUpdate()
         {
             // Hide chest search when conflicting interfaces are displayed
-            if ((Main.chatMode || Main.editSign || Main.editChest || Main.recBigList || Main.player[Main.myPlayer].chest != -1 || !Main.playerInventory) && ShowChestSearch)
+            if ((Main.drawingPlayerChat || Main.editSign || Main.editChest || Main.recBigList || Main.player[Main.myPlayer].chest != -1 || !Main.playerInventory) && ShowChestSearch)
             {
                 Close();
             }
