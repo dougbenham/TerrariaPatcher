@@ -1,3 +1,4 @@
+v1.2.0.22:	Updated for Terraria v1.3.3.
 v1.2.0.21:	Updated for Terraria v1.3.1.
 v1.2.0.20:	Changed admin checks to warnings instead of halting.
 v1.2.0.19:	Attempt to fix administrator warning.

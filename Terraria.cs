@@ -609,7 +609,7 @@ namespace TerrariaPatcher
         private static void AddBuffs(IEnumerable<int> buffs)
         {
             var main = IL.GetTypeDefinition(ModDefinition, "Main");
-            var update = IL.GetMethodDefinition(main, "Update");
+            var update = IL.GetMethodDefinition(main, "DoUpdate");
             var playerArr = IL.GetFieldDefinition(main, "player");
             var myPlayer = IL.GetFieldDefinition(main, "myPlayer");
 
@@ -721,7 +721,7 @@ namespace TerrariaPatcher
             var initialize = IL.GetMethodDefinition(main, "Initialize");
             var drawInterface = IL.GetMethodDefinition(main, "DrawInterface");
             var drawInventory = IL.GetMethodDefinition(main, "DrawInventory");
-            var update = IL.GetMethodDefinition(main, "Update");
+            var update = IL.GetMethodDefinition(main, "DoUpdate");
             var updateTime = IL.GetMethodDefinition(main, "UpdateTime");
             var checkXmas = IL.GetMethodDefinition(main, "checkXMas");
             var checkHalloween = IL.GetMethodDefinition(main, "checkHalloween");
