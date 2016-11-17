@@ -47,7 +47,7 @@ namespace TerrariaPatcher
 
                     var client = new WebClient();
                     client.CachePolicy = new RequestCachePolicy(RequestCacheLevel.NoCacheNoStore);
-                    var str = client.DownloadString(changelogURL);
+                    var str = client.DownloadString(changelogURL + "?random=" + new Random().Next());
                     var version = str.Substring(1, str.IndexOf(':') - 1);
                     if (version != asmName.Version.ToString())
                     {
