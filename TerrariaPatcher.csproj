@@ -132,35 +132,18 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties BuildVersion_ConfigurationName="Release" BuildVersion_UpdateFileVersion="False" BuildVersion_UpdateAssemblyVersion="False" BuildVersion_BuildVersioningStyle="None.None.None.Increment" />
+      <UserProperties BuildVersion_BuildVersioningStyle="None.None.None.Increment" BuildVersion_UpdateAssemblyVersion="False" BuildVersion_UpdateFileVersion="False" BuildVersion_ConfigurationName="Release" />
     </VisualStudio>
   </ProjectExtensions>
   <PropertyGroup>
     <PostBuildEvent>IF "$(ConfigurationName)" == "Debug" EXIT
-SET ASMINFO=$(SolutionDir)Properties\AssemblyInfo.cs
-FINDSTR /C:"[assembly: AssemblyVersion(" %25ASMINFO%25 | $(SolutionDir)sed.exe "s/\[assembly: AssemblyVersion(\"/SET CURRENT_VERSION=/g;s/\")\]//g;s/\.\*//g;s/\/\//REM/g" &gt;SetCurrVer.cmd
-CALL SetCurrVer.cmd
-DEL SetCurrVer.cmd
-if "$(ConfigurationName)" == "Release" SET zip=$(ProjectDir)bin\TerrariaPatcher.v%25CURRENT_VERSION%25.zip
-if "$(ConfigurationName)" == "Release" SET updatezip=$(ProjectDir)TerrariaPatcher.zip
-if "$(ConfigurationName)" == "Release (Public)" SET zip=$(ProjectDir)bin\TerrariaPatcher.v%25CURRENT_VERSION%25.public.zip
-if "$(ConfigurationName)" == "Release (Public)" SET updatezip=$(ProjectDir)TerrariaPatcher.public.zip
+if "$(ConfigurationName)" == "Release" SET zip=$(ProjectDir)TerrariaPatcher.zip
+if "$(ConfigurationName)" == "Release (Public)" SET zip=$(ProjectDir)TerrariaPatcher.public.zip
 IF EXIST "%25zip%25" DEL "%25zip%25"
 "C:\Program Files\WinRAR\WINRAR.exe" a -ep1 "%25zip%25" "$(TargetDir)TerrariaPatcher.exe" "$(TargetDir)PluginLoader.dll" "$(TargetDir)Mono.Cecil.dll" "$(TargetDir)TerrariaPatcher.exe.config" "$(ProjectDir)changelog.txt"
 "C:\Program Files\WinRAR\WINRAR.exe" a -ep1 -apPlugins "%25zip%25" "$(ProjectDir)\TranscendPlugins\*.cs"
 "C:\Program Files\WinRAR\WINRAR.exe" a -ep1 -r -apPlugins\Shared "%25zip%25" "$(ProjectDir)\TranscendPlugins\Shared\*.cs"
-COPY /Y "%25zip%25" "%25updatezip%25"
-
-SET zip=$(ProjectDir)bin\TerrariaPatcher.v%25CURRENT_VERSION%25.src.zip
-IF EXIST "%25zip%25" DEL "%25zip%25"
-
-cd "$(SolutionDir)"
-"C:\Program Files\WinRAR\WINRAR.exe" a -ep1 "%25zip%25" "$(SolutionDir)*.*" "$(SolutionDir)Properties"
-"C:\Program Files\WinRAR\WINRAR.exe" a "%25zip%25" "PluginLoader\*.*"
-"C:\Program Files\WinRAR\WINRAR.exe" a "%25zip%25" "PluginLoader\Properties"
-"C:\Program Files\WinRAR\WINRAR.exe" a "%25zip%25" "TranscendPlugins\*.*"
-"C:\Program Files\WinRAR\WINRAR.exe" a -r "%25zip%25" "TranscendPlugins\Shared\*.*"
-"C:\Program Files\WinRAR\WINRAR.exe" a "%25zip%25" "TranscendPlugins\Properties"</PostBuildEvent>
+"C:\Program Files\WinRAR\WINRAR.exe" a -ep1 -r -apPlugins\InventoryEnhancements "%25zip%25" "$(ProjectDir)\TranscendPlugins\InventoryEnhancements\*.cs"</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PreBuildEvent>
