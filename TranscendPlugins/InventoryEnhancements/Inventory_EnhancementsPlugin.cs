@@ -2,6 +2,7 @@
 using GTRPlugins.Utils;
 using PluginLoader;
 using Terraria;
+using Terraria.Audio;
 
 namespace GTRPlugins
 {
@@ -33,23 +34,24 @@ namespace GTRPlugins
 
             if (player.chest != -1)
             {
-                int num2 = 0;
+                Chest chest;
+                if (player.chest > -1)
+                {
+                    chest = Main.chest[player.chest];
+                }
+                else if (player.chest == -2)
+                {
+                    chest = player.bank;
+                }
+                else
+                {
+                    chest = player.bank2;
+                }
+                if (player.CountBuffs() == 22) return true;
+
+                SoundStylePair soundStylePair = null;
                 for (int i = 0; i < 40; i++)
                 {
-                    Chest chest;
-                    if (player.chest > -1)
-                    {
-                        chest = Main.chest[player.chest];
-                    }
-                    else if (player.chest == -2)
-                    {
-                        chest = player.bank;
-                    }
-                    else
-                    {
-                        chest = player.bank2;
-                    }
-                    if (player.CountBuffs() == 22) return true;
                     if (chest.item[i].stack > 0 && chest.item[i].type > 0 && chest.item[i].buffType > 0 && !chest.item[i].summon && chest.item[i].buffType != 90)
                     {
                         int num3 = chest.item[i].buffType;
@@ -120,7 +122,7 @@ namespace GTRPlugins
                         }
                         if (flag)
                         {
-                            num2 = chest.item[i].useSound;
+                            soundStylePair = chest.item[i].UseSound;
                             int num4 = chest.item[i].buffTime;
                             if (num4 == 0)
                             {
@@ -153,16 +155,16 @@ namespace GTRPlugins
                         NetMessage.SendData(33, -1, -1, "", Main.player[Main.myPlayer].chest, 0f, 0f, 0f, 0, 0, 0);
                     }
                 }
-                if (num2 > 0)
+                if (soundStylePair != null)
                 {
-                    Main.PlaySound(2, (int)player.position.X, (int)player.position.Y, num2);
+                    Main.PlaySound(soundStylePair, player.position);
                     Recipe.FindRecipes();
                 }
             }
 
             return false;
         }
-
+        
         public bool OnPlayerGetItem(Player player, Item newItem, out Item resultItem)
         {
             if (AutoTrash.Trash(player, newItem))

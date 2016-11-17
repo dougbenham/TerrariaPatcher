@@ -725,7 +725,7 @@ namespace TerrariaPatcher
             var updateTime = IL.GetMethodDefinition(main, "UpdateTime");
             var checkXmas = IL.GetMethodDefinition(main, "checkXMas");
             var checkHalloween = IL.GetMethodDefinition(main, "checkHalloween");
-            var playSound = IL.GetMethodDefinition(main, "PlaySound", 4);
+            var playSound = IL.GetMethodDefinition(main, "PlaySound", 6);
             var spawn = IL.GetMethodDefinition(player, "Spawn");
             var loadPlayer = IL.GetMethodDefinition(player, "LoadPlayer");
             var savePlayer = IL.GetMethodDefinition(player, "SavePlayer");
@@ -779,11 +779,12 @@ namespace TerrariaPatcher
                 {
                     var f0 = instruction.Operand as FieldReference;
                     var result0 = f0 != null && f0.Name == "netMode";
-                    var f33 = update.Body.Instructions[i + 33].Operand as FieldReference;
-                    var result33 = f33 != null && f33.Name == "drawingPlayerChat";
+                    var f33 = update.Body.Instructions[i + 3].Operand as FieldReference;
+                    var result33 = f33 != null && f33.Name == "keyState";
                     return result0 && result33;
                 }, OpCodes.Ldsfld,
-                    OpCodes.Ldc_I4_1);
+                    OpCodes.Ldc_I4_1,
+                    OpCodes.Bne_Un);
 
                 update.Body.Instructions[spot + 0].OpCode = OpCodes.Nop;
                 update.Body.Instructions[spot + 1].OpCode = OpCodes.Nop;
@@ -845,6 +846,7 @@ namespace TerrariaPatcher
                     Instruction.Create(OpCodes.Ldarg_3), // style
                     Instruction.Create(OpCodes.Call, onPlaySound),
                     Instruction.Create(OpCodes.Brfalse_S, firstInstr),
+                    Instruction.Create(OpCodes.Ldnull),
                     Instruction.Create(OpCodes.Ret)
                 });
             }
