@@ -38,9 +38,11 @@ namespace TranscendPlugins
         {
             foreach (var type in buffs)
             {
-                var index = player.HasBuff(type);
-                if (index >= 0)
-                    player.DelBuff(index);
+                for (int j = 0; j < 22; j++)
+                {
+                    if (player.buffType[j] == type)
+                        player.DelBuff(j);
+                }
                 player.buffImmune[type] = true;
             }
         }

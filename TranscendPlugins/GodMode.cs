@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using PluginLoader;
 using Terraria;
+using Terraria.DataStructures;
 
 namespace ZeromaruPlugins
 {
@@ -59,13 +60,13 @@ namespace ZeromaruPlugins
             }
         }
 
-        public bool OnPlayerHurt(Player player, int damage, int hitDirection, bool pvp, bool quiet, string deathText, bool crit, out double result)
+        public bool OnPlayerHurt(Player player, PlayerDeathReason damageSource, int damage, int hitDirection, bool pvp, bool quiet, bool crit, int cooldownCounter, out double result)
         {
             result = 0.0;
             return mode == Mode.God;
         }
 
-        public bool OnPlayerKillMe(Player player, double dmg, int hitDirection, bool pvp, string deathText)
+        public bool OnPlayerKillMe(Player player, PlayerDeathReason damageSource, double dmg, int hitDirection, bool pvp)
         {
             return mode == Mode.God || mode == Mode.DemiGod;
         }

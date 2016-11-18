@@ -974,7 +974,7 @@ namespace TerrariaPatcher
                     Instruction.Create(OpCodes.Ldarg_1),
                     Instruction.Create(OpCodes.Ldarg_2),
                     Instruction.Create(OpCodes.Ldarg_3),
-                    Instruction.Create(OpCodes.Ldarg_S, killMe.Parameters.FirstOrDefault(def => def.Name == "deathText")),
+                    Instruction.Create(OpCodes.Ldarg_S, killMe.Parameters.FirstOrDefault(def => def.Name == "pvp")),
                     Instruction.Create(OpCodes.Call, onPlayerKillMe),
                     Instruction.Create(OpCodes.Brfalse_S, firstInstr),
                     Instruction.Create(OpCodes.Ret)
@@ -989,12 +989,13 @@ namespace TerrariaPatcher
                 IL.MethodPrepend(hurt, new[]
                 {
                     Instruction.Create(OpCodes.Ldarg_0), // this
-                    Instruction.Create(OpCodes.Ldarg_1), // Damage
-                    Instruction.Create(OpCodes.Ldarg_2), // hitDirection
-                    Instruction.Create(OpCodes.Ldarg_3), // pvp
+                    Instruction.Create(OpCodes.Ldarg_1), // damageSource
+                    Instruction.Create(OpCodes.Ldarg_2), // Damage
+                    Instruction.Create(OpCodes.Ldarg_3), // hitDirection
+                    Instruction.Create(OpCodes.Ldarg_S, hurt.Parameters.FirstOrDefault(def => def.Name == "pvp")),
                     Instruction.Create(OpCodes.Ldarg_S, hurt.Parameters.FirstOrDefault(def => def.Name == "quiet")),
-                    Instruction.Create(OpCodes.Ldarg_S, hurt.Parameters.FirstOrDefault(def => def.Name == "deathText")),
                     Instruction.Create(OpCodes.Ldarg_S, hurt.Parameters.FirstOrDefault(def => def.Name == "Crit")),
+                    Instruction.Create(OpCodes.Ldarg_S, hurt.Parameters.FirstOrDefault(def => def.Name == "cooldownCounter")),
                     Instruction.Create(OpCodes.Ldloca_S, varDbl),
                     Instruction.Create(OpCodes.Call, onPlayerHurt),
                     Instruction.Create(OpCodes.Brfalse_S, firstInstr),

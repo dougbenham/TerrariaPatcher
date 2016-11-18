@@ -49,7 +49,7 @@ namespace GTRPlugins
                 }
                 if (player.CountBuffs() == 22) return true;
 
-                SoundStylePair soundStylePair = null;
+                LegacySoundStyle legacySoundStyle = null;
                 for (int i = 0; i < 40; i++)
                 {
                     if (chest.item[i].stack > 0 && chest.item[i].type > 0 && chest.item[i].buffType > 0 && !chest.item[i].summon && chest.item[i].buffType != 90)
@@ -122,7 +122,7 @@ namespace GTRPlugins
                         }
                         if (flag)
                         {
-                            soundStylePair = chest.item[i].UseSound;
+                            legacySoundStyle = chest.item[i].UseSound;
                             int num4 = chest.item[i].buffTime;
                             if (num4 == 0)
                             {
@@ -155,9 +155,9 @@ namespace GTRPlugins
                         NetMessage.SendData(33, -1, -1, "", Main.player[Main.myPlayer].chest, 0f, 0f, 0f, 0, 0, 0);
                     }
                 }
-                if (soundStylePair != null)
+                if (legacySoundStyle != null)
                 {
-                    Main.PlaySound(soundStylePair, player.position);
+                    Main.PlaySound(legacySoundStyle, player.position);
                     Recipe.FindRecipes();
                 }
             }

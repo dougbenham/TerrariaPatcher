@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using Microsoft.Xna.Framework;
 using Terraria;
+using Terraria.DataStructures;
 using Terraria.IO;
 
 namespace PluginLoader
@@ -92,11 +93,11 @@ namespace PluginLoader
     }
     public interface IPluginPlayerHurt : IPlugin
     {
-        bool OnPlayerHurt(Player player, int damage, int hitDirection, bool pvp, bool quiet, string deathText, bool crit, out double result);
+        bool OnPlayerHurt(Player player, PlayerDeathReason damageSource, int damage, int hitDirection, bool pvp, bool quiet, bool crit, int cooldownCounter, out double result);
     }
     public interface IPluginPlayerKillMe : IPlugin
     {
-        bool OnPlayerKillMe(Player player, double dmg, int hitDirection, bool pvp, string deathText);
+        bool OnPlayerKillMe(Player player, PlayerDeathReason damageSource, double dmg, int hitDirection, bool pvp);
     }
     public interface IPluginPlayerPickAmmo : IPlugin
     {

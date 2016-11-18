@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using Microsoft.CSharp;
 using Microsoft.Xna.Framework;
 using Terraria;
+using Terraria.DataStructures;
 using Terraria.IO;
 using Keys = Microsoft.Xna.Framework.Input.Keys;
 
@@ -437,14 +438,14 @@ namespace PluginLoader
                 plugin.OnPlayerUpdateArmorSets(player);
         }
 
-        public static bool OnPlayerHurt(Player player, int damage, int hitDirection, bool pvp, bool quiet, string deathText, bool crit, out double result)
+        public static bool OnPlayerHurt(Player player, PlayerDeathReason damageSource, int damage, int hitDirection, bool pvp, bool quiet, bool crit, int cooldownCounter, out double result)
         {
             result = 0.0;
             var ret = false;
             foreach (var plugin in loadedPlugins.OfType<IPluginPlayerHurt>())
             {
                 double temp;
-                if (plugin.OnPlayerHurt(player, damage, hitDirection, pvp, quiet, deathText, crit, out temp))
+                if (plugin.OnPlayerHurt(player, damageSource, damage, hitDirection, pvp, quiet, crit, cooldownCounter, out temp))
                 {
                     ret = true;
                     result = temp;
@@ -454,11 +455,11 @@ namespace PluginLoader
             return ret;
         }
 
-        public static bool OnPlayerKillMe(Player player, double dmg, int hitDirection, bool pvp, string deathText)
+        public static bool OnPlayerKillMe(Player player, PlayerDeathReason damageSource, double dmg, int hitDirection, bool pvp)
         {
             var ret = false;
             foreach (var plugin in loadedPlugins.OfType<IPluginPlayerKillMe>())
-                ret = plugin.OnPlayerKillMe(player, dmg, hitDirection, pvp, deathText) || ret;
+                ret = plugin.OnPlayerKillMe(player, damageSource, dmg, hitDirection, pvp) || ret;
 
             return ret;
         }
