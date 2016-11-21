@@ -82,6 +82,7 @@
     <Compile Include="InventoryEnhancements\SortingSet.cs" />
     <Compile Include="InventoryEnhancements\Sorting\Sets.cs" />
     <Compile Include="InventoryEnhancements\Sorting\SortingManager.cs" />
+    <Compile Include="Turrets.cs" />
     <Compile Include="PortableCraftingGuide.cs" />
     <Compile Include="SavePosition.cs" />
     <Compile Include="Shared\UI\Button.cs" />
