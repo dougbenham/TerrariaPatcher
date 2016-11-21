@@ -4,7 +4,7 @@ using Terraria;
 
 namespace TranscendPlugins
 {
-    public class Minions : MarshalByRefObject, IPluginPlayerUpdateBuffs
+    public class Minions : MarshalByRefObject, IPluginPlayerUpdateArmorSets
     {
         private int minions;
 
@@ -13,7 +13,7 @@ namespace TranscendPlugins
             if (!int.TryParse(IniAPI.ReadIni("Minions", "Max", "100", writeIt: true), out minions))
                 minions = 100;
         }
-        public void OnPlayerUpdateBuffs(Player player)
+        public void OnPlayerUpdateArmorSets(Player player)
         {
             if (player.whoAmI == Main.myPlayer)
                 player.maxMinions = minions;

@@ -186,102 +186,49 @@ namespace TerrariaPatcher
 
             // Melee - Legendary
             int spot = IL.ScanForOpcodePattern(prefix,
-                                                (i, instruction) =>
-                                                {
-                                                    return (sbyte)prefix.Body.Instructions[i].Operand == (sbyte)40;
-                                                },
-                                               new[]
-                                               {
-                                                   OpCodes.Ldc_I4_S,
-                                                   OpCodes.Callvirt
-                                               });
+                                                (i, instruction) => (sbyte)prefix.Body.Instructions[i].Operand == (sbyte)40, 
+                                                OpCodes.Ldc_I4_S, OpCodes.Callvirt);
             prefix.Body.Instructions[spot - 1].OpCode = OpCodes.Nop;
-            prefix.Body.Instructions[spot].Operand = sbyte.MaxValue;
+            prefix.Body.Instructions[spot].Operand = (sbyte)81;
             prefix.Body.Instructions[spot + 1].OpCode = OpCodes.Nop;
-            prefix.Body.Instructions.Insert(spot + 3, il.Create(OpCodes.Ldc_I4, 81));
-            prefix.Body.Instructions.Insert(spot + 4, il.Create(OpCodes.Stloc_0));
 
             // Generic - Godly
             int spot2 = IL.ScanForOpcodePattern(prefix,
-                                                (i, instruction) =>
-                                                {
-                                                    return (sbyte)prefix.Body.Instructions[i].Operand == (sbyte)14;
-                                                },
-                                               new[]
-                                               {
-                                                   OpCodes.Ldc_I4_S,
-                                                   OpCodes.Callvirt
-                                               });
+                                                (i, instruction) => (sbyte)prefix.Body.Instructions[i].Operand == (sbyte)14, 
+                                                OpCodes.Ldc_I4_S, OpCodes.Callvirt);
             prefix.Body.Instructions[spot2 - 1].OpCode = OpCodes.Nop;
-            prefix.Body.Instructions[spot2].Operand = sbyte.MaxValue;
+            prefix.Body.Instructions[spot2].Operand = (sbyte)59;
             prefix.Body.Instructions[spot2 + 1].OpCode = OpCodes.Nop;
-            prefix.Body.Instructions.Insert(spot2 + 3, il.Create(OpCodes.Ldc_I4, 59));
-            prefix.Body.Instructions.Insert(spot2 + 4, il.Create(OpCodes.Stloc_0));
 
             // Ranged - Unreal
             int spot3 = IL.ScanForOpcodePattern(prefix,
-                                                (i, instruction) =>
-                                                {
-                                                    return (sbyte)prefix.Body.Instructions[i].Operand == (sbyte)36;
-                                                },
-                                               new[]
-                                               {
-                                                   OpCodes.Ldc_I4_S,
-                                                   OpCodes.Callvirt
-                                               });
+                                                (i, instruction) => (sbyte)prefix.Body.Instructions[i].Operand == (sbyte)36, 
+                                                OpCodes.Ldc_I4_S, OpCodes.Callvirt);
             prefix.Body.Instructions[spot3 - 1].OpCode = OpCodes.Nop;
-            prefix.Body.Instructions[spot3].Operand = sbyte.MaxValue;
+            prefix.Body.Instructions[spot3].Operand = (sbyte)82;
             prefix.Body.Instructions[spot3 + 1].OpCode = OpCodes.Nop;
-            prefix.Body.Instructions.Insert(spot3 + 3, il.Create(OpCodes.Ldc_I4, 82));
-            prefix.Body.Instructions.Insert(spot3 + 4, il.Create(OpCodes.Stloc_0));
 
             // Magical - Mythical
             int spot4 = IL.ScanForOpcodePattern(prefix,
-                                                (i, instruction) =>
-                                                {
-                                                    return (sbyte)prefix.Body.Instructions[i].Operand == (sbyte)36;
-                                                },
-                                               new[]
-                                               {
-                                                   OpCodes.Ldc_I4_S,
-                                                   OpCodes.Callvirt
-                                               });
+                                                (i, instruction) => (sbyte)prefix.Body.Instructions[i].Operand == (sbyte)36, 
+                                                OpCodes.Ldc_I4_S, OpCodes.Callvirt);
             prefix.Body.Instructions[spot4 - 1].OpCode = OpCodes.Nop;
-            prefix.Body.Instructions[spot4].Operand = sbyte.MaxValue;
+            prefix.Body.Instructions[spot4].Operand = (sbyte)83;
             prefix.Body.Instructions[spot4 + 1].OpCode = OpCodes.Nop;
-            prefix.Body.Instructions.Insert(spot4 + 3, il.Create(OpCodes.Ldc_I4, 83));
-            prefix.Body.Instructions.Insert(spot4 + 4, il.Create(OpCodes.Stloc_0));
 
             // Boomerangs - Godly
             int spot5 = IL.ScanForOpcodePattern(prefix,
-                                                (i, instruction) =>
-                                                {
-                                                    return (sbyte)prefix.Body.Instructions[i].Operand == (sbyte)14;
-                                                },
-                                               new[]
-                                               {
-                                                   OpCodes.Ldc_I4_S,
-                                                   OpCodes.Callvirt
-                                               });
+                                                (i, instruction) => (sbyte)prefix.Body.Instructions[i].Operand == (sbyte)14, 
+                                                OpCodes.Ldc_I4_S, OpCodes.Callvirt);
             prefix.Body.Instructions[spot5 - 1].OpCode = OpCodes.Nop;
-            prefix.Body.Instructions[spot5].Operand = sbyte.MaxValue;
+            prefix.Body.Instructions[spot5].Operand = (sbyte)59;
             prefix.Body.Instructions[spot5 + 1].OpCode = OpCodes.Nop;
-            prefix.Body.Instructions.Insert(spot5 + 3, il.Create(OpCodes.Ldc_I4, 59));
-            prefix.Body.Instructions.Insert(spot5 + 4, il.Create(OpCodes.Stloc_0));
             
             // Accessory - based on selection of Accessory Prefix combo box
             int spot6 = IL.ScanForOpcodePattern(prefix,
-                                                (i, instruction) =>
-                                                {
-                                                    return (sbyte)prefix.Body.Instructions[i].Operand == (sbyte)62 &&
-                                                        (sbyte)prefix.Body.Instructions[i + 1].Operand == (sbyte)81;
-                                                },
-                                               new[]
-                                               {
-                                                   OpCodes.Ldc_I4_S,
-                                                   OpCodes.Ldc_I4_S,
-                                                   OpCodes.Callvirt
-                                               });
+                                                (i, instruction) => (sbyte)prefix.Body.Instructions[i].Operand == (sbyte)62 &&
+                                                                    (sbyte)prefix.Body.Instructions[i + 1].Operand == (sbyte)81, 
+                                                OpCodes.Ldc_I4_S, OpCodes.Ldc_I4_S, OpCodes.Callvirt);
             prefix.Body.Instructions[spot6 - 1].OpCode = OpCodes.Nop;
             prefix.Body.Instructions[spot6].Operand = (sbyte)accessoryPrefix;
             prefix.Body.Instructions[spot6 + 1].OpCode = OpCodes.Nop;
@@ -294,12 +241,7 @@ namespace TerrariaPatcher
                                                     var i0 = prefix.Body.Instructions[i].Operand as FieldReference;
                                                     return i0 != null && i0.Name == "knockBack";
                                                 },
-                                               new[]
-                                               {
-                                                   OpCodes.Ldfld,
-                                                   OpCodes.Ldc_R4,
-                                                   OpCodes.Bne_Un_S
-                                               });
+                                                OpCodes.Ldfld, OpCodes.Ldc_R4, OpCodes.Bne_Un_S);
             prefix.Body.Instructions.Insert(spot7 + 5, il.Create(OpCodes.Ldc_I4_0));
             prefix.Body.Instructions.Insert(spot7 + 6, il.Create(OpCodes.Starg, 1));
             prefix.Body.Instructions[spot7 + 7].OpCode = OpCodes.Ldc_I4_S;
@@ -312,12 +254,7 @@ namespace TerrariaPatcher
                                                     var i0 = prefix.Body.Instructions[i].Operand as FieldReference;
                                                     return i0 != null && i0.Name == "damage";
                                                 },
-                                               new[]
-                                               {
-                                                   OpCodes.Ldfld,
-                                                   OpCodes.Conv_R8,
-                                                   OpCodes.Bne_Un_S
-                                               });
+                                                OpCodes.Ldfld, OpCodes.Conv_R8, OpCodes.Bne_Un_S);
             prefix.Body.Instructions.Insert(spot8 + 5, il.Create(OpCodes.Ldc_I4_0));
             prefix.Body.Instructions.Insert(spot8 + 6, il.Create(OpCodes.Starg, 1));
             prefix.Body.Instructions[spot8 + 7].OpCode = OpCodes.Ldc_I4_S;
@@ -329,13 +266,8 @@ namespace TerrariaPatcher
                                                 {
                                                     var i0 = prefix.Body.Instructions[i].Operand as FieldReference;
                                                     return i0 != null && i0.Name == "mana";
-                                                },
-                                               new[]
-                                               {
-                                                   OpCodes.Ldfld,
-                                                   OpCodes.Conv_R8,
-                                                   OpCodes.Bne_Un_S
-                                               });
+                                                }, 
+                                                OpCodes.Ldfld, OpCodes.Conv_R8, OpCodes.Bne_Un_S);
             prefix.Body.Instructions.Insert(spot9 + 5, il.Create(OpCodes.Ldc_I4_0));
             prefix.Body.Instructions.Insert(spot9 + 6, il.Create(OpCodes.Starg, 1));
             prefix.Body.Instructions[spot9 + 7].OpCode = OpCodes.Ldc_I4_S;
@@ -347,13 +279,8 @@ namespace TerrariaPatcher
                                                 {
                                                     var i0 = prefix.Body.Instructions[i].Operand as FieldReference;
                                                     return i0 != null && i0.Name == "useAnimation";
-                                                },
-                                               new[]
-                                               {
-                                                   OpCodes.Ldfld,
-                                                   OpCodes.Conv_R8,
-                                                   OpCodes.Bne_Un_S
-                                               });
+                                                }, 
+                                                OpCodes.Ldfld, OpCodes.Conv_R8, OpCodes.Bne_Un_S);
             prefix.Body.Instructions.Insert(spot10 + 5, il.Create(OpCodes.Ldc_I4_0));
             prefix.Body.Instructions.Insert(spot10 + 6, il.Create(OpCodes.Starg, 1));
             prefix.Body.Instructions[spot10 + 7].OpCode = OpCodes.Ldc_I4_S;
@@ -515,16 +442,16 @@ namespace TerrariaPatcher
             int spot4 = IL.ScanForOpcodePattern(itemCheck,
                                                (i, instruction) =>
                                                {
-                                                   var in1 = itemCheck.Body.Instructions[i - 1].OpCode;
-                                                   var i0 = itemCheck.Body.Instructions[i + 0].Operand as FieldReference;
-                                                   return in1.Name.ToLower().Contains("ldloc") && i0 != null && i0.Name == "potion";
+                                                   var i2 = itemCheck.Body.Instructions[i + 2].Operand as FieldReference;
+                                                   return i2 != null && i2.Name == "restorationDelayTime";
                                                },
+                                               OpCodes.Ldarg_0,
+                                               OpCodes.Ldarg_0,
                                                OpCodes.Ldfld,
-                                               OpCodes.Brfalse_S);
+                                               OpCodes.Stfld);
 
-            for (int i = -1; i < 1; i++)
+            for (int i = 0; i < 10; i++)
                 itemCheck.Body.Instructions[spot4 + i].OpCode = OpCodes.Nop;
-            itemCheck.Body.Instructions[spot4 + 1].OpCode = OpCodes.Br_S;
         }
 
         private static void RemoveManaCost()
