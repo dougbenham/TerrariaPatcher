@@ -189,7 +189,7 @@ namespace TerrariaPatcher
                                                 (i, instruction) => (sbyte)prefix.Body.Instructions[i].Operand == (sbyte)40, 
                                                 OpCodes.Ldc_I4_S, OpCodes.Callvirt);
             prefix.Body.Instructions[spot - 1].OpCode = OpCodes.Nop;
-            prefix.Body.Instructions[spot].Operand = (sbyte)81;
+            prefix.Body.Instructions[spot].Operand = (sbyte)39; // 39 becomes 81
             prefix.Body.Instructions[spot + 1].OpCode = OpCodes.Nop;
 
             // Generic - Godly
@@ -197,7 +197,7 @@ namespace TerrariaPatcher
                                                 (i, instruction) => (sbyte)prefix.Body.Instructions[i].Operand == (sbyte)14, 
                                                 OpCodes.Ldc_I4_S, OpCodes.Callvirt);
             prefix.Body.Instructions[spot2 - 1].OpCode = OpCodes.Nop;
-            prefix.Body.Instructions[spot2].Operand = (sbyte)59;
+            prefix.Body.Instructions[spot2].Operand = (sbyte)11; // 11 becomes 59
             prefix.Body.Instructions[spot2 + 1].OpCode = OpCodes.Nop;
 
             // Ranged - Unreal
@@ -205,7 +205,7 @@ namespace TerrariaPatcher
                                                 (i, instruction) => (sbyte)prefix.Body.Instructions[i].Operand == (sbyte)36, 
                                                 OpCodes.Ldc_I4_S, OpCodes.Callvirt);
             prefix.Body.Instructions[spot3 - 1].OpCode = OpCodes.Nop;
-            prefix.Body.Instructions[spot3].Operand = (sbyte)82;
+            prefix.Body.Instructions[spot3].Operand = (sbyte)35; // 35 becomes 82
             prefix.Body.Instructions[spot3 + 1].OpCode = OpCodes.Nop;
 
             // Magical - Mythical
@@ -213,7 +213,7 @@ namespace TerrariaPatcher
                                                 (i, instruction) => (sbyte)prefix.Body.Instructions[i].Operand == (sbyte)36, 
                                                 OpCodes.Ldc_I4_S, OpCodes.Callvirt);
             prefix.Body.Instructions[spot4 - 1].OpCode = OpCodes.Nop;
-            prefix.Body.Instructions[spot4].Operand = (sbyte)83;
+            prefix.Body.Instructions[spot4].Operand = (sbyte)35; // 35 becomes 83
             prefix.Body.Instructions[spot4 + 1].OpCode = OpCodes.Nop;
 
             // Boomerangs - Godly
@@ -221,7 +221,7 @@ namespace TerrariaPatcher
                                                 (i, instruction) => (sbyte)prefix.Body.Instructions[i].Operand == (sbyte)14, 
                                                 OpCodes.Ldc_I4_S, OpCodes.Callvirt);
             prefix.Body.Instructions[spot5 - 1].OpCode = OpCodes.Nop;
-            prefix.Body.Instructions[spot5].Operand = (sbyte)59;
+            prefix.Body.Instructions[spot5].Operand = (sbyte)11; // 11 becomes 59
             prefix.Body.Instructions[spot5 + 1].OpCode = OpCodes.Nop;
             
             // Accessory - based on selection of Accessory Prefix combo box
