@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using MethodAttributes = Mono.Cecil.MethodAttributes;
@@ -653,7 +652,7 @@ namespace TerrariaPatcher
             var netMessage = IL.GetTypeDefinition(ModDefinition, "NetMessage");
             var lighting = IL.GetTypeDefinition(ModDefinition, "Lighting");
             var chest = IL.GetTypeDefinition(ModDefinition, "Chest");
-            var modLoader = IL.GetTypeDefinition(ModDefinition, "Mod");
+            var modLoader = IL.GetTypeDefinition(ModDefinition, "Mod", false);
 
             // Methods
             var initialize = IL.GetMethodDefinition(main, "Initialize");

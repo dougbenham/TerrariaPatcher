@@ -230,13 +230,13 @@ namespace TerrariaPatcher
         /// </summary>
         /// <param name="typeName"></param>
         /// <returns></returns>
-        public static TypeDefinition GetTypeDefinition(ModuleDefinition moduleDefinition, string typeName)
+        public static TypeDefinition GetTypeDefinition(ModuleDefinition moduleDefinition, string typeName, bool verbose = true)
         {
             var result = (from TypeDefinition t in moduleDefinition.Types
                           where t.Name == typeName
                           select t).FirstOrDefault();
 
-            if (result == null)
+            if (result == null && verbose)
                 Program.ShowErrorMessage(string.Format("Failed to locate {0} type!", typeName));
 
             return result;
