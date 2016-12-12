@@ -1,6 +1,7 @@
 ﻿using System;
 using PluginLoader;
 using Terraria;
+using Utils = PluginLoader.Utils;
 
 namespace TranscendPlugins
 {
@@ -8,7 +9,8 @@ namespace TranscendPlugins
     {
         public SkipSplash()
         {
-            Main.showSplash = false;
+            if (Utils.IstModLoaderInstalled())
+                Main.showSplash = false;
         }
     }
 }

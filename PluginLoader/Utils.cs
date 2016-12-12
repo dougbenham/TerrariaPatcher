@@ -153,5 +153,10 @@ namespace PluginLoader
             //file is not locked
             return false;
         }
+
+        public static bool IstModLoaderInstalled()
+        {
+            return System.Reflection.Assembly.GetEntryAssembly().GetType("Terraria.ModLoader.Mod") == null;
+        }
     }
 }

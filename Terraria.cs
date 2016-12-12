@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using MethodAttributes = Mono.Cecil.MethodAttributes;
@@ -539,9 +540,12 @@ namespace TerrariaPatcher
             var update = IL.GetMethodDefinition(main, "DoUpdate");
             var playerArr = IL.GetFieldDefinition(main, "player");
             var myPlayer = IL.GetFieldDefinition(main, "myPlayer");
+            var gameMenu = IL.GetFieldDefinition(main, "gameMenu");
 
             var player = IL.GetTypeDefinition(ModDefinition, "Player");
             var addBuff = IL.GetMethodDefinition(player, "AddBuff");
+
+            var first = update.Body.Instructions.First();
 
             foreach (int buff in buffs)
             {
@@ -556,6 +560,12 @@ namespace TerrariaPatcher
                         Instruction.Create(OpCodes.Call, addBuff)
                     });
             }
+
+            IL.MethodPrepend(update, new[]
+            {
+                Instruction.Create(OpCodes.Ldsfld, gameMenu),
+                Instruction.Create(OpCodes.Brtrue, first)
+            });
         }
         
         private static void RecipeRange()
@@ -643,6 +653,7 @@ namespace TerrariaPatcher
             var netMessage = IL.GetTypeDefinition(ModDefinition, "NetMessage");
             var lighting = IL.GetTypeDefinition(ModDefinition, "Lighting");
             var chest = IL.GetTypeDefinition(ModDefinition, "Chest");
+            var modLoader = IL.GetTypeDefinition(ModDefinition, "Mod");
 
             // Methods
             var initialize = IL.GetMethodDefinition(main, "Initialize");
@@ -700,6 +711,7 @@ namespace TerrariaPatcher
                 });
             }
 
+            if (modLoader == null)
             {
                 // patch chat to allow on singleplayer
                 int spot = IL.ScanForOpcodePattern(update, (i, instruction) =>
