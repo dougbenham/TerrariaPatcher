@@ -9,7 +9,7 @@ namespace TranscendPlugins
     {
         public SkipSplash()
         {
-            if (Utils.IstModLoaderInstalled())
+            if (!Utils.IstModLoaderInstalled())
                 Main.showSplash = false;
         }
     }

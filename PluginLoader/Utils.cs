@@ -156,7 +156,7 @@ namespace PluginLoader
 
         public static bool IstModLoaderInstalled()
         {
-            return System.Reflection.Assembly.GetEntryAssembly().GetType("Terraria.ModLoader.Mod") == null;
+            return System.Reflection.Assembly.GetEntryAssembly().GetType("Terraria.ModLoader.Mod") != null;
         }
     }
 }
