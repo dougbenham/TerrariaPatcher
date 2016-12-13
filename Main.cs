@@ -155,6 +155,7 @@ namespace TerrariaPatcher
                 accessoryPrefix.Text = IniAPI.ReadIni("General", "AccessoryPrefix", "Warding", 255, ConfigPath);
                 permanentWings.Checked = bool.Parse(IniAPI.ReadIni("General", "PermanentWings", "true", 255, ConfigPath));
                 infiniteCloudJumps.Checked = bool.Parse(IniAPI.ReadIni("General", "InfiniteCloudJumps", "false", 255, ConfigPath));
+                functionalSocialSlots.Checked = bool.Parse(IniAPI.ReadIni("General", "FunctionalSocialSlots", "true", 255, ConfigPath));
                 maxCraftingRange.Checked = bool.Parse(IniAPI.ReadIni("General", "MaxCraftingRange", "true", 255, ConfigPath));
 #if !PUBLIC
                 steamFixEnabled.Checked = bool.Parse(IniAPI.ReadIni("General", "SteamFixEnabled", "true", 255, ConfigPath));
@@ -197,6 +198,7 @@ namespace TerrariaPatcher
             IniAPI.WriteIni("General", "AccessoryPrefix", accessoryPrefix.Text, ConfigPath);
             IniAPI.WriteIni("General", "PermanentWings", permanentWings.Checked.ToString(), ConfigPath);
             IniAPI.WriteIni("General", "InfiniteCloudJumps", infiniteCloudJumps.Checked.ToString(), ConfigPath);
+            IniAPI.WriteIni("General", "FunctionalSocialSlots", functionalSocialSlots.Checked.ToString(), ConfigPath);
             IniAPI.WriteIni("General", "MaxCraftingRange", maxCraftingRange.Checked.ToString(), ConfigPath);
             IniAPI.WriteIni("General", "SteamFixEnabled", steamFixEnabled.Checked.ToString(), ConfigPath);
             IniAPI.WriteIni("General", "Plugins", plugins.Checked.ToString(), ConfigPath);
@@ -349,6 +351,7 @@ namespace TerrariaPatcher
                 var details = new TerrariaDetails()
                 {
                     InfiniteCloudJumps = infiniteCloudJumps.Checked,
+                    FunctionalSocialSlots = functionalSocialSlots.Checked,
                     VampiricHealing = (float)vampiricKnivesHealingRate.Value,
                     SpectreHealing = (float)spectreHealingRate.Value,
                     FixedPrefixes = fixedPrefixes.Checked,

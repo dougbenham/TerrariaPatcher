@@ -22,6 +22,7 @@ namespace TerrariaPatcher
         public bool SteamFix = false;
         public bool Plugins = false;
         public bool InfiniteCloudJumps = false;
+        public bool FunctionalSocialSlots = false;
         public bool MaxCraftingRange = false;
         public float VampiricHealing = 7.5f;
         public float SpectreHealing = 20f;
@@ -42,6 +43,8 @@ namespace TerrariaPatcher
         /// Gets or sets the main module definition.
         /// </summary>
         private static ModuleDefinition ModDefinition { get; set; }
+
+        private static bool IsModLoader => IL.GetTypeDefinition(ModDefinition, "Mod", false) != null;
 
         /// <summary>
         /// Entrypoint.
@@ -64,6 +67,7 @@ namespace TerrariaPatcher
             if (details.FixedPrefixes) FixPrefixes(details.AccessoryPrefix);
             if (details.RemoveDiscordBuff) RemoveDiscordBuff();
             if (details.MaxCraftingRange) RecipeRange();
+            if (details.FunctionalSocialSlots) FunctionalSocialSlots();
             if (details.InfiniteCloudJumps) InfiniteCloudJumps();
             if (details.RemoveManaCost) RemoveManaCost();
             if (details.RemoveDrowning) RemoveDrowning();
@@ -81,6 +85,45 @@ namespace TerrariaPatcher
               */
 
             AsmDefinition.Write(target);
+        }
+
+        private static void FunctionalSocialSlots()
+        {
+            var player = IL.GetTypeDefinition(ModDefinition, "Player");
+            var ctor = IL.GetMethodDefinition(player, ".ctor");
+            var updateEquips = IL.GetMethodDefinition(player, "UpdateEquips");
+
+            int spot0 = IL.ScanForOpcodePattern(ctor, (i, instruction) =>
+            {
+                var i3 = ctor.Body.Instructions[i + 3].Operand as FieldReference;
+                return i3 != null && i3.Name == "hideVisual";
+            }, OpCodes.Ldarg_0, OpCodes.Ldc_I4_S, OpCodes.Newarr, OpCodes.Stfld);
+            ctor.Body.Instructions[spot0 + 1].Operand = (sbyte)20;
+
+            if (IsModLoader)
+            {
+                int spot1 = IL.ScanForOpcodePattern(updateEquips,
+                    OpCodes.Ldloc_S, OpCodes.Ldc_I4_1, OpCodes.Add, OpCodes.Stloc_S, OpCodes.Ldloc_S, OpCodes.Ldc_I4_8, OpCodes.Ldarg_0, OpCodes.Ldfld, OpCodes.Add, OpCodes.Blt_S);
+                updateEquips.Body.Instructions[spot1 + 5] = Instruction.Create(OpCodes.Ldc_I4, 18);
+
+                int spot2 = IL.ScanForOpcodePattern(updateEquips, (i, v) => true, spot1 + 1,
+                    OpCodes.Ldloc_S, OpCodes.Ldc_I4_1, OpCodes.Add, OpCodes.Stloc_S, OpCodes.Ldloc_S, OpCodes.Ldc_I4_8, OpCodes.Ldarg_0, OpCodes.Ldfld, OpCodes.Add, OpCodes.Blt_S);
+                updateEquips.Body.Instructions[spot2 + 5] = Instruction.Create(OpCodes.Ldc_I4, 18);
+            }
+            else
+            {
+                int spot1 = IL.ScanForOpcodePattern(updateEquips,
+                    OpCodes.Ldloc_2, OpCodes.Ldc_I4_1, OpCodes.Add, OpCodes.Stloc_2, OpCodes.Ldloc_2, OpCodes.Ldc_I4_8, OpCodes.Ldarg_0, OpCodes.Ldfld, OpCodes.Add, OpCodes.Blt);
+                updateEquips.Body.Instructions[spot1 + 5] = Instruction.Create(OpCodes.Ldc_I4, 18);
+
+                int spot2 = IL.ScanForOpcodePattern(updateEquips,
+                    OpCodes.Ldloc_S, OpCodes.Ldc_I4_1, OpCodes.Add, OpCodes.Stloc_S, OpCodes.Ldloc_S, OpCodes.Ldc_I4_8, OpCodes.Ldarg_0, OpCodes.Ldfld, OpCodes.Add, OpCodes.Blt);
+                updateEquips.Body.Instructions[spot2 + 5] = Instruction.Create(OpCodes.Ldc_I4, 18);
+
+                int spot3 = IL.ScanForOpcodePattern(updateEquips, (i, v) => true, spot2 + 1,
+                    OpCodes.Ldloc_S, OpCodes.Ldc_I4_1, OpCodes.Add, OpCodes.Stloc_S, OpCodes.Ldloc_S, OpCodes.Ldc_I4_8, OpCodes.Ldarg_0, OpCodes.Ldfld, OpCodes.Add, OpCodes.Blt_S);
+                updateEquips.Body.Instructions[spot3 + 5] = Instruction.Create(OpCodes.Ldc_I4, 18);
+            }
         }
 
         private static void ModVampiricKnives(float healingRate) // default is 0.075
@@ -652,7 +695,6 @@ namespace TerrariaPatcher
             var netMessage = IL.GetTypeDefinition(ModDefinition, "NetMessage");
             var lighting = IL.GetTypeDefinition(ModDefinition, "Lighting");
             var chest = IL.GetTypeDefinition(ModDefinition, "Chest");
-            var modLoader = IL.GetTypeDefinition(ModDefinition, "Mod", false);
 
             // Methods
             var initialize = IL.GetMethodDefinition(main, "Initialize");
@@ -710,7 +752,7 @@ namespace TerrariaPatcher
                 });
             }
 
-            if (modLoader == null)
+            if (!IsModLoader)
             {
                 // patch chat to allow on singleplayer
                 int spot = IL.ScanForOpcodePattern(update, (i, instruction) =>

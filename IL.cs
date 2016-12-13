@@ -158,13 +158,13 @@ namespace TerrariaPatcher
         /// <param name="t"></param>
         /// <param name="fieldName"></param>
         /// <returns></returns>
-        public static FieldDefinition GetFieldDefinition(TypeDefinition t, string fieldName)
+        public static FieldDefinition GetFieldDefinition(TypeDefinition t, string fieldName, bool verbose = true)
         {
             var result = (from FieldDefinition f in t.Fields
                           where f.Name == fieldName
                           select f).FirstOrDefault();
 
-            if (result == null)
+            if (result == null && verbose)
                 Program.ShowErrorMessage(string.Format("Failed to locate {0}.{1} field!", t.FullName, fieldName));
 
             return result;
@@ -176,13 +176,13 @@ namespace TerrariaPatcher
         /// <param name="t"></param>
         /// <param name="methodName"></param>
         /// <returns></returns>
-        public static MethodDefinition GetMethodDefinition(TypeDefinition t, string methodName, int parameterCount = -1)
+        public static MethodDefinition GetMethodDefinition(TypeDefinition t, string methodName, int parameterCount = -1, bool verbose = true)
         {
             var result = (from MethodDefinition m in t.Methods
                           where m.Name == methodName && (parameterCount == -1 || m.Parameters.Count + m.GenericParameters.Count == parameterCount)
                           select m).FirstOrDefault();
 
-            if (result == null)
+            if (result == null && verbose)
                 Program.ShowErrorMessage(string.Format("Failed to locate {0}.{1}() method!", t.FullName, methodName));
 
             return result;
@@ -194,11 +194,11 @@ namespace TerrariaPatcher
 		/// <param name="t"></param>
 		/// <param name="methodName"></param>
 		/// <returns></returns>
-		public static ModuleDefinition GetModuleDefinition(AssemblyDefinition definition, string fullyQualifiedName)
+		public static ModuleDefinition GetModuleDefinition(AssemblyDefinition definition, string fullyQualifiedName, bool verbose = true)
 		{
 			ModuleDefinition module = definition.Modules.FirstOrDefault(p => p.FullyQualifiedName == fullyQualifiedName);
 
-			if (module == null)
+			if (module == null && verbose)
 			{
 				Program.ShowErrorMessage(string.Format("Failed to locate {0} reference!", fullyQualifiedName));
 				module = definition.MainModule;
@@ -213,13 +213,13 @@ namespace TerrariaPatcher
         /// <param name="t"></param>
         /// <param name="propName"></param>
         /// <returns></returns>
-        public static PropertyDefinition GetPropertyDefinition(TypeDefinition t, string propName)
+        public static PropertyDefinition GetPropertyDefinition(TypeDefinition t, string propName, bool verbose = true)
         {
             var result = (from PropertyDefinition p in t.Properties
                           where p.Name == propName
                           select p).FirstOrDefault();
 
-            if (result == null)
+            if (result == null && verbose)
                 Program.ShowErrorMessage(string.Format("Failed to locate {0}.{1} property!", t.FullName, propName));
 
             return result;
@@ -247,11 +247,11 @@ namespace TerrariaPatcher
         /// </summary>
         /// <param name="fullName"></param>
         /// <returns></returns>
-        public static TypeReference GetTypeReference(ModuleDefinition moduleDefinition, string fullName)
+        public static TypeReference GetTypeReference(ModuleDefinition moduleDefinition, string fullName, bool verbose = true)
         {
             TypeReference reference;
 
-            if (!moduleDefinition.TryGetTypeReference(fullName, out reference))
+            if (!moduleDefinition.TryGetTypeReference(fullName, out reference) && verbose)
                 Program.ShowErrorMessage(string.Format("Failed to locate {0} type!", fullName));
 
             return reference;

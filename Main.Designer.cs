@@ -36,6 +36,7 @@
             this.timeEnabled = new System.Windows.Forms.CheckBox();
             this.steamFixEnabled = new System.Windows.Forms.CheckBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.functionalSocialSlots = new System.Windows.Forms.CheckBox();
             this.plugins = new System.Windows.Forms.CheckBox();
             this.maxCraftingRange = new System.Windows.Forms.CheckBox();
             this.infiniteCloudJumps = new System.Windows.Forms.CheckBox();
@@ -149,7 +150,7 @@
             this.steamFixEnabled.AutoSize = true;
             this.steamFixEnabled.Checked = true;
             this.steamFixEnabled.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.steamFixEnabled.Location = new System.Drawing.Point(5, 294);
+            this.steamFixEnabled.Location = new System.Drawing.Point(6, 317);
             this.steamFixEnabled.Name = "steamFixEnabled";
             this.steamFixEnabled.Size = new System.Drawing.Size(72, 17);
             this.steamFixEnabled.TabIndex = 4;
@@ -159,6 +160,7 @@
             // 
             // groupBox2
             // 
+            this.groupBox2.Controls.Add(this.functionalSocialSlots);
             this.groupBox2.Controls.Add(this.plugins);
             this.groupBox2.Controls.Add(this.maxCraftingRange);
             this.groupBox2.Controls.Add(this.infiniteCloudJumps);
@@ -177,17 +179,30 @@
             this.groupBox2.Controls.Add(this.steamFixEnabled);
             this.groupBox2.Location = new System.Drawing.Point(12, 63);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(308, 338);
+            this.groupBox2.Size = new System.Drawing.Size(308, 361);
             this.groupBox2.TabIndex = 5;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "General:";
+            // 
+            // functionalSocialSlots
+            // 
+            this.functionalSocialSlots.AutoSize = true;
+            this.functionalSocialSlots.Checked = true;
+            this.functionalSocialSlots.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.functionalSocialSlots.Location = new System.Drawing.Point(6, 271);
+            this.functionalSocialSlots.Name = "functionalSocialSlots";
+            this.functionalSocialSlots.Size = new System.Drawing.Size(133, 17);
+            this.functionalSocialSlots.TabIndex = 33;
+            this.functionalSocialSlots.Text = "Functional Social Slots";
+            this.functionalSocialSlots.UseVisualStyleBackColor = true;
+            this.functionalSocialSlots.CheckedChanged += new System.EventHandler(this.config_Changed);
             // 
             // plugins
             // 
             this.plugins.AutoSize = true;
             this.plugins.Checked = true;
             this.plugins.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.plugins.Location = new System.Drawing.Point(5, 317);
+            this.plugins.Location = new System.Drawing.Point(6, 340);
             this.plugins.Name = "plugins";
             this.plugins.Size = new System.Drawing.Size(215, 17);
             this.plugins.TabIndex = 32;
@@ -200,7 +215,7 @@
             this.maxCraftingRange.AutoSize = true;
             this.maxCraftingRange.Checked = true;
             this.maxCraftingRange.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.maxCraftingRange.Location = new System.Drawing.Point(5, 271);
+            this.maxCraftingRange.Location = new System.Drawing.Point(6, 294);
             this.maxCraftingRange.Name = "maxCraftingRange";
             this.maxCraftingRange.Size = new System.Drawing.Size(120, 17);
             this.maxCraftingRange.TabIndex = 30;
@@ -211,7 +226,7 @@
             // infiniteCloudJumps
             // 
             this.infiniteCloudJumps.AutoSize = true;
-            this.infiniteCloudJumps.Location = new System.Drawing.Point(5, 248);
+            this.infiniteCloudJumps.Location = new System.Drawing.Point(6, 248);
             this.infiniteCloudJumps.Name = "infiniteCloudJumps";
             this.infiniteCloudJumps.Size = new System.Drawing.Size(120, 17);
             this.infiniteCloudJumps.TabIndex = 24;
@@ -266,7 +281,7 @@
             this.infiniteAmmo.AutoSize = true;
             this.infiniteAmmo.Checked = true;
             this.infiniteAmmo.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.infiniteAmmo.Location = new System.Drawing.Point(5, 179);
+            this.infiniteAmmo.Location = new System.Drawing.Point(6, 179);
             this.infiniteAmmo.Margin = new System.Windows.Forms.Padding(2);
             this.infiniteAmmo.Name = "infiniteAmmo";
             this.infiniteAmmo.Size = new System.Drawing.Size(147, 17);
@@ -315,7 +330,7 @@
             this.permanentWings.AutoSize = true;
             this.permanentWings.Checked = true;
             this.permanentWings.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.permanentWings.Location = new System.Drawing.Point(5, 225);
+            this.permanentWings.Location = new System.Drawing.Point(6, 225);
             this.permanentWings.Name = "permanentWings";
             this.permanentWings.Size = new System.Drawing.Size(238, 17);
             this.permanentWings.TabIndex = 12;
@@ -375,7 +390,7 @@
             this.groupBox3.Controls.Add(this.moveIn);
             this.groupBox3.Location = new System.Drawing.Point(326, 12);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(308, 389);
+            this.groupBox3.Size = new System.Drawing.Size(308, 412);
             this.groupBox3.TabIndex = 6;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Persistent Buffs:";
@@ -411,7 +426,7 @@
             // buffsInCount
             // 
             this.buffsInCount.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.buffsInCount.Location = new System.Drawing.Point(163, 370);
+            this.buffsInCount.Location = new System.Drawing.Point(163, 391);
             this.buffsInCount.Name = "buffsInCount";
             this.buffsInCount.Size = new System.Drawing.Size(139, 12);
             this.buffsInCount.TabIndex = 5;
@@ -420,7 +435,7 @@
             // buffsOutCount
             // 
             this.buffsOutCount.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.buffsOutCount.Location = new System.Drawing.Point(6, 370);
+            this.buffsOutCount.Location = new System.Drawing.Point(6, 391);
             this.buffsOutCount.Name = "buffsOutCount";
             this.buffsOutCount.Size = new System.Drawing.Size(130, 12);
             this.buffsOutCount.TabIndex = 4;
@@ -444,7 +459,7 @@
             this.buffsIn.HorizontalScrollbar = true;
             this.buffsIn.Location = new System.Drawing.Point(172, 45);
             this.buffsIn.Name = "buffsIn";
-            this.buffsIn.Size = new System.Drawing.Size(130, 316);
+            this.buffsIn.Size = new System.Drawing.Size(130, 342);
             this.buffsIn.TabIndex = 1;
             this.buffsIn.SelectedIndexChanged += new System.EventHandler(this.buffs_Update);
             // 
@@ -454,7 +469,7 @@
             this.buffsOut.HorizontalScrollbar = true;
             this.buffsOut.Location = new System.Drawing.Point(6, 45);
             this.buffsOut.Name = "buffsOut";
-            this.buffsOut.Size = new System.Drawing.Size(130, 316);
+            this.buffsOut.Size = new System.Drawing.Size(130, 342);
             this.buffsOut.TabIndex = 0;
             this.buffsOut.SelectedIndexChanged += new System.EventHandler(this.buffs_Update);
             // 
@@ -473,7 +488,7 @@
             // save
             // 
             this.save.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.save.Location = new System.Drawing.Point(865, 379);
+            this.save.Location = new System.Drawing.Point(865, 405);
             this.save.Name = "save";
             this.save.Size = new System.Drawing.Size(83, 23);
             this.save.TabIndex = 0;
@@ -595,19 +610,19 @@
             // 
             this.linkLabel.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.linkLabel.AutoSize = true;
-            this.linkLabel.Location = new System.Drawing.Point(714, 363);
+            this.linkLabel.Location = new System.Drawing.Point(689, 389);
             this.linkLabel.Name = "linkLabel";
-            this.linkLabel.Size = new System.Drawing.Size(234, 13);
+            this.linkLabel.Size = new System.Drawing.Size(259, 13);
             this.linkLabel.TabIndex = 28;
             this.linkLabel.TabStop = true;
-            this.linkLabel.Text = "http://www.terrariaonline.com/threads/116592/";
+            this.linkLabel.Text = "https://forums.terraria.org/index.php?threads/24615/";
             this.linkLabel.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel_LinkClicked);
             // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(956, 410);
+            this.ClientSize = new System.Drawing.Size(956, 436);
             this.Controls.Add(this.linkLabel);
             this.Controls.Add(this.save);
             this.Controls.Add(this.groupBox6);
@@ -681,6 +696,7 @@
         private System.Windows.Forms.LinkLabel linkLabel;
         private System.Windows.Forms.TextBox filterBuffsIn;
         private System.Windows.Forms.TextBox filterBuffsOut;
+        private System.Windows.Forms.CheckBox functionalSocialSlots;
     }
 }
 
