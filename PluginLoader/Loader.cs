@@ -92,22 +92,8 @@ namespace PluginLoader
 
                     references.Add(newtonsoftFileName);
                 }
-
-                var sharedSource = Directory.EnumerateFiles(sharedFolder, "*.cs", SearchOption.AllDirectories).ToArray();
-                if (sharedSource.Length > 0)
-                    references.Add(Generate("Shared.dll", references.ToArray(), sharedSource));
-
-                var referencesArray = references.ToArray();
-                foreach (var filename in Directory.EnumerateFiles(pluginsFolder, "*.cs"))
-                    Load(Path.GetFileNameWithoutExtension(filename), referencesArray, filename);
-
-                foreach (var folder in Directory.EnumerateDirectories(pluginsFolder))
-                {
-                    var name = Path.GetFileName(folder);
-                    if (name == "Shared") continue;
-
-                    Load(name, referencesArray, Directory.EnumerateFiles(folder, "*.cs", SearchOption.AllDirectories).ToArray());
-                }
+                
+                Load(references.ToArray(), Directory.EnumerateFiles(pluginsFolder, "*.cs", SearchOption.AllDirectories).ToArray());
 
                 // Load hotkey binds
                 var result = IniAPI.GetIniKeys("HotkeyBinds").ToList();
@@ -124,7 +110,7 @@ namespace PluginLoader
             }
         }
 
-        private static void Load(string name, string[] references, params string[] sources)
+        private static void Load(string[] references, params string[] sources)
         {
             // http://ayende.com/blog/1376/solving-the-assembly-load-context-problem
             var compilerParams = new CompilerParameters();
@@ -132,7 +118,6 @@ namespace PluginLoader
             compilerParams.GenerateExecutable = false;
             compilerParams.TreatWarningsAsErrors = false;
             compilerParams.CompilerOptions = "/optimize";
-
             compilerParams.ReferencedAssemblies.AddRange(references);
 
             var provider = new CSharpCodeProvider();
@@ -140,45 +125,13 @@ namespace PluginLoader
 
             if (compile.Errors.HasErrors)
             {
-                var text = "Compile error for plugin " + name + ": ";
-                foreach (CompilerError ce in compile.Errors)
-                {
-                    text += ce + Environment.NewLine;
-                }
-                throw new Exception(text);
+                throw new Exception(compile.Errors.Cast<CompilerError>().Aggregate("", (current, ce) => current + (ce + Environment.NewLine)));
             }
 
             foreach (var type in compile.CompiledAssembly.GetTypes().Where(type1 => type1.GetInterfaces().Contains(typeof (IPlugin))))
             {
                 loadedPlugins.Add(Activator.CreateInstance(type) as IPlugin);
             }
-        }
-
-        private static string Generate(string target, string[] references, params string[] sources)
-        {
-            var compilerParams = new CompilerParameters();
-            compilerParams.OutputAssembly = target;
-            compilerParams.GenerateInMemory = false;
-            compilerParams.GenerateExecutable = false;
-            compilerParams.TreatWarningsAsErrors = false;
-            compilerParams.CompilerOptions = "/optimize";
-
-            compilerParams.ReferencedAssemblies.AddRange(references);
-
-            var provider = new CSharpCodeProvider();
-            var compile = provider.CompileAssemblyFromFile(compilerParams, sources);
-
-            if (compile.Errors.HasErrors)
-            {
-                var text = "Compile error for shared source: ";
-                foreach (CompilerError ce in compile.Errors)
-                {
-                    text += ce + Environment.NewLine;
-                }
-                throw new Exception(text);
-            }
-
-            return compile.CompiledAssembly.Location;
         }
 
         #endregion

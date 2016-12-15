@@ -1,3 +1,4 @@
+v1.2.0.32:	Improved plugin loader.
 v1.2.0.31:	Added Functional Social Slots patch.
 v1.2.0.30:	Fixed visual bug.
 v1.2.0.29:	Updated to work with tModLoader v0.9.0.0.
