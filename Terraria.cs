@@ -85,6 +85,7 @@ namespace TerrariaPatcher
               */
 
             AsmDefinition.Write(target);
+            IL.MakeLargeAddressAware(target);
         }
 
         private static void FunctionalSocialSlots()

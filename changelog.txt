@@ -1,3 +1,4 @@
+v1.2.0.33:	Added Large Address Aware patch.
 v1.2.0.32:	Improved plugin loader.
 v1.2.0.31:	Added Functional Social Slots patch.
 v1.2.0.30:	Fixed visual bug.
