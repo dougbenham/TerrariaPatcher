@@ -113,7 +113,7 @@ namespace BlahPlugins
                         }
                         else if (Main.netMode == 1 && player.whoAmI == Main.myPlayer)
                         {
-                            NetMessage.SendData(73, -1, -1, "", 0, 0f, 0f, 0f, 0);
+                            NetMessage.SendData(73);
                         }
                     }
                     for (int num91 = 0; num91 < 70; num91++)

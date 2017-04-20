@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using GTRPlugins.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using PluginLoader;
+using ReLogic.Graphics;
+using ReLogic.OS;
 using Terraria;
 using Terraria.UI;
 using Terraria.UI.Chat;
+using Button = GTRPlugins.UI.Button;
 
 namespace GTRPlugins
 {
@@ -34,7 +36,7 @@ namespace GTRPlugins
                 {
                     return 1;
                 }
-                int nameComp = string.Compare(GetItem().name, comp.GetItem().name, StringComparison.InvariantCulture);
+                int nameComp = string.Compare(GetItem().Name, comp.GetItem().Name, StringComparison.InvariantCulture);
                 if (nameComp != 0)
                 {
                     return nameComp;
@@ -121,6 +123,8 @@ namespace GTRPlugins
                 if (SearchTextFocus)
                 {
                     string searchText = SearchText;
+                    Terraria.GameInput.PlayerInput.WritingText = true;
+                    Platform.Current.Ime.Enable();
                     SearchText = Main.GetInputText(SearchText);
                     if (searchText != SearchText)
                     {
@@ -158,7 +162,7 @@ namespace GTRPlugins
                         {
                             for (int j = 0; j < Main.chest[i].item.Length; j++)
                             {
-                                if (Main.chest[i].item[j] != null && Main.chest[i].item[j].type > 0 && Main.chest[i].item[j].stack > 0 && Main.chest[i].item[j].name.ToLower().Contains(SearchText.ToLower()))
+                                if (Main.chest[i].item[j] != null && Main.chest[i].item[j].type > 0 && Main.chest[i].item[j].stack > 0 && Main.chest[i].item[j].Name.ToLower().Contains(SearchText.ToLower()))
                                 {
                                     itemList.Add(new ChestItem() { chest = i, slot = j, distance = dist });
                                 }
@@ -192,8 +196,8 @@ namespace GTRPlugins
                     SearchTextFocus = false;
                 }
 
-                Main.spriteBatch.Draw(Main.textBackTexture, new Vector2(textFieldX, textFieldY), new Microsoft.Xna.Framework.Rectangle?(new Microsoft.Xna.Framework.Rectangle(0, 0, 175, Main.textBackTexture.Height)), new Microsoft.Xna.Framework.Color(160, 160, 160, 160), 0f, default(Vector2), 1f, SpriteEffects.None, 0f);
-                Main.spriteBatch.Draw(Main.textBackTexture, new Vector2(textFieldX + 175, textFieldY), new Microsoft.Xna.Framework.Rectangle?(new Microsoft.Xna.Framework.Rectangle(Main.textBackTexture.Width - 175, 0, 175, Main.textBackTexture.Height)), new Microsoft.Xna.Framework.Color(160, 160, 160, 160), 0f, default(Vector2), 1f, SpriteEffects.None, 0f);
+                Main.spriteBatch.Draw(Main.textBackTexture, new Vector2(textFieldX, textFieldY), new Rectangle(0, 0, 175, Main.textBackTexture.Height), new Color(160, 160, 160, 160), 0f, default(Vector2), 1f, SpriteEffects.None, 0f);
+                Main.spriteBatch.Draw(Main.textBackTexture, new Vector2(textFieldX + 175, textFieldY), new Rectangle(Main.textBackTexture.Width - 175, 0, 175, Main.textBackTexture.Height), new Color(160, 160, 160, 160), 0f, default(Vector2), 1f, SpriteEffects.None, 0f);
                 string searchText = SearchText;
                 if (SearchTextFocus)
                 {
@@ -260,7 +264,7 @@ namespace GTRPlugins
                             player.chest = prevPlayerChest;
                         }
                     }
-                    ItemSlot.Draw(Main.spriteBatch, ref item, invContext, new Vector2((float)x, (float)y), default(Microsoft.Xna.Framework.Color));
+                    ItemSlot.Draw(Main.spriteBatch, ref item, invContext, new Vector2((float)x, (float)y), default(Color));
                 }
             }
         }

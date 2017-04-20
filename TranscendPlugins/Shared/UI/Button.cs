@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Terraria;
+using ReLogic.Graphics;
 
 namespace GTRPlugins.UI
 {

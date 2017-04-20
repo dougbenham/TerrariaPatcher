@@ -7,19 +7,13 @@ using Terraria.ID;
 
 namespace TranscendPlugins
 {
-    public class Teleport : MarshalByRefObject, IPluginUpdate, IPluginChatCommand
+    public class Teleport : MarshalByRefObject, IPluginInitialize, IPluginUpdate, IPluginChatCommand
     {
         private int planteraBulbTileLookup, plant1Lookup, plant2Lookup, plant3Lookup, plant4Lookup;
         private Keys teleportKey;
 
         public Teleport()
         {
-            planteraBulbTileLookup = Terraria.Map.MapHelper.TileToLookup(TileID.PlanteraBulb, 0);
-            plant1Lookup = Terraria.Map.MapHelper.TileToLookup(TileID.DyePlants, 8);
-            plant2Lookup = Terraria.Map.MapHelper.TileToLookup(TileID.DyePlants, 9);
-            plant3Lookup = Terraria.Map.MapHelper.TileToLookup(TileID.DyePlants, 10);
-            plant4Lookup = Terraria.Map.MapHelper.TileToLookup(TileID.DyePlants, 11);
-
             if (!Keys.TryParse(IniAPI.ReadIni("Teleport", "TeleportKey", "F", writeIt: true), out teleportKey))
                 teleportKey = Keys.F;
 
@@ -29,8 +23,17 @@ namespace TranscendPlugins
                 var vector = new Vector2(Main.mouseX + Main.screenPosition.X, Main.mouseY + Main.screenPosition.Y);
                 player.Teleport(vector, 5, 0);
                 player.velocity = Vector2.Zero;
-                NetMessage.SendData(65, -1, -1, "", 0, player.whoAmI, vector.X, vector.Y, 5, 0, 0);
+                NetMessage.SendData(65, -1, -1, null, 0, player.whoAmI, vector.X, vector.Y, 5, 0, 0);
             }, teleportKey);
+        }
+
+        public void OnInitialize()
+        {
+            planteraBulbTileLookup = Terraria.Map.MapHelper.TileToLookup(TileID.PlanteraBulb, 0);
+            plant1Lookup = Terraria.Map.MapHelper.TileToLookup(TileID.DyePlants, 8);
+            plant2Lookup = Terraria.Map.MapHelper.TileToLookup(TileID.DyePlants, 9);
+            plant3Lookup = Terraria.Map.MapHelper.TileToLookup(TileID.DyePlants, 10);
+            plant4Lookup = Terraria.Map.MapHelper.TileToLookup(TileID.DyePlants, 11);
         }
 
         public void OnUpdate()

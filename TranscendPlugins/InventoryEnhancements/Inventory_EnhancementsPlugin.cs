@@ -134,8 +134,7 @@ namespace GTRPlugins
                                 chest.item[i].stack--;
                                 if (chest.item[i].stack <= 0)
                                 {
-                                    chest.item[i].type = 0;
-                                    chest.item[i].name = "";
+                                    chest.item[i].SetDefaults();
                                 }
                             }
                         }
@@ -147,12 +146,12 @@ namespace GTRPlugins
                     {
                         for (int l = 0; l < 40; l++)
                         {
-                            NetMessage.SendData(32, -1, -1, "", player.chest, (float)l, 0f, 0f, 0, 0, 0);
+                            NetMessage.SendData(32, -1, -1, null, player.chest, (float)l, 0f, 0f, 0, 0, 0);
                         }
                     }
                     else
                     {
-                        NetMessage.SendData(33, -1, -1, "", Main.player[Main.myPlayer].chest, 0f, 0f, 0f, 0, 0, 0);
+                        NetMessage.SendData(33, -1, -1, null, Main.player[Main.myPlayer].chest, 0f, 0f, 0f, 0, 0, 0);
                     }
                 }
                 if (legacySoundStyle != null)

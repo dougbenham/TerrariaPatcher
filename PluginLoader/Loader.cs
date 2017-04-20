@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using Microsoft.CSharp;
 using Microsoft.Xna.Framework;
 using Terraria;
+using Terraria.Chat;
 using Terraria.DataStructures;
 using Terraria.IO;
 using Keys = Microsoft.Xna.Framework.Input.Keys;
@@ -36,77 +37,90 @@ namespace PluginLoader
             {
                 loaded = true;
                 
-                var pluginsFolder = @".\Plugins\";
-                var sharedFolder = Path.Combine(pluginsFolder, "Shared");
+                try
+                {
+                    var pluginsFolder = @".\Plugins\";
+                    var sharedFolder = Path.Combine(pluginsFolder, "Shared");
 
-                if (!Utils.IsProcessElevated)
-                {
-                    MessageBox.Show("Elevated administrator privileges not detected, you may run into issues! If you are running via Steam, please start Steam with elevated administrator privileges.", "Terraria",
-                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                }
-                if (Utils.IsFileLocked(new FileInfo("Shared.dll")))
-                {
-                    MessageBox.Show("You can only have a single instance of Terraria running at once. Please use Task Manager to close any extra Terraria processes and try again.", "Terraria",
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    Environment.Exit(0);
-                }
-                if (!Directory.Exists(pluginsFolder))
-                {
-                    MessageBox.Show(@"Your Terraria\Plugins folder is missing.", "Terraria",
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    Environment.Exit(0);
-                }
-                if (!Directory.Exists(sharedFolder))
-                {
-                    MessageBox.Show(@"Your Terraria\Plugins\Shared folder is missing.", "Terraria",
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    Environment.Exit(0);
-                }
-
-                var references = AppDomain.CurrentDomain
-                    .GetAssemblies()
-                    .Where(a => !a.IsDynamic && !string.IsNullOrEmpty(a.Location))
-                    .Select(a => a.Location).ToList();
-                var jsonBaseName = "Newtonsoft.Json.dll";
-                if (!references.Any(s => s.Contains(jsonBaseName)))
-                {
-                    // Dynamic compilation requires assemblies to be stored on file, thus we must extract the Newtonsoft.Json.dll embedded resource to a temp file if we want to use it.
-                    var assembly = Assembly.GetEntryAssembly();
-                    var error = "Could not extract Newtonsoft.Json.dll from Terraria.";
-                    var resourceName = assembly.GetManifestResourceNames().FirstOrDefault(s => s.Contains(jsonBaseName));
-                    if (resourceName == null) throw new Exception(error);
-
-                    var newtonsoftFileName = Path.Combine(".", jsonBaseName);
-                    if (!File.Exists(newtonsoftFileName))
+                    if (!Utils.IsProcessElevated)
                     {
-                        using (var stream = assembly.GetManifestResourceStream(resourceName))
-                        {
-                            if (stream == null) throw new Exception(error);
-
-                            using (var fileStream = new FileStream(newtonsoftFileName, FileMode.Create))
-                            {
-                                stream.CopyTo(fileStream);
-                            }
-                        }
+                        MessageBox.Show("Elevated administrator privileges not detected, you may run into issues! If you are running via Steam, please start Steam with elevated administrator privileges.", "Terraria",
+                            MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    }
+                    if (Utils.IsFileLocked(new FileInfo("Shared.dll")))
+                    {
+                        MessageBox.Show("You can only have a single instance of Terraria running at once. Please use Task Manager to close any extra Terraria processes and try again.", "Terraria",
+                            MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        Environment.Exit(0);
+                    }
+                    if (!Directory.Exists(pluginsFolder))
+                    {
+                        MessageBox.Show(@"Your Terraria\Plugins folder is missing.", "Terraria",
+                            MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        Environment.Exit(0);
+                    }
+                    if (!Directory.Exists(sharedFolder))
+                    {
+                        MessageBox.Show(@"Your Terraria\Plugins\Shared folder is missing.", "Terraria",
+                            MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        Environment.Exit(0);
                     }
 
-                    references.Add(newtonsoftFileName);
-                }
-                
-                Load(references.ToArray(), Directory.EnumerateFiles(pluginsFolder, "*.cs", SearchOption.AllDirectories).ToArray());
+                    var references = AppDomain.CurrentDomain
+                        .GetAssemblies()
+                        .Where(a => !a.IsDynamic && !string.IsNullOrEmpty(a.Location))
+                        .Select(a => a.Location).ToList();
+                    ExtractAndReference(references, "Terraria.Libraries.JSON.NET.Newtonsoft.Json.dll");
+                    ExtractAndReference(references, "Terraria.Libraries.ReLogic.ReLogic.dll");
 
-                // Load hotkey binds
-                var result = IniAPI.GetIniKeys("HotkeyBinds").ToList();
-                foreach (var keys in result)
+                    Load(references.ToArray(), Directory.EnumerateFiles(pluginsFolder, "*.cs", SearchOption.AllDirectories).ToArray());
+
+                    // Load hotkey binds
+                    var result = IniAPI.GetIniKeys("HotkeyBinds").ToList();
+                    foreach (var keys in result)
+                    {
+                        var val = IniAPI.ReadIni("HotkeyBinds", keys, null);
+                        var key = ParseHotkey(keys);
+
+                        if (string.IsNullOrEmpty(val) || !val.StartsWith("/") || key == null)
+                            MessageBox.Show("Invalid record in [HotkeyBinds]: " + key + ".", "", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        else
+                            RegisterHotkey(val, key);
+                    }
+                }
+                catch (Exception ex)
                 {
-                    var val = IniAPI.ReadIni("HotkeyBinds", keys, null);
-                    var key = ParseHotkey(keys);
-
-                    if (string.IsNullOrEmpty(val) || !val.StartsWith("/") || key == null)
-                        MessageBox.Show("Invalid record in [HotkeyBinds]: " + key + ".", "", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    else
-                        RegisterHotkey(val, key);
+                    MessageBox.Show(ex.ToString());
+                    throw;
                 }
+            }
+        }
+
+        private static void ExtractAndReference(List<string> references, string dllName)
+        {
+            if (!references.Any(s => s.Contains(dllName)))
+            {
+                // Dynamic compilation requires assemblies to be stored on file, thus we must extract the Newtonsoft.Json.dll embedded resource to a temp file if we want to use it.
+                var assembly = Assembly.GetEntryAssembly();
+                var error = "Could not extract Newtonsoft.Json.dll from Terraria.";
+                var resourceName = assembly.GetManifestResourceNames().FirstOrDefault(s => s.Contains(dllName));
+                if (resourceName == null) throw new Exception(error);
+
+                var newtonsoftFileName = Path.Combine(".", dllName);
+                if (!File.Exists(newtonsoftFileName))
+                {
+                    using (var stream = assembly.GetManifestResourceStream(resourceName))
+                    {
+                        if (stream == null) throw new Exception(error);
+
+                        using (var fileStream = new FileStream(newtonsoftFileName, FileMode.Create))
+                        {
+                            stream.CopyTo(fileStream);
+                        }
+                    }
+                }
+
+                references.Add(newtonsoftFileName);
             }
         }
 
@@ -484,15 +498,12 @@ namespace PluginLoader
 
         #region NetMessage
 
-        public static bool OnNetMessageSendData(int msgType, int remoteClient, int ignoreClient, string text, int number, float number2, float number3, float number4,
-            int number5, int number6, int number7)
+        public static bool OnSendChatMessageFromClient(ChatMessage msg)
         {
-            bool ret = false, chatRet = false;
-
-            foreach (var plugin in loadedPlugins.OfType<IPluginNetMessageSendData>())
-                ret = ret || plugin.OnNetMessageSendData(msgType, remoteClient, ignoreClient, text, number, number2, number3, number4, number5, number6, number7);
-
-            if (msgType == 25 && number == Main.myPlayer && !string.IsNullOrEmpty(text) && text[0] == '/')
+            var text = msg.Text;
+            bool chatRet = false;
+            
+            if (!string.IsNullOrEmpty(text) && text[0] == '/')
             {
                 var split = text.Substring(1).Split(new[] {' '}, 2);
                 var cmd = split[0].ToLower();
@@ -509,10 +520,9 @@ namespace PluginLoader
                             chatRet = plugin.OnChatCommand(cmd, args) || chatRet;
                         break;
                 }
-                if (chatRet) Main.chatText = string.Empty;
             }
 
-            return ret || chatRet;
+            return chatRet;
         }
 
         #endregion

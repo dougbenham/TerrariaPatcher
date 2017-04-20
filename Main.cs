@@ -461,10 +461,9 @@ namespace TerrariaPatcher
         private void removeAnglerQuestLimit_CheckedChanged(object sender, EventArgs e)
         {
             if (removeAnglerQuestLimit.Checked && !loading)
-            {
-                MessageBox.Show("This mod is reported to break Steam achievements for the Angler. It will still allow you to get in-game achievements though.", Program.AssemblyName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                SaveConfig();
-            }
+                MessageBox.Show("This mod is reported to break Steam achievements for the Angler. It will still allow you to get in-game achievements though.", Program.AssemblyName,
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            SaveConfig();
         }
 
         private bool CheckIncludedByFilter(Buff buff)

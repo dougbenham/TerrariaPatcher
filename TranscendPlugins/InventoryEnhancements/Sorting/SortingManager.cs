@@ -6,7 +6,7 @@ namespace GTRPlugins.Sorting
 {
     public class SortingManager
     {
-        List<SortingSet> sortingSets = new List<SortingSet> { };
+        List<SortingSet> sortingSets = new List<SortingSet>();
 
         public SortingManager()
         {
@@ -23,7 +23,7 @@ namespace GTRPlugins.Sorting
         {
             if (Main.gameMenu) return;
             Player player = Main.player[Main.myPlayer];
-            List<Item> toSortList = new List<Item> { };
+            List<Item> toSortList = new List<Item>();
             if (player.chest == -1 || Inventory_Enhancements.config.SortChests == false)
             {
                 for (int i = 10; i < 50; i++)
@@ -36,7 +36,7 @@ namespace GTRPlugins.Sorting
                     }
                 }
                 Item[] sorted = ApplySortings(toSortList, mode).ToArray();
-                if (sorted.Count() == 0) return;
+                if (sorted.Length == 0) return;
                 int sortCounter = 0;
                 for (int i = 10; i < 50; i++)
                 {
@@ -74,7 +74,7 @@ namespace GTRPlugins.Sorting
                     }
                 }
                 Item[] sorted = ApplySortings(toSortList, mode).ToArray();
-                if (sorted.Count() == 0) return;
+                if (sorted.Length == 0) return;
                 int sortCounter = 0;
                 for (int i = 0; i < 40; i++)
                 {
@@ -98,10 +98,10 @@ namespace GTRPlugins.Sorting
                     {
                         for (int i = 0; i < 40; i++)
                         {
-                            NetMessage.SendData(32, -1, -1, "", player.chest, (float)i, 0f, 0f, 0, 0, 0);
+                            NetMessage.SendData(32, -1, -1, null, player.chest, i);
                         }
                     }
-                    else NetMessage.SendData(33, -1, -1, "", Main.player[Main.myPlayer].chest, 0f, 0f, 0f, 0, 0, 0);
+                    else NetMessage.SendData(33, -1, -1, null, Main.player[Main.myPlayer].chest);
                 }
             }
 
@@ -109,11 +109,11 @@ namespace GTRPlugins.Sorting
 
         private List<Item> ApplySortings(List<Item> input, int mode)
         {
-            List<Item> sorted = new List<Item> { };
+            List<Item> sorted = new List<Item>();
             foreach (SortingSet s in sortingSets)
             {
                 List<Item> temp = s.sortOutValid(ref input);
-                if (mode == 1) temp = temp.OrderBy(x => x.name).ThenByDescending(x => x.stack).ToList();
+                if (mode == 1) temp = temp.OrderBy(x => x.Name).ThenByDescending(x => x.stack).ToList();
                 else if (mode == 2) temp = temp.OrderByDescending(X => X.rare).ThenByDescending(x => x.stack).ToList();
                 else if (mode == 3) temp = temp.OrderByDescending(x => x.value).ThenByDescending(x => x.stack).ToList();
                 else temp = temp.OrderBy(x => x.type).ThenByDescending(x => x.stack).ToList();
@@ -122,7 +122,7 @@ namespace GTRPlugins.Sorting
                     sorted.Add(i);
                 }
             }
-            if (mode == 1) input = input.OrderBy(x => x.name).ThenByDescending(x => x.stack).ToList();
+            if (mode == 1) input = input.OrderBy(x => x.Name).ThenByDescending(x => x.stack).ToList();
             else if (mode == 2) input = input.OrderByDescending(x => x.rare).ThenByDescending(x => x.stack).ToList();
             else if (mode == 3) input = input.OrderByDescending(x => x.value).ThenByDescending(x => x.stack).ToList();
             else input = input.OrderBy(x => x.type).ThenByDescending(x => x.stack).ToList();

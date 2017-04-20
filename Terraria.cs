@@ -534,8 +534,8 @@ namespace TerrariaPatcher
                 return fieldReference != null && fieldReference.Name == "chaosState";
             },
                 OpCodes.Ldfld,
-                OpCodes.Brfalse);
-
+                OpCodes.Brfalse_S);
+            
             var target = itemCheck.Body.Instructions[spot + 1].Operand as Instruction;
             bool done = false;
             for (; !done; target = target.Next)
@@ -679,7 +679,7 @@ namespace TerrariaPatcher
             var onItemSetDefaults = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnItemSetDefaults"));
             var onProjectileAI = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnProjectileAI001"));
             var onRightClick = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnItemSlotRightClick"));
-            var onNetMessage = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnNetMessageSendData"));
+            var onSendChatMessageFromClient = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnSendChatMessageFromClient"));
             var onGetColor = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnLightingGetColor"));
             var onGetItem = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerGetItem"));
             var onChestSetupShop = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnChestSetupShop"));
@@ -693,7 +693,6 @@ namespace TerrariaPatcher
             var item = IL.GetTypeDefinition(ModDefinition, "Item");
             var projectile = IL.GetTypeDefinition(ModDefinition, "Projectile");
             var itemSlot = IL.GetTypeDefinition(ModDefinition, "ItemSlot");
-            var netMessage = IL.GetTypeDefinition(ModDefinition, "NetMessage");
             var lighting = IL.GetTypeDefinition(ModDefinition, "Lighting");
             var chest = IL.GetTypeDefinition(ModDefinition, "Chest");
 
@@ -702,6 +701,7 @@ namespace TerrariaPatcher
             var drawInterface = IL.GetMethodDefinition(main, "DrawInterface");
             var drawInventory = IL.GetMethodDefinition(main, "DrawInventory");
             var update = IL.GetMethodDefinition(main, "DoUpdate");
+            var updateEnterToggleChat = IL.GetMethodDefinition(main, "DoUpdate_Enter_ToggleChat");
             var updateTime = IL.GetMethodDefinition(main, "UpdateTime");
             var checkXmas = IL.GetMethodDefinition(main, "checkXMas");
             var checkHalloween = IL.GetMethodDefinition(main, "checkHalloween");
@@ -719,7 +719,7 @@ namespace TerrariaPatcher
             var setDefaults = IL.GetMethodDefinition(item, "SetDefaults", 2);
             var ai = IL.GetMethodDefinition(projectile, "AI_001");
             var rightClick = IL.GetMethodDefinition(itemSlot, "RightClick", 3);
-            var sendData = IL.GetMethodDefinition(netMessage, "SendData");
+            var doUpdateHandleChat = IL.GetMethodDefinition(main, "DoUpdate_HandleChat");
             var getColor = IL.GetMethodDefinition(lighting, "GetColor", 2);
             var getItem = IL.GetMethodDefinition(player, "GetItem");
             var setupShop = IL.GetMethodDefinition(chest, "SetupShop");
@@ -756,20 +756,20 @@ namespace TerrariaPatcher
             if (!IsModLoader)
             {
                 // patch chat to allow on singleplayer
-                int spot = IL.ScanForOpcodePattern(update, (i, instruction) =>
-                {
-                    var f0 = instruction.Operand as FieldReference;
-                    var result0 = f0 != null && f0.Name == "netMode";
-                    var f33 = update.Body.Instructions[i + 3].Operand as FieldReference;
-                    var result33 = f33 != null && f33.Name == "keyState";
-                    return result0 && result33;
-                }, OpCodes.Ldsfld,
+                int spot = IL.ScanForOpcodePattern(updateEnterToggleChat, (i, instruction) =>
+                    {
+                        var f0 = instruction.Operand as FieldReference;
+                        var result0 = f0 != null && f0.Name == "netMode";
+                        var f33 = updateEnterToggleChat.Body.Instructions[i + 3].Operand as FieldReference;
+                        var result33 = f33 != null && f33.Name == "keyState";
+                        return result0 && result33;
+                    }, OpCodes.Ldsfld,
                     OpCodes.Ldc_I4_1,
                     OpCodes.Bne_Un);
 
-                update.Body.Instructions[spot + 0].OpCode = OpCodes.Nop;
-                update.Body.Instructions[spot + 1].OpCode = OpCodes.Nop;
-                update.Body.Instructions[spot + 2].OpCode = OpCodes.Nop;
+                updateEnterToggleChat.Body.Instructions[spot + 0].OpCode = OpCodes.Nop;
+                updateEnterToggleChat.Body.Instructions[spot + 1].OpCode = OpCodes.Nop;
+                updateEnterToggleChat.Body.Instructions[spot + 2].OpCode = OpCodes.Nop;
             }
 
             {
@@ -1036,24 +1036,23 @@ namespace TerrariaPatcher
             }
             
             {
-                // NetMessage.SendData pre hook
-                var firstInstr = sendData.Body.Instructions.FirstOrDefault();
-                IL.MethodPrepend(sendData, new[]
+                // Main.DoUpdate_HandleChat hook
+                int spot = IL.ScanForOpcodePattern(doUpdateHandleChat, (i, instruction) =>
+                    {
+                        var fieldReference = doUpdateHandleChat.Body.Instructions[i + 2].Operand as FieldReference;
+                        return fieldReference != null && fieldReference.Name == "netMode";
+                    },
+                    OpCodes.Ldloc_2,
+                    OpCodes.Call,
+                    OpCodes.Ldsfld,
+                    OpCodes.Brtrue_S);
+                
+                var firstInstr = doUpdateHandleChat.Body.Instructions[spot + 3].Operand as Instruction;
+                IL.MethodAppend(doUpdateHandleChat, spot, 0, new[]
                 {
-                    Instruction.Create(OpCodes.Ldarg_0), // msgType
-                    Instruction.Create(OpCodes.Ldarg_1), // remoteClient
-                    Instruction.Create(OpCodes.Ldarg_2), // ignoreClient
-                    Instruction.Create(OpCodes.Ldarg_3), // text
-                    Instruction.Create(OpCodes.Ldarg_S, sendData.Parameters[4]), // number
-                    Instruction.Create(OpCodes.Ldarg_S, sendData.Parameters[5]), // number2
-                    Instruction.Create(OpCodes.Ldarg_S, sendData.Parameters[6]), // number3
-                    Instruction.Create(OpCodes.Ldarg_S, sendData.Parameters[7]), // number4
-                    Instruction.Create(OpCodes.Ldarg_S, sendData.Parameters[8]), // number5
-                    Instruction.Create(OpCodes.Ldarg_S, sendData.Parameters[9]), // number6
-                    Instruction.Create(OpCodes.Ldarg_S, sendData.Parameters[10]), // number7
-                    Instruction.Create(OpCodes.Call, onNetMessage),
-                    Instruction.Create(OpCodes.Brfalse_S, firstInstr),
-                    Instruction.Create(OpCodes.Ret)
+                    Instruction.Create(OpCodes.Ldloc_2), // text
+                    Instruction.Create(OpCodes.Call, onSendChatMessageFromClient),
+                    Instruction.Create(OpCodes.Brtrue_S, firstInstr)
                 });
             }
 
@@ -1131,7 +1130,9 @@ namespace TerrariaPatcher
                 IL.MakeTypePublic(IL.GetTypeDefinition(ModDefinition, "MapHelper"));
                 IL.MakeTypePublic(IL.GetTypeDefinition(ModDefinition, "Player"));
                 IL.MakeTypePublic(IL.GetTypeDefinition(ModDefinition, "Main"));
-                //IL.MakeTypePublic(IL.GetTypeDefinition(ModDefinition, "Lighting"));
+                IL.MakeTypePublic(IL.GetTypeDefinition(ModDefinition, "Lang"));
+                IL.MakeTypePublic(IL.GetTypeDefinition(ModDefinition, "LocalizedText"));
+                IL.MakeTypePublic(IL.GetTypeDefinition(ModDefinition, "ItemTooltip"));
             }
         }
 

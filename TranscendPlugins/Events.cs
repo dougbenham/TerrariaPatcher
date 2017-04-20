@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using Microsoft.Xna.Framework;
 using PluginLoader;
 using Terraria;
 using Terraria.GameContent.Achievements;
@@ -138,16 +139,14 @@ namespace TranscendPlugins
 
         private void TriggerEclipse()
         {
-            Main.eclipse = true;
-            AchievementsHelper.NotifyProgressionEvent(2);
             if (Main.netMode == 0)
             {
-                Main.NewText(Lang.misc[20], 50, 255, 130, false);
+                Main.eclipse = true;
+                Main.NewText(Lang.misc[20].Value, 50, 255, 130, false);
             }
-            else if (Main.netMode == 2)
+            else
             {
-                NetMessage.SendData(25, -1, -1, Lang.misc[20], 255, 50f, 255f, 130f, 0, 0, 0);
-                NetMessage.SendData(7, -1, -1, "", 0, 0f, 0f, 0f, 0, 0, 0);
+                NetMessage.SendData(61, -1, -1, null, Main.myPlayer, -6f, 0f, 0f, 0, 0, 0);
             }
         }
 
@@ -157,26 +156,23 @@ namespace TranscendPlugins
             AchievementsHelper.NotifyProgressionEvent(4);
             if (Main.netMode == 0)
             {
-                Main.NewText(Lang.misc[8], 50, 255, 130, false);
+                Main.NewText(Lang.misc[8].Value, 50, 255, 130, false);
             }
             else if (Main.netMode == 2)
             {
-                NetMessage.SendData(25, -1, -1, Lang.misc[8], 255, 50f, 255f, 130f, 0, 0, 0);
+                NetMessage.BroadcastChatMessage(Lang.misc[8].ToNetworkText(), new Color(50, 255, 130), -1);
             }
         }
 
         private void SpawnMoonLord()
         {
-            Terraria.NPC.MoonLordCountdown = 3600;
-            NetMessage.SendData(103, -1, -1, "", Terraria.NPC.MoonLordCountdown, 0f, 0f, 0f, 0, 0, 0);
             if (Main.netMode == 0)
             {
-                Main.NewText(Lang.misc[52], 50, 255, 130, false);
-                return;
+                WorldGen.StartImpendingDoom();
             }
-            if (Main.netMode == 2)
+            else
             {
-                NetMessage.SendData(25, -1, -1, Lang.misc[52], 255, 50f, 255f, 130f, 0, 0, 0);
+                NetMessage.SendData(61, -1, -1, null, Main.myPlayer, -8f, 0f, 0f, 0, 0, 0);
             }
         }
 

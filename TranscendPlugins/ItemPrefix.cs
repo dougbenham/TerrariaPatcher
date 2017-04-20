@@ -50,7 +50,7 @@ namespace TranscendPlugins
             {
                 for (int i = 0; i < Lang.prefix.Length; i++)
                 {
-                    if (Lang.prefix[i].ToLower() == args[0].ToLower())
+                    if (Lang.prefix[i].Value.ToLower() == args[0].ToLower())
                     {
                         prefixId = i;
                         break;

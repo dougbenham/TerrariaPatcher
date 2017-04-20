@@ -2,10 +2,11 @@
 using PluginLoader;
 using Terraria;
 using Terraria.ID;
+using TranscendPlugins.Shared.Extensions;
 
 namespace TranscendPlugins
 {
-    public class BuffRates : MarshalByRefObject, IPluginPlayerUpdateBuffs, IPluginItemSetDefaults, IPluginPlayerPickAmmo
+    public class BuffRates : MarshalByRefObject, IPluginInitialize, IPluginPlayerUpdateBuffs, IPluginPlayerPickAmmo
     {
         private static class Indices
         {
@@ -34,15 +35,23 @@ namespace TranscendPlugins
                 magic = 0.2f;
         }
 
+        public void OnInitialize()
+        {
+            Lang._buffDescriptionCache[Indices.Magic].SetValue((magic * 100) + "% increased magic damage");
+            Lang._buffDescriptionCache[Indices.Archery].SetValue((archery * 100) + "% increased arrow damage and speed");
+            Lang._buffDescriptionCache[Indices.Endurance].SetValue((endurance * 100) + "% reduced damage");
+            Lang._buffDescriptionCache[Indices.IceBarrier].SetValue("Damage taken is reduced by " + (iceBarrier * 100) + "%");
+            Lang._buffDescriptionCache[Indices.Rage].SetValue((rage * 100) + "% increased critical chance");
+            Lang._buffDescriptionCache[Indices.Wrath].SetValue((wrath * 100) + "% increased damage");
+            Lang._itemTooltipCache[ItemID.MagicPowerPotion].SetValue((magic * 100) + "% increased magic damage");
+            Lang._itemTooltipCache[ItemID.ArcheryPotion].SetValue((archery * 100) + "% increased arrow speed and damage");
+            Lang._itemTooltipCache[ItemID.EndurancePotion].SetValue("Reduces damage taken by " + (endurance * 100) + "%");
+            Lang._itemTooltipCache[ItemID.RagePotion].SetValue("Increases critical chance by " + (rage * 100) + "%");
+            Lang._itemTooltipCache[ItemID.WrathPotion].SetValue("Increases damage by " + (wrath * 100) + "%");
+        }
+
         public void OnPlayerUpdateBuffs(Player player)
         {
-            Main.buffTip[Indices.Magic] = (magic * 100) + "% increased magic damage";
-            Main.buffTip[Indices.Archery] = (archery * 100) + "% increased arrow damage and speed";
-            Main.buffTip[Indices.Endurance] = (endurance * 100) + "% reduced damage";
-            Main.buffTip[Indices.IceBarrier] = "Damage taken is reduced by " + (iceBarrier * 100) + "%";
-            Main.buffTip[Indices.Rage] = (rage * 100) + "% increased critical chance";
-            Main.buffTip[Indices.Wrath] = (wrath * 100) + "% increased damage";
-
             for (int k = 0; k < 22; k++)
             {
                 if (player.buffType[k] > 0 && player.buffTime[k] > 0)
@@ -77,34 +86,6 @@ namespace TranscendPlugins
                             player.minionDamage += w;
                             break;
                     }
-                }
-            }
-        }
-
-        public void OnItemSetDefaults(Item item)
-        {
-            if (item != null)
-            {
-                switch (item.netID)
-                {
-                    case ItemID.MagicPowerPotion:
-                        item.toolTip = (magic * 100) + "% increased magic damage";
-                        break;
-                    case ItemID.ArcheryPotion:
-                        item.toolTip = (archery * 100) + "% increased arrow speed and damage";
-                        break;
-                    case ItemID.FrozenTurtleShell:
-                        item.toolTip = "Puts a shell around the owner when below 50% life"; // bug fix, Terraria usually says 20% in the tooltip but should say 50%
-                        break;
-                    case ItemID.EndurancePotion:
-                        item.toolTip = "Reduces damage taken by " + (endurance * 100) + "%";
-                        break;
-                    case ItemID.RagePotion:
-                        item.toolTip = "Increases critical chance by " + (rage * 100) + "%";
-                        break;
-                    case ItemID.WrathPotion:
-                        item.toolTip = "Increases damage by " + (wrath * 100) + "%";
-                        break;
                 }
             }
         }

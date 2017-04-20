@@ -75,7 +75,7 @@ namespace RyanPlugins
 
                     if (context == 3 && Main.netMode == 1)
                     {
-                        NetMessage.SendData(32, -1, -1, "", Main.player[Main.myPlayer].chest, (float)slot, 0f, 0f, 0, 0, 0);
+                        NetMessage.SendData(32, -1, -1, null, Main.player[Main.myPlayer].chest, (float)slot, 0f, 0f, 0, 0, 0);
                     }
                 }
                 return true;

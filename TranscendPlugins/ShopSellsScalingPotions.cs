@@ -1,6 +1,7 @@
 ﻿using System;
 using PluginLoader;
 using Terraria;
+using Terraria.ID;
 
 namespace EraselsPlugins
 {
@@ -14,28 +15,28 @@ namespace EraselsPlugins
 
                 if (player.statLifeMax >= 200 && player.statLifeMax <= 299)
                 {
-                    chest.item[7].SetDefaults("Healing Potion");
+                    chest.item[7].SetDefaults(ItemID.HealingPotion);
                 }
                 else if (player.statLifeMax >= 300 && player.statLifeMax <= 499)
                 {
-                    chest.item[7].SetDefaults("Greater Healing Potion");
+                    chest.item[7].SetDefaults(ItemID.GreaterHealingPotion);
                 }
                 else if (player.statLifeMax >= 500)
                 {
-                    chest.item[7].SetDefaults("Super Healing Potion");
+                    chest.item[7].SetDefaults(ItemID.SuperHealingPotion);
                 }
 
                 if (player.statManaMax >= 160 && player.statManaMax <= 200)
                 {
-                    chest.item[8].SetDefaults("Mana Potion");
+                    chest.item[8].SetDefaults(ItemID.ManaPotion);
                 }
                 else if (player.statManaMax >= 201 && player.statManaMax <= 399)
                 {
-                    chest.item[8].SetDefaults("Greater Mana Potion");
+                    chest.item[8].SetDefaults(ItemID.GreaterManaPotion);
                 }
                 else if (player.statManaMax >= 400)
                 {
-                    chest.item[8].SetDefaults("Super Mana Potion");
+                    chest.item[8].SetDefaults(ItemID.SuperManaPotion);
                 }
             }
         }

@@ -137,12 +137,7 @@ namespace PluginLoader
     #endregion
 
     #region NetMessage
-
-    public interface IPluginNetMessageSendData : IPlugin
-    {
-        bool OnNetMessageSendData(int msgType, int remoteClient, int ignoreClient, string text, int number, float number2, float number3, float number4,
-            int number5, int number6, int number7);
-    }
+    
     public interface IPluginChatCommand : IPlugin
     {
         bool OnChatCommand(string command, string[] args);

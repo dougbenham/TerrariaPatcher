@@ -52,6 +52,9 @@
     <Reference Include="Terraria">
       <HintPath>..\bin\Debug\Terraria.exe</HintPath>
     </Reference>
+    <Reference Include="Terraria.Libraries.ReLogic.ReLogic">
+      <HintPath>References\Terraria.Libraries.ReLogic.ReLogic.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Bind.cs" />
@@ -82,6 +85,7 @@
     <Compile Include="InventoryEnhancements\SortingSet.cs" />
     <Compile Include="InventoryEnhancements\Sorting\Sets.cs" />
     <Compile Include="InventoryEnhancements\Sorting\SortingManager.cs" />
+    <Compile Include="Shared\Extensions\ItemTooltipExtensions.cs" />
     <Compile Include="Turrets.cs" />
     <Compile Include="PortableCraftingGuide.cs" />
     <Compile Include="SavePosition.cs" />

@@ -1,6 +1,8 @@
 ﻿using System;
 using PluginLoader;
 using Terraria;
+using Terraria.ID;
+using TranscendPlugins.Shared.Extensions;
 
 /// Original taken from: https://gist.github.com/YellowAfterlife/1edaa4060191823ee366
 namespace YellowAfterlifePlugins
@@ -95,9 +97,8 @@ namespace YellowAfterlifePlugins
             var maxStack = LoadInt(section, "maxStack");
             var scale = LoadFloat(section, "scale");
             var toolTip = LoadString(section, "toolTip");
-            var toolTip2 = LoadString(section, "toolTip2");
 
-            if (name != null) item.name = name;
+            if (name != null) Lang._itemNameCache[ItemID.FromNetId((short) item.type)].SetValue(name);
             if (autoReuse != null) item.autoReuse = (bool) autoReuse;
             if (damage != null) item.damage = (int) damage;
             if (knockback != null) item.knockBack = (float) knockback;
@@ -109,8 +110,7 @@ namespace YellowAfterlifePlugins
             if (useStyle != null) item.useStyle = (int) useStyle;
             if (maxStack != null) item.maxStack = (int) maxStack;
             if (scale != null) item.scale = (float) scale;
-            if (toolTip != null) item.toolTip = toolTip;
-            if (toolTip2 != null) item.toolTip2 = toolTip2;
+            if (toolTip != null) item.ToolTip.SetValue(toolTip);
         }
     }
 }
