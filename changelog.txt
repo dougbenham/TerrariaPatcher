@@ -1,3 +1,4 @@
+v1.2.0.35:	Updated for Terraria v1.3.5.3.
 v1.2.0.34:	Updated for Terraria v1.3.5.1.
 v1.2.0.33:	Added Large Address Aware patch.
 v1.2.0.32:	Improved plugin loader.

@@ -101,29 +101,17 @@ namespace TerrariaPatcher
             }, OpCodes.Ldarg_0, OpCodes.Ldc_I4_S, OpCodes.Newarr, OpCodes.Stfld);
             ctor.Body.Instructions[spot0 + 1].Operand = (sbyte)20;
 
-            if (IsModLoader)
+            while (true)
             {
-                int spot1 = IL.ScanForOpcodePattern(updateEquips,
-                    OpCodes.Ldloc_S, OpCodes.Ldc_I4_1, OpCodes.Add, OpCodes.Stloc_S, OpCodes.Ldloc_S, OpCodes.Ldc_I4_8, OpCodes.Ldarg_0, OpCodes.Ldfld, OpCodes.Add, OpCodes.Blt_S);
-                updateEquips.Body.Instructions[spot1 + 5] = Instruction.Create(OpCodes.Ldc_I4, 18);
+                int spot1 = IL.ScanForOpcodePattern(updateEquips, (i, instruction) =>
+                    {
+                        var i2 = updateEquips.Body.Instructions[i + 2].Operand as FieldReference;
+                        return i2 != null && i2.Name == "extraAccessorySlots";
+                    },
+                    OpCodes.Ldc_I4_8, OpCodes.Ldarg_0, OpCodes.Ldfld, OpCodes.Add);
+                if (spot1 < 0) break;
 
-                int spot2 = IL.ScanForOpcodePattern(updateEquips, (i, v) => true, spot1 + 1,
-                    OpCodes.Ldloc_S, OpCodes.Ldc_I4_1, OpCodes.Add, OpCodes.Stloc_S, OpCodes.Ldloc_S, OpCodes.Ldc_I4_8, OpCodes.Ldarg_0, OpCodes.Ldfld, OpCodes.Add, OpCodes.Blt_S);
-                updateEquips.Body.Instructions[spot2 + 5] = Instruction.Create(OpCodes.Ldc_I4, 18);
-            }
-            else
-            {
-                int spot1 = IL.ScanForOpcodePattern(updateEquips,
-                    OpCodes.Ldloc_2, OpCodes.Ldc_I4_1, OpCodes.Add, OpCodes.Stloc_2, OpCodes.Ldloc_2, OpCodes.Ldc_I4_8, OpCodes.Ldarg_0, OpCodes.Ldfld, OpCodes.Add, OpCodes.Blt);
-                updateEquips.Body.Instructions[spot1 + 5] = Instruction.Create(OpCodes.Ldc_I4, 18);
-
-                int spot2 = IL.ScanForOpcodePattern(updateEquips,
-                    OpCodes.Ldloc_S, OpCodes.Ldc_I4_1, OpCodes.Add, OpCodes.Stloc_S, OpCodes.Ldloc_S, OpCodes.Ldc_I4_8, OpCodes.Ldarg_0, OpCodes.Ldfld, OpCodes.Add, OpCodes.Blt);
-                updateEquips.Body.Instructions[spot2 + 5] = Instruction.Create(OpCodes.Ldc_I4, 18);
-
-                int spot3 = IL.ScanForOpcodePattern(updateEquips, (i, v) => true, spot2 + 1,
-                    OpCodes.Ldloc_S, OpCodes.Ldc_I4_1, OpCodes.Add, OpCodes.Stloc_S, OpCodes.Ldloc_S, OpCodes.Ldc_I4_8, OpCodes.Ldarg_0, OpCodes.Ldfld, OpCodes.Add, OpCodes.Blt_S);
-                updateEquips.Body.Instructions[spot3 + 5] = Instruction.Create(OpCodes.Ldc_I4, 18);
+                updateEquips.Body.Instructions[spot1] = Instruction.Create(OpCodes.Ldc_I4, 18);
             }
         }
 
