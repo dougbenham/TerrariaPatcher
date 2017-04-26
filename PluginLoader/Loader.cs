@@ -71,7 +71,7 @@ namespace PluginLoader
                         .Where(a => !a.IsDynamic && !string.IsNullOrEmpty(a.Location))
                         .Select(a => a.Location).ToList();
                     ExtractAndReference(references, "Terraria.Libraries.JSON.NET.Newtonsoft.Json.dll");
-                    ExtractAndReference(references, "Terraria.Libraries.ReLogic.ReLogic.dll");
+                    ExtractAndReference(references, "Terraria.Libraries.ReLogic.ReLogic.dll", true);
 
                     Load(references.ToArray(), Directory.EnumerateFiles(pluginsFolder, "*.cs", SearchOption.AllDirectories).ToArray());
 
@@ -96,18 +96,18 @@ namespace PluginLoader
             }
         }
 
-        private static void ExtractAndReference(List<string> references, string dllName)
+        private static void ExtractAndReference(List<string> references, string dllName, bool forceExtract = false)
         {
             if (!references.Any(s => s.Contains(dllName)))
             {
                 // Dynamic compilation requires assemblies to be stored on file, thus we must extract the Newtonsoft.Json.dll embedded resource to a temp file if we want to use it.
                 var assembly = Assembly.GetEntryAssembly();
-                var error = "Could not extract Newtonsoft.Json.dll from Terraria.";
+                var error = "Could not extract " + dllName + " from Terraria.";
                 var resourceName = assembly.GetManifestResourceNames().FirstOrDefault(s => s.Contains(dllName));
                 if (resourceName == null) throw new Exception(error);
 
                 var newtonsoftFileName = Path.Combine(".", dllName);
-                if (!File.Exists(newtonsoftFileName))
+                if (!File.Exists(newtonsoftFileName) || forceExtract)
                 {
                     using (var stream = assembly.GetManifestResourceStream(resourceName))
                     {
