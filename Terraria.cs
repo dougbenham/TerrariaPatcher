@@ -1027,13 +1027,12 @@ namespace TerrariaPatcher
                 // Main.DoUpdate_HandleChat hook
                 int spot = IL.ScanForOpcodePattern(doUpdateHandleChat, (i, instruction) =>
                     {
-                        var fieldReference = doUpdateHandleChat.Body.Instructions[i + 2].Operand as FieldReference;
+                        var fieldReference = doUpdateHandleChat.Body.Instructions[i + 1].Operand as FieldReference;
                         return fieldReference != null && fieldReference.Name == "netMode";
                     },
-                    OpCodes.Ldloc_2,
                     OpCodes.Call,
                     OpCodes.Ldsfld,
-                    OpCodes.Brtrue_S);
+                    OpCodes.Brtrue_S) - 1;
                 
                 var firstInstr = doUpdateHandleChat.Body.Instructions[spot + 3].Operand as Instruction;
                 IL.MethodAppend(doUpdateHandleChat, spot, 0, new[]

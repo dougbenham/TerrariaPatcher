@@ -14,7 +14,7 @@ namespace TranscendPlugins
         public BuffImmunity()
         {
             buffs = new List<int>();
-            IniAPI.ReadIni("BuffImmunity", "Buffs", "Blackout, Darkness, Webbed", writeIt: true).Split(new [] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList().ForEach(buff =>
+            IniAPI.ReadIni("BuffImmunity", "Buffs", "PotionSickness, ManaSickness, Blackout, Darkness, Webbed", writeIt: true).Split(new [] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList().ForEach(buff =>
             {
                 buff = buff.Trim().ToLower();
 
