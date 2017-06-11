@@ -1037,7 +1037,7 @@ namespace TerrariaPatcher
                 var firstInstr = doUpdateHandleChat.Body.Instructions[spot + 3].Operand as Instruction;
                 IL.MethodAppend(doUpdateHandleChat, spot, 0, new[]
                 {
-                    Instruction.Create(OpCodes.Ldloc_2), // text
+                    Instruction.Create(doUpdateHandleChat.Body.Instructions[spot].OpCode), // text
                     Instruction.Create(OpCodes.Call, onSendChatMessageFromClient),
                     Instruction.Create(OpCodes.Brtrue_S, firstInstr)
                 });
