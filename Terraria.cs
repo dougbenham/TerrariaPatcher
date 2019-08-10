@@ -501,9 +501,12 @@ namespace TerrariaPatcher
                 OpCodes.Ldc_I4_S,
                 OpCodes.Bne_Un_S);
 
-            for (int i = -1; i < 5; i++)
-                itemCheck.Body.Instructions[spot + i].OpCode = OpCodes.Nop;
-            itemCheck.Body.Instructions[spot + 5].OpCode = OpCodes.Br;
+            if (spot >= 0)
+            {
+                for (int i = -1; i < 5; i++)
+                    itemCheck.Body.Instructions[spot + i].OpCode = OpCodes.Nop;
+                itemCheck.Body.Instructions[spot + 5].OpCode = OpCodes.Br;
+            }
 
             checkMana.Body.ExceptionHandlers.Clear();
             checkMana.Body.Instructions.Clear();

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29123.88
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TerrariaPatcher", "TerrariaPatcher.csproj", "{80C7B8DD-7764-40BA-911A-EB83216F93DF}"
 EndProject
@@ -10,20 +10,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TranscendPlugins", "TranscendPlugins\TranscendPlugins.csproj", "{55C89F3A-2F84-4513-8D4C-905B8513C91C}"
 EndProject
 Global
-	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 4
-		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
-		SccTeamFoundationServer = https://dougbenham.visualstudio.com/defaultcollection
-		SccLocalPath0 = .
-		SccProjectUniqueName1 = TerrariaPatcher.csproj
-		SccLocalPath1 = .
-		SccProjectUniqueName2 = PluginLoader\\PluginLoader.csproj
-		SccProjectName2 = PluginLoader
-		SccLocalPath2 = PluginLoader
-		SccProjectUniqueName3 = TranscendPlugins\\TranscendPlugins.csproj
-		SccProjectName3 = TranscendPlugins
-		SccLocalPath3 = TranscendPlugins
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release (Public)|Any CPU = Release (Public)|Any CPU
@@ -45,11 +31,12 @@ Global
 		{55C89F3A-2F84-4513-8D4C-905B8513C91C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{55C89F3A-2F84-4513-8D4C-905B8513C91C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{55C89F3A-2F84-4513-8D4C-905B8513C91C}.Release (Public)|Any CPU.ActiveCfg = Release|Any CPU
-		{55C89F3A-2F84-4513-8D4C-905B8513C91C}.Release (Public)|Any CPU.Build.0 = Release|Any CPU
 		{55C89F3A-2F84-4513-8D4C-905B8513C91C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{55C89F3A-2F84-4513-8D4C-905B8513C91C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B7E8E7C3-022B-4BF7-8EE9-06714C24F7A3}
 	EndGlobalSection
 EndGlobal

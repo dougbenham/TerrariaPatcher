@@ -70,8 +70,8 @@ namespace PluginLoader
                         .GetAssemblies()
                         .Where(a => !a.IsDynamic && !string.IsNullOrEmpty(a.Location))
                         .Select(a => a.Location).ToList();
-                    ExtractAndReference(references, "Terraria.Libraries.JSON.NET.Newtonsoft.Json.dll");
-                    ExtractAndReference(references, "Terraria.Libraries.ReLogic.ReLogic.dll", true);
+                    ExtractAndReference(references, "Newtonsoft.Json.dll");
+                    ExtractAndReference(references, "ReLogic.dll", true);
 
                     Load(references.ToArray(), Directory.EnumerateFiles(pluginsFolder, "*.cs", SearchOption.AllDirectories).ToArray());
 
@@ -106,21 +106,21 @@ namespace PluginLoader
                 var resourceName = assembly.GetManifestResourceNames().FirstOrDefault(s => s.Contains(dllName));
                 if (resourceName == null) throw new Exception(error);
 
-                var newtonsoftFileName = Path.Combine(".", dllName);
-                if (!File.Exists(newtonsoftFileName) || forceExtract)
+                var path = Path.Combine(".", dllName);
+                if (!File.Exists(path) || forceExtract)
                 {
                     using (var stream = assembly.GetManifestResourceStream(resourceName))
                     {
                         if (stream == null) throw new Exception(error);
 
-                        using (var fileStream = new FileStream(newtonsoftFileName, FileMode.Create))
+                        using (var fileStream = new FileStream(path, FileMode.Create))
                         {
                             stream.CopyTo(fileStream);
                         }
                     }
                 }
 
-                references.Add(newtonsoftFileName);
+                references.Add(path);
             }
         }
 
