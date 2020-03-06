@@ -47,7 +47,10 @@ namespace TerrariaPatcher
         /// </summary>
         public static void Patch(string original, string target, TerrariaDetails details)
         {
-            using (var asm = AssemblyDefinition.ReadAssembly(original))
+            using (var asm = AssemblyDefinition.ReadAssembly(original, new ReaderParameters()
+            {
+                AssemblyResolver = new MyAssemblyResolver(Path.GetDirectoryName(original))
+            }))
             {
                 _mainModule = asm.MainModule;
                 
@@ -658,8 +661,8 @@ namespace TerrariaPatcher
         {
             // Loader target methods
             TypeDefinition loader;
-            var loaderFileName = _mainModule.AssemblyReferences.Any(r => r.Name == "FNA") 
-                ? "PluginLoader.FNA.dll" 
+            var loaderFileName = _mainModule.AssemblyReferences.Any(r => r.Name == "FNA")
+                ? "PluginLoader.FNA.dll"
                 : "PluginLoader.XNA.dll";
             using (var fna = AssemblyDefinition.ReadAssembly(loaderFileName))
                 loader = _mainModule.ImportReference(new TypeReference("PluginLoader", "Loader", fna.MainModule, fna.MainModule)).Resolve();
