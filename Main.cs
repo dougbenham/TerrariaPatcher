@@ -45,6 +45,7 @@ namespace TerrariaPatcher
                     foreach (var tmp in Directory.GetFiles(Environment.CurrentDirectory, "*.tmp"))
                         File.Delete(tmp);
 
+                    ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
                     var client = new WebClient();
                     client.CachePolicy = new RequestCachePolicy(RequestCacheLevel.NoCacheNoStore);
                     var str = client.DownloadString(changelogURL + "?random=" + new Random().Next());
