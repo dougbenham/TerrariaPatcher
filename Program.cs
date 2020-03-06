@@ -1,7 +1,8 @@
-﻿using System;
+﻿extern alias PluginLoaderXNA;
+using System;
 using System.Reflection;
 using System.Windows.Forms;
-using PluginLoader;
+using PluginLoaderXNA::PluginLoader;
 
 namespace TerrariaPatcher
 {

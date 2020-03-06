@@ -50,7 +50,7 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="Terraria">
-      <HintPath>..\bin\Debug\Terraria.exe</HintPath>
+      <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="Terraria.Libraries.ReLogic.ReLogic">
       <HintPath>References\Terraria.Libraries.ReLogic.ReLogic.dll</HintPath>
@@ -112,9 +112,9 @@
     <Compile Include="Weather.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\PluginLoader\PluginLoader.csproj">
-      <Project>{fab05058-0ecb-4ea1-808c-d8b684d463d8}</Project>
-      <Name>PluginLoader</Name>
+    <ProjectReference Include="..\PluginLoader.XNA\PluginLoader.XNA.csproj">
+      <Project>{a2185dcd-c7e8-4578-881c-b797d901a263}</Project>
+      <Name>PluginLoader.XNA</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

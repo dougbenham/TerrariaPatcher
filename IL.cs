@@ -47,7 +47,8 @@ namespace TerrariaPatcher
         
         public static Version GetAssemblyVersion(string path)
         {
-            return AssemblyDefinition.ReadAssembly(path).Name.Version;
+            using (var asm = AssemblyDefinition.ReadAssembly(path))
+                return asm.Name.Version;
         }
 
         public static void MethodPrepend(MethodDefinition method, IEnumerable<Instruction> instructions)

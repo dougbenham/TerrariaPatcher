@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -35,62 +36,73 @@ namespace TerrariaPatcher
     public class Terraria
     {
         /// <summary>
-        /// Gets or set the main assembly definition.
-        /// </summary>
-        private static AssemblyDefinition AsmDefinition { get; set; }
-
-        /// <summary>
         /// Gets or sets the main module definition.
         /// </summary>
-        private static ModuleDefinition ModDefinition { get; set; }
+        private static ModuleDefinition _mainModule;
 
-        private static bool IsModLoader => IL.GetTypeDefinition(ModDefinition, "Mod", false) != null;
+        private static bool IsModLoader => IL.GetTypeDefinition(_mainModule, "Mod", false) != null;
 
         /// <summary>
         /// Entrypoint.
         /// </summary>
         public static void Patch(string original, string target, TerrariaDetails details)
         {
-            // Load Terraria and obtain the main module..
-            AsmDefinition = AssemblyDefinition.ReadAssembly(original);
-            ModDefinition = AsmDefinition.MainModule;
+            using (var asm = AssemblyDefinition.ReadAssembly(original))
+            {
+                _mainModule = asm.MainModule;
+                
+                if (details.PermanentWings)
+                    AddWings();
+                if (details.SteamFix)
+                    RemoveSteam();
+                if (details.PermanentBuffs.Count > 0)
+                    AddBuffs(details.PermanentBuffs);
+                if (details.InfiniteAmmo)
+                    InfiniteAmmo();
+                if (details.RemovePotionSickness)
+                    RemovePotionSickness();
+                if (details.FixedPrefixes)
+                    FixPrefixes(details.AccessoryPrefix);
+                if (details.RemoveDiscordBuff)
+                    RemoveDiscordBuff();
+                if (details.MaxCraftingRange)
+                    RecipeRange();
+                if (details.FunctionalSocialSlots)
+                    FunctionalSocialSlots();
+                if (details.InfiniteCloudJumps)
+                    InfiniteCloudJumps();
+                if (details.RemoveManaCost)
+                    RemoveManaCost();
+                if (details.RemoveDrowning)
+                    RemoveDrowning();
+                if (details.DisplayTime)
+                    DisplayTime();
+                if (details.OneHitKill)
+                    OneHitKill();
+                if (details.RemoveAnglerQuestLimit)
+                    RemoveAnglerQuestLimit();
+                if (details.Plugins)
+                    Plugins();
+                if (Math.Abs(details.VampiricHealing - 7.5f) > 0.01)
+                    ModVampiricKnives(details.VampiricHealing / 100f);
+                if (Math.Abs(details.SpectreHealing - 20f) > 0.01)
+                    ModSpectreArmor(details.SpectreHealing / 100f);
+                if (details.SpawnRateVoodoo != 15)
+                    ModSpawnRateVoodooDemon(details.SpawnRateVoodoo / 100f);
+                //ModThornsBuff(details.Thorns / 100f);
 
-            /**
-              * Patch functions.
-              */
+                asm.Write(target + ".tmp");
+            }
 
-            if (details.PermanentWings) AddWings();
-            if (details.SteamFix) RemoveSteam();
-            if (details.PermanentBuffs.Count > 0) AddBuffs(details.PermanentBuffs);
-            if (details.InfiniteAmmo) InfiniteAmmo();
-            if (details.RemovePotionSickness) RemovePotionSickness();
-            if (details.FixedPrefixes) FixPrefixes(details.AccessoryPrefix);
-            if (details.RemoveDiscordBuff) RemoveDiscordBuff();
-            if (details.MaxCraftingRange) RecipeRange();
-            if (details.FunctionalSocialSlots) FunctionalSocialSlots();
-            if (details.InfiniteCloudJumps) InfiniteCloudJumps();
-            if (details.RemoveManaCost) RemoveManaCost();
-            if (details.RemoveDrowning) RemoveDrowning();
-            if (details.DisplayTime) DisplayTime();
-            if (details.OneHitKill) OneHitKill();
-            if (details.RemoveAnglerQuestLimit) RemoveAnglerQuestLimit();
-            if (details.Plugins) Plugins();
-            if (Math.Abs(details.VampiricHealing - 7.5f) > 0.01) ModVampiricKnives(details.VampiricHealing / 100f);
-            if (Math.Abs(details.SpectreHealing - 20f) > 0.01) ModSpectreArmor(details.SpectreHealing / 100f);
-            if (details.SpawnRateVoodoo != 15) ModSpawnRateVoodooDemon(details.SpawnRateVoodoo / 100f);
-            //ModThornsBuff(details.Thorns / 100f);
-
-            /**
-              * Save patches.
-              */
-
-            AsmDefinition.Write(target);
+            if (File.Exists(target))
+                File.Delete(target);
+            File.Move(target + ".tmp", target);
             IL.MakeLargeAddressAware(target);
         }
 
         private static void FunctionalSocialSlots()
         {
-            var player = IL.GetTypeDefinition(ModDefinition, "Player");
+            var player = IL.GetTypeDefinition(_mainModule, "Player");
             var ctor = IL.GetMethodDefinition(player, ".ctor");
             var updateEquips = IL.GetMethodDefinition(player, "UpdateEquips");
 
@@ -117,7 +129,7 @@ namespace TerrariaPatcher
 
         private static void ModVampiricKnives(float healingRate) // default is 0.075
         {
-            var projectile = IL.GetTypeDefinition(ModDefinition, "Projectile");
+            var projectile = IL.GetTypeDefinition(_mainModule, "Projectile");
             var vampireHeal = IL.GetMethodDefinition(projectile, "vampireHeal");
             
             int spot = IL.ScanForOpcodePattern(vampireHeal, OpCodes.Ldc_R4);
@@ -125,7 +137,7 @@ namespace TerrariaPatcher
         }
         private static void ModSpectreArmor(float healingRate) // default is 0.2
         {
-            var projectile = IL.GetTypeDefinition(ModDefinition, "Projectile");
+            var projectile = IL.GetTypeDefinition(_mainModule, "Projectile");
             var ghostHeal = IL.GetMethodDefinition(projectile, "ghostHeal");
 
             int spot = IL.ScanForOpcodePattern(ghostHeal, OpCodes.Ldc_R4);
@@ -134,7 +146,7 @@ namespace TerrariaPatcher
 
         private static void InfiniteCloudJumps()
         {
-            var player = IL.GetTypeDefinition(ModDefinition, "Player");
+            var player = IL.GetTypeDefinition(_mainModule, "Player");
             var update = IL.GetMethodDefinition(player, "Update");
             var jumpAgain1 = IL.GetFieldDefinition(player, "jumpAgainBlizzard");
             var jumpAgain2 = IL.GetFieldDefinition(player, "jumpAgainCloud");
@@ -174,11 +186,11 @@ namespace TerrariaPatcher
         
         private static void ModThornsBuff(float rate)
         {
-            var player = IL.GetTypeDefinition(ModDefinition, "Player");
+            var player = IL.GetTypeDefinition(_mainModule, "Player");
             var updatePlayer = IL.GetMethodDefinition(player, "Update");
 
-            var thornsScaling = new MethodDefinition("ThornsScaling", MethodAttributes.Private, ModDefinition.Import(typeof(int)));
-            thornsScaling.Parameters.Add(new ParameterDefinition(ModDefinition.Import(typeof(int))));
+            var thornsScaling = new MethodDefinition("ThornsScaling", MethodAttributes.Private, _mainModule.Import(typeof(int)));
+            thornsScaling.Parameters.Add(new ParameterDefinition(_mainModule.Import(typeof(int))));
             var thornsScalingIL = thornsScaling.Body.GetILProcessor();
             thornsScalingIL.Emit(OpCodes.Ldarg_1);
             thornsScalingIL.Emit(OpCodes.Conv_R4);
@@ -206,13 +218,13 @@ namespace TerrariaPatcher
             var in0 = updatePlayer.Body.Instructions[spot2];
             var in1 = updatePlayer.Body.Instructions[spot2 + 1];
             il.Remove(in0);
-            il.InsertBefore(in1, il.Create(OpCodes.Call, ModDefinition.Import(thornsScaling)));
+            il.InsertBefore(in1, il.Create(OpCodes.Call, _mainModule.Import(thornsScaling)));
             il.Remove(in1);
         }
 
         private static void FixPrefixes(int accessoryPrefix)
         {
-            var item = IL.GetTypeDefinition(ModDefinition, "Item");
+            var item = IL.GetTypeDefinition(_mainModule, "Item");
             var prefix = IL.GetMethodDefinition(item, "Prefix");
             var il = prefix.Body.GetILProcessor();
 
@@ -322,7 +334,7 @@ namespace TerrariaPatcher
 
         private static void OneHitKill()
         {
-            var npc = IL.GetTypeDefinition(ModDefinition, "NPC");
+            var npc = IL.GetTypeDefinition(_mainModule, "NPC");
             var strikeNPC = IL.GetMethodDefinition(npc, "StrikeNPC");
 
             int spot = IL.ScanForOpcodePattern(strikeNPC,
@@ -350,7 +362,7 @@ namespace TerrariaPatcher
 
         private static void DisplayTime()
         {
-            var main = IL.GetTypeDefinition(ModDefinition, "Main");
+            var main = IL.GetTypeDefinition(_mainModule, "Main");
             var drawInfoAccs = IL.GetMethodDefinition(main, "DrawInfoAccs");
 
             int spot = IL.ScanForOpcodePattern(drawInfoAccs, (i, instruction) =>
@@ -368,7 +380,7 @@ namespace TerrariaPatcher
 
         private static void RemoveDrowning()
         {
-            var player = IL.GetTypeDefinition(ModDefinition, "Player");
+            var player = IL.GetTypeDefinition(_mainModule, "Player");
             var checkDrowning = IL.GetMethodDefinition(player, "CheckDrowning");
             checkDrowning.Body.ExceptionHandlers.Clear();
             checkDrowning.Body.Instructions.Clear();
@@ -377,7 +389,7 @@ namespace TerrariaPatcher
 
         private static void RemoveAnglerQuestLimit()
         {
-            var main = IL.GetTypeDefinition(ModDefinition, "Main");
+            var main = IL.GetTypeDefinition(_mainModule, "Main");
             var guiChatDrawInner = IL.GetMethodDefinition(main, "GUIChatDrawInner");
             var questSwap = IL.GetMethodDefinition(main, "AnglerQuestSwap");
 
@@ -398,7 +410,7 @@ namespace TerrariaPatcher
         
 		private static void InfiniteAmmo()
 		{
-			var player = IL.GetTypeDefinition(ModDefinition, "Player");
+			var player = IL.GetTypeDefinition(_mainModule, "Player");
 			var pickAmmo = IL.GetMethodDefinition(player, "PickAmmo");
 
             int spot = IL.ScanForOpcodePattern(pickAmmo,
@@ -417,7 +429,7 @@ namespace TerrariaPatcher
 
 		private static void RemovePotionSickness()
         {
-            var player = IL.GetTypeDefinition(ModDefinition, "Player");
+            var player = IL.GetTypeDefinition(_mainModule, "Player");
             var quickHeal = IL.GetMethodDefinition(player, "QuickHeal");
             var quickMana = IL.GetMethodDefinition(player, "QuickMana");
             var itemCheck = IL.GetMethodDefinition(player, "ItemCheck"); // regular potion usage
@@ -488,7 +500,7 @@ namespace TerrariaPatcher
 
         private static void RemoveManaCost()
         {
-            var player = IL.GetTypeDefinition(ModDefinition, "Player");
+            var player = IL.GetTypeDefinition(_mainModule, "Player");
             var itemCheck = IL.GetMethodDefinition(player, "ItemCheck");
             var checkMana = IL.GetMethodDefinition(player, "CheckMana");
 
@@ -516,7 +528,7 @@ namespace TerrariaPatcher
 
         private static void RemoveDiscordBuff()
         {
-            var player = IL.GetTypeDefinition(ModDefinition, "Player");
+            var player = IL.GetTypeDefinition(_mainModule, "Player");
             var itemCheck = IL.GetMethodDefinition(player, "ItemCheck");
 
             int spot = IL.ScanForOpcodePattern(itemCheck, (i, instruction) =>
@@ -550,7 +562,7 @@ namespace TerrariaPatcher
 
         private static void ModSpawnRateVoodooDemon(float rate)
         {
-            var npc = IL.GetTypeDefinition(ModDefinition, "NPC");
+            var npc = IL.GetTypeDefinition(_mainModule, "NPC");
             var spawn = IL.GetMethodDefinition(npc, "SpawnNPC");
 
             int spot = IL.ScanForOpcodePattern(spawn, (i, instruction) =>
@@ -570,13 +582,13 @@ namespace TerrariaPatcher
 
         private static void AddBuffs(IEnumerable<int> buffs)
         {
-            var main = IL.GetTypeDefinition(ModDefinition, "Main");
+            var main = IL.GetTypeDefinition(_mainModule, "Main");
             var update = IL.GetMethodDefinition(main, "DoUpdate");
             var playerArr = IL.GetFieldDefinition(main, "player");
             var myPlayer = IL.GetFieldDefinition(main, "myPlayer");
             var gameMenu = IL.GetFieldDefinition(main, "gameMenu");
 
-            var player = IL.GetTypeDefinition(ModDefinition, "Player");
+            var player = IL.GetTypeDefinition(_mainModule, "Player");
             var addBuff = IL.GetMethodDefinition(player, "AddBuff");
 
             var first = update.Body.Instructions.First();
@@ -604,7 +616,7 @@ namespace TerrariaPatcher
         
         private static void RecipeRange()
         {
-            var player = IL.GetTypeDefinition(ModDefinition, "Player");
+            var player = IL.GetTypeDefinition(_mainModule, "Player");
             var adjTiles = IL.GetMethodDefinition(player, "AdjTiles");
 
             int spot = IL.ScanForOpcodePattern(adjTiles, OpCodes.Ldc_I4_4,
@@ -621,7 +633,7 @@ namespace TerrariaPatcher
 
         private static void AddWings()
         {
-            var player = IL.GetTypeDefinition(ModDefinition, "Player");
+            var player = IL.GetTypeDefinition(_mainModule, "Player");
             var updatePlayerEquips = IL.GetMethodDefinition(player, "UpdateEquips");
             var wings = IL.GetFieldDefinition(player, "wings");
             var wingsLogic = IL.GetFieldDefinition(player, "wingsLogic");
@@ -645,47 +657,52 @@ namespace TerrariaPatcher
         private static void Plugins()
         {
             // Loader target methods
-            var loader = ModDefinition.Import(typeof(PluginLoader.Loader)).Resolve();
-            var onInitialize = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnInitialize"));
-            var onDrawInterface = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnDrawInterface"));
-            var onDrawInventory = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnDrawInventory"));
-            var onPreUpdate = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPreUpdate"));
-            var onUpdate = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnUpdate"));
-            var onUpdateTime = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnUpdateTime"));
-            var onCheckXmas = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnCheckXmas"));
-            var onCheckHalloween = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnCheckHalloween"));
-            var onPlaySound = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlaySound"));
-            var onPlayerPreSpawn = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerPreSpawn"));
-            var onPlayerSpawn = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerSpawn"));
-            var onPlayerLoad = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerLoad"));
-            var onPlayerSave = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerSave"));
-            var onPlayerPreUpdate = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerPreUpdate"));
-            var onPlayerUpdate = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerUpdate"));
-            var onPlayerUpdateBuffs = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerUpdateBuffs"));
-            var onPlayerUpdateEquips = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerUpdateEquips"));
-            var onPlayerUpdateArmorSets = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerUpdateArmorSets"));
-            var onPlayerKillMe = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerKillMe"));
-            var onPlayerHurt = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerHurt"));
-            var onPlayerPickAmmo = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerPickAmmo"));
-            var onItemSetDefaults = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnItemSetDefaults"));
-            var onProjectileAI = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnProjectileAI001"));
-            var onRightClick = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnItemSlotRightClick"));
-            var onSendChatMessageFromClient = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnSendChatMessageFromClient"));
-            var onGetColor = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnLightingGetColor"));
-            var onGetItem = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerGetItem"));
-            var onChestSetupShop = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnChestSetupShop"));
-            var onPlayerQuickBuff = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnPlayerQuickBuff"));
-            var onNPCLoot = ModDefinition.Import(IL.GetMethodDefinition(loader, "OnNPCLoot"));
+            TypeDefinition loader;
+            var loaderFileName = _mainModule.AssemblyReferences.Any(r => r.Name == "FNA") 
+                ? "PluginLoader.FNA.dll" 
+                : "PluginLoader.XNA.dll";
+            using (var fna = AssemblyDefinition.ReadAssembly(loaderFileName))
+                loader = _mainModule.ImportReference(new TypeReference("PluginLoader", "Loader", fna.MainModule, fna.MainModule)).Resolve();
+            var onInitialize = _mainModule.Import(IL.GetMethodDefinition(loader, "OnInitialize"));
+            var onDrawInterface = _mainModule.Import(IL.GetMethodDefinition(loader, "OnDrawInterface"));
+            var onDrawInventory = _mainModule.Import(IL.GetMethodDefinition(loader, "OnDrawInventory"));
+            var onPreUpdate = _mainModule.Import(IL.GetMethodDefinition(loader, "OnPreUpdate"));
+            var onUpdate = _mainModule.Import(IL.GetMethodDefinition(loader, "OnUpdate"));
+            var onUpdateTime = _mainModule.Import(IL.GetMethodDefinition(loader, "OnUpdateTime"));
+            var onCheckXmas = _mainModule.Import(IL.GetMethodDefinition(loader, "OnCheckXmas"));
+            var onCheckHalloween = _mainModule.Import(IL.GetMethodDefinition(loader, "OnCheckHalloween"));
+            var onPlaySound = _mainModule.Import(IL.GetMethodDefinition(loader, "OnPlaySound"));
+            var onPlayerPreSpawn = _mainModule.Import(IL.GetMethodDefinition(loader, "OnPlayerPreSpawn"));
+            var onPlayerSpawn = _mainModule.Import(IL.GetMethodDefinition(loader, "OnPlayerSpawn"));
+            var onPlayerLoad = _mainModule.Import(IL.GetMethodDefinition(loader, "OnPlayerLoad"));
+            var onPlayerSave = _mainModule.Import(IL.GetMethodDefinition(loader, "OnPlayerSave"));
+            var onPlayerPreUpdate = _mainModule.Import(IL.GetMethodDefinition(loader, "OnPlayerPreUpdate"));
+            var onPlayerUpdate = _mainModule.Import(IL.GetMethodDefinition(loader, "OnPlayerUpdate"));
+            var onPlayerUpdateBuffs = _mainModule.Import(IL.GetMethodDefinition(loader, "OnPlayerUpdateBuffs"));
+            var onPlayerUpdateEquips = _mainModule.Import(IL.GetMethodDefinition(loader, "OnPlayerUpdateEquips"));
+            var onPlayerUpdateArmorSets = _mainModule.Import(IL.GetMethodDefinition(loader, "OnPlayerUpdateArmorSets"));
+            var onPlayerKillMe = _mainModule.Import(IL.GetMethodDefinition(loader, "OnPlayerKillMe"));
+            var onPlayerHurt = _mainModule.Import(IL.GetMethodDefinition(loader, "OnPlayerHurt"));
+            var onPlayerPickAmmo = _mainModule.Import(IL.GetMethodDefinition(loader, "OnPlayerPickAmmo"));
+            var onItemSetDefaults = _mainModule.Import(IL.GetMethodDefinition(loader, "OnItemSetDefaults"));
+            var onProjectileAI = _mainModule.Import(IL.GetMethodDefinition(loader, "OnProjectileAI001"));
+            var onRightClick = _mainModule.Import(IL.GetMethodDefinition(loader, "OnItemSlotRightClick"));
+            var onSendChatMessageFromClient = _mainModule.Import(IL.GetMethodDefinition(loader, "OnSendChatMessageFromClient"));
+            var onGetColor = _mainModule.Import(IL.GetMethodDefinition(loader, "OnLightingGetColor"));
+            var onGetItem = _mainModule.Import(IL.GetMethodDefinition(loader, "OnPlayerGetItem"));
+            var onChestSetupShop = _mainModule.Import(IL.GetMethodDefinition(loader, "OnChestSetupShop"));
+            var onPlayerQuickBuff = _mainModule.Import(IL.GetMethodDefinition(loader, "OnPlayerQuickBuff"));
+            var onNPCLoot = _mainModule.Import(IL.GetMethodDefinition(loader, "OnNPCLoot"));
 
             // Types
-            var main = IL.GetTypeDefinition(ModDefinition, "Main");
-            var player = IL.GetTypeDefinition(ModDefinition, "Player");
-            var npc = IL.GetTypeDefinition(ModDefinition, "NPC");
-            var item = IL.GetTypeDefinition(ModDefinition, "Item");
-            var projectile = IL.GetTypeDefinition(ModDefinition, "Projectile");
-            var itemSlot = IL.GetTypeDefinition(ModDefinition, "ItemSlot");
-            var lighting = IL.GetTypeDefinition(ModDefinition, "Lighting");
-            var chest = IL.GetTypeDefinition(ModDefinition, "Chest");
+            var main = IL.GetTypeDefinition(_mainModule, "Main");
+            var player = IL.GetTypeDefinition(_mainModule, "Player");
+            var npc = IL.GetTypeDefinition(_mainModule, "NPC");
+            var item = IL.GetTypeDefinition(_mainModule, "Item");
+            var projectile = IL.GetTypeDefinition(_mainModule, "Projectile");
+            var itemSlot = IL.GetTypeDefinition(_mainModule, "ItemSlot");
+            var lighting = IL.GetTypeDefinition(_mainModule, "Lighting");
+            var chest = IL.GetTypeDefinition(_mainModule, "Chest");
 
             // Methods
             var initialize = IL.GetMethodDefinition(main, "Initialize");
@@ -956,7 +973,7 @@ namespace TerrariaPatcher
             {
                 // Player.Hurt pre hook
                 var firstInstr = hurt.Body.Instructions.FirstOrDefault();
-                var varDbl = new VariableDefinition(ModDefinition.Import(typeof(double)));
+                var varDbl = new VariableDefinition(_mainModule.Import(typeof(double)));
                 hurt.Body.Variables.Add(varDbl);
                 IL.MethodPrepend(hurt, new[]
                 {
@@ -1049,7 +1066,7 @@ namespace TerrariaPatcher
             {
                 // Lighting.GetColor pre hook
                 var firstInstr = getColor.Body.Instructions.FirstOrDefault();
-                var varColor = new VariableDefinition("test", IL.GetTypeReference(ModDefinition, "Microsoft.Xna.Framework.Color"));
+                var varColor = new VariableDefinition(IL.GetTypeReference(_mainModule, "Microsoft.Xna.Framework.Color"));
                 getColor.Body.Variables.Add(varColor);
                 IL.MethodPrepend(getColor, new[]
                 {
@@ -1066,7 +1083,7 @@ namespace TerrariaPatcher
             {
                 // Player.GetItem pre hook
                 var firstInstr = getItem.Body.Instructions.FirstOrDefault();
-                var varItem = new VariableDefinition("test", IL.GetTypeDefinition(ModDefinition, "Item"));
+                var varItem = new VariableDefinition(IL.GetTypeDefinition(_mainModule, "Item"));
                 getItem.Body.Variables.Add(varItem);
                 IL.MethodPrepend(getItem, new[]
                 {
@@ -1117,18 +1134,18 @@ namespace TerrariaPatcher
 
             {
                 // Make many fields/methods public so we can access freely without using reflection on the fly
-                IL.MakeTypePublic(IL.GetTypeDefinition(ModDefinition, "MapHelper"));
-                IL.MakeTypePublic(IL.GetTypeDefinition(ModDefinition, "Player"));
-                IL.MakeTypePublic(IL.GetTypeDefinition(ModDefinition, "Main"));
-                IL.MakeTypePublic(IL.GetTypeDefinition(ModDefinition, "Lang"));
-                IL.MakeTypePublic(IL.GetTypeDefinition(ModDefinition, "LocalizedText"));
-                IL.MakeTypePublic(IL.GetTypeDefinition(ModDefinition, "ItemTooltip"));
+                IL.MakeTypePublic(IL.GetTypeDefinition(_mainModule, "MapHelper"));
+                IL.MakeTypePublic(IL.GetTypeDefinition(_mainModule, "Player"));
+                IL.MakeTypePublic(IL.GetTypeDefinition(_mainModule, "Main"));
+                IL.MakeTypePublic(IL.GetTypeDefinition(_mainModule, "Lang"));
+                IL.MakeTypePublic(IL.GetTypeDefinition(_mainModule, "LocalizedText"));
+                IL.MakeTypePublic(IL.GetTypeDefinition(_mainModule, "ItemTooltip"));
             }
         }
 
         private static void RemoveSteam()
         {
-            var socialAPI = IL.GetTypeDefinition(ModDefinition, "SocialAPI");
+            var socialAPI = IL.GetTypeDefinition(_mainModule, "SocialAPI");
             var socialAPIInitialize = IL.GetMethodDefinition(socialAPI, "LoadSteam");
 
             socialAPIInitialize.Body.Instructions.Clear();

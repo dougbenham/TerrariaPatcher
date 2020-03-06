@@ -1,3 +1,4 @@
+v1.2.0.39:	Added support for tModLoader 64-bit.
 v1.2.0.38:	Updated to work with tModLoader v0.11.3.0.
 v1.2.0.37:	Fixed compatibility.
 v1.2.0.36:	Updated to work with tModLoader v0.10.0.1.

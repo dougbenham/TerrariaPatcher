@@ -18,7 +18,7 @@
     <SccProvider>SAK</SccProvider>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -29,7 +29,7 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -50,15 +50,24 @@
     <DefineConstants>TRACE;PUBLIC</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <UseVSHostingProcess>false</UseVSHostingProcess>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Mono.Cecil">
-      <HintPath>E:\Games\Terraria\1.2.0.3.1\tunlock_1.0.0.4.by.atom0s\Mono.Cecil.dll</HintPath>
+    <Reference Include="Mono.Cecil, Version=0.11.2.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
+      <HintPath>packages\Mono.Cecil.0.11.2\lib\net40\Mono.Cecil.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Mdb, Version=0.11.2.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
+      <HintPath>packages\Mono.Cecil.0.11.2\lib\net40\Mono.Cecil.Mdb.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Pdb, Version=0.11.2.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
+      <HintPath>packages\Mono.Cecil.0.11.2\lib\net40\Mono.Cecil.Pdb.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Rocks, Version=0.11.2.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
+      <HintPath>packages\Mono.Cecil.0.11.2\lib\net40\Mono.Cecil.Rocks.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -107,6 +116,7 @@
       <DesignTime>True</DesignTime>
     </Compile>
     <None Include="app.manifest" />
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -124,9 +134,15 @@
     <Content Include="Terraria.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="PluginLoader\PluginLoader.csproj">
-      <Project>{fab05058-0ecb-4ea1-808c-d8b684d463d8}</Project>
-      <Name>PluginLoader</Name>
+    <ProjectReference Include="PluginLoader.FNA\PluginLoader.FNA.csproj">
+      <Project>{ef1e81a7-812f-4ec5-b8bb-4ff5264a3290}</Project>
+      <Name>PluginLoader.FNA</Name>
+      <Aliases>PluginLoaderFNA</Aliases>
+    </ProjectReference>
+    <ProjectReference Include="PluginLoader.XNA\PluginLoader.XNA.csproj">
+      <Project>{a2185dcd-c7e8-4578-881c-b797d901a263}</Project>
+      <Name>PluginLoader.XNA</Name>
+      <Aliases>PluginLoaderXNA</Aliases>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
@@ -140,7 +156,7 @@
 if "$(ConfigurationName)" == "Release" SET zip=$(ProjectDir)TerrariaPatcher.zip
 if "$(ConfigurationName)" == "Release (Public)" SET zip=$(ProjectDir)TerrariaPatcher.public.zip
 IF EXIST "%25zip%25" DEL "%25zip%25"
-"C:\Program Files\WinRAR\WINRAR.exe" a -ep1 "%25zip%25" "$(TargetDir)TerrariaPatcher.exe" "$(TargetDir)PluginLoader.dll" "$(TargetDir)Mono.Cecil.dll" "$(TargetDir)TerrariaPatcher.exe.config" "$(ProjectDir)changelog.txt"
+"C:\Program Files\WinRAR\WINRAR.exe" a -ep1 "%25zip%25" "$(TargetDir)TerrariaPatcher.exe" "$(TargetDir)PluginLoader.XNA.dll" "$(TargetDir)PluginLoader.FNA.dll" "$(TargetDir)Mono.Cecil.dll" "$(TargetDir)TerrariaPatcher.exe.config" "$(ProjectDir)changelog.txt"
 "C:\Program Files\WinRAR\WINRAR.exe" a -ep1 -apPlugins "%25zip%25" "$(ProjectDir)\TranscendPlugins\*.cs"
 "C:\Program Files\WinRAR\WINRAR.exe" a -ep1 -r -apPlugins\Shared "%25zip%25" "$(ProjectDir)\TranscendPlugins\Shared\*.cs"
 "C:\Program Files\WinRAR\WINRAR.exe" a -ep1 -r -apPlugins\InventoryEnhancements "%25zip%25" "$(ProjectDir)\TranscendPlugins\InventoryEnhancements\*.cs"</PostBuildEvent>

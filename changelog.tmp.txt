@@ -1,3 +1,4 @@
+v1.2.0.38:	Updated to work with tModLoader v0.11.3.0.
 v1.2.0.37:	Fixed compatibility.
 v1.2.0.36:	Updated to work with tModLoader v0.10.0.1.
 v1.2.0.35:	Updated for Terraria v1.3.5.3.

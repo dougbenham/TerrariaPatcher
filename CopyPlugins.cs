@@ -1,19 +1,19 @@
-﻿using System;
-using System.CodeDom;
+﻿extern alias PluginLoaderXNA;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
-using PluginLoader;
+using PluginLoaderXNA::PluginLoader;
 
 namespace TerrariaPatcher
 {
     public partial class CopyPlugins : Form
     {
         private readonly string sourceFolder;
-        private string sourceSharedFolder { get { return Path.Combine(sourceFolder, "Shared"); } }
+        private string sourceSharedFolder => Path.Combine(sourceFolder, "Shared");
         private readonly string targetFolder;
-        private string targetSharedFolder { get { return Path.Combine(targetFolder, "Shared"); } }
+        private string targetSharedFolder => Path.Combine(targetFolder, "Shared");
 
         public CopyPlugins(string targetFolder)
         {

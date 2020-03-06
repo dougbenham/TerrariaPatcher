@@ -47,25 +47,21 @@ namespace PluginLoader
                         MessageBox.Show("Elevated administrator privileges not detected, you may run into issues! If you are running via Steam, please start Steam with elevated administrator privileges.", "Terraria",
                             MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     }
-                    if (Utils.IsFileLocked(new FileInfo("Shared.dll")))
-                    {
-                        MessageBox.Show("You can only have a single instance of Terraria running at once. Please use Task Manager to close any extra Terraria processes and try again.", "Terraria",
-                            MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        Environment.Exit(0);
-                    }
+
                     if (!Directory.Exists(pluginsFolder))
                     {
                         MessageBox.Show(@"Your Terraria\Plugins folder is missing.", "Terraria",
                             MessageBoxButtons.OK, MessageBoxIcon.Error);
                         Environment.Exit(0);
                     }
+
                     if (!Directory.Exists(sharedFolder))
                     {
                         MessageBox.Show(@"Your Terraria\Plugins\Shared folder is missing.", "Terraria",
                             MessageBoxButtons.OK, MessageBoxIcon.Error);
                         Environment.Exit(0);
                     }
-
+                    
                     var references = AppDomain.CurrentDomain
                         .GetAssemblies()
                         .Where(a => !a.IsDynamic && !string.IsNullOrEmpty(a.Location))

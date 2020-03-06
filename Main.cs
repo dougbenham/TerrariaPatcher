@@ -1,4 +1,5 @@
-﻿using System;
+﻿extern alias PluginLoaderXNA;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -8,11 +9,10 @@ using System.Linq;
 using System.Net;
 using System.Net.Cache;
 using System.Reflection;
-using System.Security.Principal;
 using System.Threading;
 using System.Windows.Forms;
 using Microsoft.Win32;
-using PluginLoader;
+using PluginLoaderXNA::PluginLoader;
 
 namespace TerrariaPatcher
 {
@@ -57,10 +57,12 @@ namespace TerrariaPatcher
                             var zip = "update.tmp";
                             client.DownloadFile(updateURL, zip);
 
-                            // Rename the currently executing TerrariaPatcher.exe / PluginLoader.dll / Mono.Cecil.dll so that we can update
+                            // Rename the currently executing TerrariaPatcher.exe / PluginLoader.XNA.dll / PluginLoader.FNA.dll / Mono.Cecil.dll so that we can update
                             var location = Path.Combine(Environment.CurrentDirectory, "TerrariaPatcher.exe");
                             File.Move(location, location.Replace("exe", "tmp"));
-                            location = Path.Combine(Environment.CurrentDirectory, "PluginLoader.dll");
+                            location = Path.Combine(Environment.CurrentDirectory, "PluginLoader.XNA.dll");
+                            File.Move(location, location.Replace("dll", "tmp"));
+                            location = Path.Combine(Environment.CurrentDirectory, "PluginLoader.FNA.dll");
                             File.Move(location, location.Replace("dll", "tmp"));
                             location = Path.Combine(Environment.CurrentDirectory, "Mono.Cecil.dll");
                             File.Move(location, location.Replace("dll", "tmp"));
@@ -378,16 +380,20 @@ namespace TerrariaPatcher
                     if (details.Plugins)
                     {
                         var targetFolder = Path.GetDirectoryName(saveFileDialog.FileName);
-                        var target = targetFolder + @"\PluginLoader.dll";
-
-                        var pluginLoaderInfo = new FileInfo(target);
-                        while (Utils.IsFileLocked(pluginLoaderInfo))
+                        foreach (var t in new[] {"PluginLoader.XNA.dll", "PluginLoader.FNA.dll"})
                         {
-                            var result = MessageBox.Show(target + " is in use. Please close Terraria then hit OK.", Program.AssemblyName, MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
-                            if (result == DialogResult.Cancel) return;
-                        }
+                            var target = $"{targetFolder}\\{t}";
 
-                        File.Copy("PluginLoader.dll", target, true);
+                            var pluginLoaderInfo = new FileInfo(target);
+                            while (Utils.IsFileLocked(pluginLoaderInfo))
+                            {
+                                var result = MessageBox.Show(target + " is in use. Please close Terraria then hit OK.", Program.AssemblyName, MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
+                                if (result == DialogResult.Cancel)
+                                    return;
+                            }
+
+                            File.Copy(t, target, true);
+                        }
 
                         if (!Directory.Exists(@".\Plugins"))
                             MessageBox.Show("Plugins folder is missing from TerrariaPatcher folder. Please re-download.", Program.AssemblyName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
