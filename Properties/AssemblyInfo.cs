@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("TerrariaPatcher")]
-[assembly: AssemblyCopyright("Copyright © Transcend 2020")]
+[assembly: AssemblyCopyright("Copyright © Transcend 2021")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

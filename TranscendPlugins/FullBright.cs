@@ -23,7 +23,7 @@ namespace TranscendPlugins
             {
                 fullbright = !fullbright;
                 IniAPI.WriteIni("FullBright", "FullBrightDefault", fullbright.ToString());
-                Main.NewText("Full Bright " + (fullbright ? "Enabled" : "Disabled"), green.R, green.G, green.B, false);
+                Main.NewText("Full Bright " + (fullbright ? "Enabled" : "Disabled"), green.R, green.G, green.B);
             }, fullbrightKey);
         }
 

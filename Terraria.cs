@@ -158,33 +158,36 @@ namespace TerrariaPatcher
             var jumpAgain5 = IL.GetFieldDefinition(player, "jumpAgainSandstorm");
             var jumpAgain6 = IL.GetFieldDefinition(player, "jumpAgainUnicorn");
 
-            int spot = IL.ScanForOpcodePattern(update,
-                                               (i, instruction) =>
-                                               {
-                                                   var i0 = update.Body.Instructions[i + 1].Operand as FieldReference;
-                                                   return i0 != null && i0.Name == "doubleJumpCloud";
-                                               },
-                                               OpCodes.Ldc_I4_0,
-                                               OpCodes.Stfld);
+            using (update.JumpFix())
+            {
+                int spot = IL.ScanForOpcodePattern(update,
+                    (i, instruction) =>
+                    {
+                        var i0 = update.Body.Instructions[i + 1].Operand as FieldReference;
+                        return i0 != null && i0.Name == "doubleJumpCloud";
+                    },
+                    OpCodes.Ldc_I4_0,
+                    OpCodes.Stfld);
 
-            update.Body.Instructions.Insert(spot + 2, Instruction.Create(OpCodes.Ldarg_0));
-            update.Body.Instructions.Insert(spot + 3, Instruction.Create(OpCodes.Ldc_I4_1));
-            update.Body.Instructions.Insert(spot + 4, Instruction.Create(OpCodes.Stfld, jumpAgain1));
-            update.Body.Instructions.Insert(spot + 2, Instruction.Create(OpCodes.Ldarg_0));
-            update.Body.Instructions.Insert(spot + 3, Instruction.Create(OpCodes.Ldc_I4_1));
-            update.Body.Instructions.Insert(spot + 4, Instruction.Create(OpCodes.Stfld, jumpAgain2));
-            update.Body.Instructions.Insert(spot + 2, Instruction.Create(OpCodes.Ldarg_0));
-            update.Body.Instructions.Insert(spot + 3, Instruction.Create(OpCodes.Ldc_I4_1));
-            update.Body.Instructions.Insert(spot + 4, Instruction.Create(OpCodes.Stfld, jumpAgain3));
-            update.Body.Instructions.Insert(spot + 2, Instruction.Create(OpCodes.Ldarg_0));
-            update.Body.Instructions.Insert(spot + 3, Instruction.Create(OpCodes.Ldc_I4_1));
-            update.Body.Instructions.Insert(spot + 4, Instruction.Create(OpCodes.Stfld, jumpAgain4));
-            update.Body.Instructions.Insert(spot + 2, Instruction.Create(OpCodes.Ldarg_0));
-            update.Body.Instructions.Insert(spot + 3, Instruction.Create(OpCodes.Ldc_I4_1));
-            update.Body.Instructions.Insert(spot + 4, Instruction.Create(OpCodes.Stfld, jumpAgain5));
-            update.Body.Instructions.Insert(spot + 2, Instruction.Create(OpCodes.Ldarg_0));
-            update.Body.Instructions.Insert(spot + 3, Instruction.Create(OpCodes.Ldc_I4_1));
-            update.Body.Instructions.Insert(spot + 4, Instruction.Create(OpCodes.Stfld, jumpAgain6));
+                update.Body.Instructions.Insert(spot + 2, Instruction.Create(OpCodes.Ldarg_0));
+                update.Body.Instructions.Insert(spot + 3, Instruction.Create(OpCodes.Ldc_I4_1));
+                update.Body.Instructions.Insert(spot + 4, Instruction.Create(OpCodes.Stfld, jumpAgain1));
+                update.Body.Instructions.Insert(spot + 2, Instruction.Create(OpCodes.Ldarg_0));
+                update.Body.Instructions.Insert(spot + 3, Instruction.Create(OpCodes.Ldc_I4_1));
+                update.Body.Instructions.Insert(spot + 4, Instruction.Create(OpCodes.Stfld, jumpAgain2));
+                update.Body.Instructions.Insert(spot + 2, Instruction.Create(OpCodes.Ldarg_0));
+                update.Body.Instructions.Insert(spot + 3, Instruction.Create(OpCodes.Ldc_I4_1));
+                update.Body.Instructions.Insert(spot + 4, Instruction.Create(OpCodes.Stfld, jumpAgain3));
+                update.Body.Instructions.Insert(spot + 2, Instruction.Create(OpCodes.Ldarg_0));
+                update.Body.Instructions.Insert(spot + 3, Instruction.Create(OpCodes.Ldc_I4_1));
+                update.Body.Instructions.Insert(spot + 4, Instruction.Create(OpCodes.Stfld, jumpAgain4));
+                update.Body.Instructions.Insert(spot + 2, Instruction.Create(OpCodes.Ldarg_0));
+                update.Body.Instructions.Insert(spot + 3, Instruction.Create(OpCodes.Ldc_I4_1));
+                update.Body.Instructions.Insert(spot + 4, Instruction.Create(OpCodes.Stfld, jumpAgain5));
+                update.Body.Instructions.Insert(spot + 2, Instruction.Create(OpCodes.Ldarg_0));
+                update.Body.Instructions.Insert(spot + 3, Instruction.Create(OpCodes.Ldc_I4_1));
+                update.Body.Instructions.Insert(spot + 4, Instruction.Create(OpCodes.Stfld, jumpAgain6));
+            }
         }
         
         private static void ModThornsBuff(float rate)
@@ -203,136 +206,150 @@ namespace TerrariaPatcher
             thornsScalingIL.Emit(OpCodes.Ret);
             player.Methods.Add(thornsScaling);
 
-            int spot = IL.ScanForOpcodePattern(updatePlayer,
-                                               (i, instruction) =>
-                                               {
-                                                   var i0 = updatePlayer.Body.Instructions[i].Operand as FieldReference;
-                                                   return i0 != null && i0.Name == "thorns";
-                                               },
-                                               OpCodes.Ldfld);
-            
-            int spot2 = IL.ScanForOpcodePattern(updatePlayer,
-                                                (i, instruction) => true,
-                                                spot,
-                                                OpCodes.Ldc_I4_3, 
-                                                OpCodes.Div);
+            using (updatePlayer.JumpFix())
+            {
+                int spot = IL.ScanForOpcodePattern(updatePlayer,
+                    (i, instruction) =>
+                    {
+                        var i0 = updatePlayer.Body.Instructions[i].Operand as FieldReference;
+                        return i0 != null && i0.Name == "thorns";
+                    },
+                    OpCodes.Ldfld);
 
-            var il = updatePlayer.Body.GetILProcessor();
-            var in0 = updatePlayer.Body.Instructions[spot2];
-            var in1 = updatePlayer.Body.Instructions[spot2 + 1];
-            il.Remove(in0);
-            il.InsertBefore(in1, il.Create(OpCodes.Call, _mainModule.Import(thornsScaling)));
-            il.Remove(in1);
+                int spot2 = IL.ScanForOpcodePattern(updatePlayer,
+                    (i, instruction) => true,
+                    spot,
+                    OpCodes.Ldc_I4_3,
+                    OpCodes.Div);
+
+                var il = updatePlayer.Body.GetILProcessor();
+                var in0 = updatePlayer.Body.Instructions[spot2];
+                var in1 = updatePlayer.Body.Instructions[spot2 + 1];
+                il.Remove(in0);
+                il.InsertBefore(in1, il.Create(OpCodes.Call, _mainModule.Import(thornsScaling)));
+                il.Remove(in1);
+            }
         }
 
         private static void FixPrefixes(int accessoryPrefix)
         {
             var item = IL.GetTypeDefinition(_mainModule, "Item");
             var prefix = IL.GetMethodDefinition(item, "Prefix");
-            var il = prefix.Body.GetILProcessor();
 
-            // Melee - Legendary
-            int spot = IL.ScanForOpcodePattern(prefix,
-                                                (i, instruction) => (sbyte)prefix.Body.Instructions[i].Operand == (sbyte)40, 
-                                                OpCodes.Ldc_I4_S, OpCodes.Callvirt);
-            prefix.Body.Instructions[spot - 1].OpCode = OpCodes.Nop;
-            prefix.Body.Instructions[spot].Operand = (sbyte)39; // 39 becomes 81
-            prefix.Body.Instructions[spot + 1].OpCode = OpCodes.Nop;
+            using (prefix.JumpFix())
+            {
+                var il = prefix.Body.GetILProcessor();
 
-            // Generic - Godly
-            int spot2 = IL.ScanForOpcodePattern(prefix,
-                                                (i, instruction) => (sbyte)prefix.Body.Instructions[i].Operand == (sbyte)14, 
-                                                OpCodes.Ldc_I4_S, OpCodes.Callvirt);
-            prefix.Body.Instructions[spot2 - 1].OpCode = OpCodes.Nop;
-            prefix.Body.Instructions[spot2].Operand = (sbyte)11; // 11 becomes 59
-            prefix.Body.Instructions[spot2 + 1].OpCode = OpCodes.Nop;
+                // Melee - Legendary
+                int spot = IL.ScanForOpcodePattern(prefix,
+                    (i, instruction) => (sbyte) prefix.Body.Instructions[i].Operand == (sbyte) 40,
+                    OpCodes.Ldc_I4_S, OpCodes.Callvirt);
+                prefix.Body.Instructions[spot - 1].OpCode = OpCodes.Nop;
+                prefix.Body.Instructions[spot].Operand = (sbyte) 39; // 39 becomes 81
+                prefix.Body.Instructions[spot + 1].OpCode = OpCodes.Nop;
 
-            // Ranged - Unreal
-            int spot3 = IL.ScanForOpcodePattern(prefix,
-                                                (i, instruction) => (sbyte)prefix.Body.Instructions[i].Operand == (sbyte)36, 
-                                                OpCodes.Ldc_I4_S, OpCodes.Callvirt);
-            prefix.Body.Instructions[spot3 - 1].OpCode = OpCodes.Nop;
-            prefix.Body.Instructions[spot3].Operand = (sbyte)35; // 35 becomes 82
-            prefix.Body.Instructions[spot3 + 1].OpCode = OpCodes.Nop;
+                // Generic - Godly
+                int spot2 = IL.ScanForOpcodePattern(prefix,
+                    (i, instruction) => (sbyte) prefix.Body.Instructions[i].Operand == (sbyte) 14,
+                    OpCodes.Ldc_I4_S, OpCodes.Callvirt);
+                prefix.Body.Instructions[spot2 - 1].OpCode = OpCodes.Nop;
+                prefix.Body.Instructions[spot2].Operand = (sbyte) 11; // 11 becomes 59
+                prefix.Body.Instructions[spot2 + 1].OpCode = OpCodes.Nop;
 
-            // Magical - Mythical
-            int spot4 = IL.ScanForOpcodePattern(prefix,
-                                                (i, instruction) => (sbyte)prefix.Body.Instructions[i].Operand == (sbyte)36, 
-                                                OpCodes.Ldc_I4_S, OpCodes.Callvirt);
-            prefix.Body.Instructions[spot4 - 1].OpCode = OpCodes.Nop;
-            prefix.Body.Instructions[spot4].Operand = (sbyte)35; // 35 becomes 83
-            prefix.Body.Instructions[spot4 + 1].OpCode = OpCodes.Nop;
+                // Ranged - Unreal
+                int spot3 = IL.ScanForOpcodePattern(prefix,
+                    (i, instruction) => (sbyte) prefix.Body.Instructions[i].Operand == (sbyte) 35,
+                    OpCodes.Ldc_I4_S, OpCodes.Callvirt);
+                prefix.Body.Instructions[spot3 - 1].OpCode = OpCodes.Nop;
+                prefix.Body.Instructions[spot3].Operand = (sbyte) 34; // 34 becomes 82
+                prefix.Body.Instructions[spot3 + 1].OpCode = OpCodes.Nop;
 
-            // Boomerangs - Godly
-            int spot5 = IL.ScanForOpcodePattern(prefix,
-                                                (i, instruction) => (sbyte)prefix.Body.Instructions[i].Operand == (sbyte)14, 
-                                                OpCodes.Ldc_I4_S, OpCodes.Callvirt);
-            prefix.Body.Instructions[spot5 - 1].OpCode = OpCodes.Nop;
-            prefix.Body.Instructions[spot5].Operand = (sbyte)11; // 11 becomes 59
-            prefix.Body.Instructions[spot5 + 1].OpCode = OpCodes.Nop;
-            
-            // Accessory - based on selection of Accessory Prefix combo box
-            int spot6 = IL.ScanForOpcodePattern(prefix,
-                                                (i, instruction) => (sbyte)prefix.Body.Instructions[i].Operand == (sbyte)62 &&
-                                                                    (sbyte)prefix.Body.Instructions[i + 1].Operand == (sbyte)81, 
-                                                OpCodes.Ldc_I4_S, OpCodes.Ldc_I4_S, OpCodes.Callvirt);
-            prefix.Body.Instructions[spot6 - 1].OpCode = OpCodes.Nop;
-            prefix.Body.Instructions[spot6].Operand = (sbyte)accessoryPrefix;
-            prefix.Body.Instructions[spot6 + 1].OpCode = OpCodes.Nop;
-            prefix.Body.Instructions[spot6 + 2].OpCode = OpCodes.Nop;
+                // Magical - Mythical
+                int spot4 = IL.ScanForOpcodePattern(prefix,
+                    (i, instruction) => (sbyte) prefix.Body.Instructions[i].Operand == (sbyte) 36,
+                    OpCodes.Ldc_I4_S, OpCodes.Callvirt);
+                prefix.Body.Instructions[spot4 - 1].OpCode = OpCodes.Nop;
+                prefix.Body.Instructions[spot4].Operand = (sbyte) 35; // 35 becomes 83
+                prefix.Body.Instructions[spot4 + 1].OpCode = OpCodes.Nop;
 
-            // No knockback - Demonic
-            int spot7 = IL.ScanForOpcodePattern(prefix,
-                                                (i, instruction) =>
-                                                {
-                                                    var i0 = prefix.Body.Instructions[i].Operand as FieldReference;
-                                                    return i0 != null && i0.Name == "knockBack";
-                                                },
-                                                OpCodes.Ldfld, OpCodes.Ldc_R4, OpCodes.Bne_Un_S);
-            prefix.Body.Instructions.Insert(spot7 + 5, il.Create(OpCodes.Ldc_I4_0));
-            prefix.Body.Instructions.Insert(spot7 + 6, il.Create(OpCodes.Starg, 1));
-            prefix.Body.Instructions[spot7 + 7].OpCode = OpCodes.Ldc_I4_S;
-            prefix.Body.Instructions[spot7 + 7].Operand = (sbyte)60;
+                // Boomerangs - Godly
+                int spot5 = IL.ScanForOpcodePattern(prefix,
+                    (i, instruction) => (sbyte) prefix.Body.Instructions[i].Operand == (sbyte) 14,
+                    OpCodes.Ldc_I4_S, OpCodes.Callvirt);
+                prefix.Body.Instructions[spot5 - 1].OpCode = OpCodes.Nop;
+                prefix.Body.Instructions[spot5].Operand = (sbyte) 11; // 11 becomes 59
+                prefix.Body.Instructions[spot5 + 1].OpCode = OpCodes.Nop;
 
-            // No damage - Rapid
-            int spot8 = IL.ScanForOpcodePattern(prefix,
-                                                (i, instruction) =>
-                                                {
-                                                    var i0 = prefix.Body.Instructions[i].Operand as FieldReference;
-                                                    return i0 != null && i0.Name == "damage";
-                                                },
-                                                OpCodes.Ldfld, OpCodes.Conv_R8, OpCodes.Bne_Un_S);
-            prefix.Body.Instructions.Insert(spot8 + 5, il.Create(OpCodes.Ldc_I4_0));
-            prefix.Body.Instructions.Insert(spot8 + 6, il.Create(OpCodes.Starg, 1));
-            prefix.Body.Instructions[spot8 + 7].OpCode = OpCodes.Ldc_I4_S;
-            prefix.Body.Instructions[spot8 + 7].Operand = (sbyte)17;
+                // Boomerangs special? - Godly
+                int spot5_1 = IL.ScanForOpcodePattern(prefix,
+                    (i, instruction) => (sbyte) prefix.Body.Instructions[i].Operand == (sbyte) 15,
+                    OpCodes.Ldc_I4_S, OpCodes.Callvirt);
+                prefix.Body.Instructions[spot5_1 - 1].OpCode = OpCodes.Nop;
+                prefix.Body.Instructions[spot5_1].Operand = (sbyte) 11; // 11 becomes 59
+                prefix.Body.Instructions[spot5_1 + 1].OpCode = OpCodes.Nop;
 
-            // No mana - Godly
-            int spot9 = IL.ScanForOpcodePattern(prefix,
-                                                (i, instruction) =>
-                                                {
-                                                    var i0 = prefix.Body.Instructions[i].Operand as FieldReference;
-                                                    return i0 != null && i0.Name == "mana";
-                                                }, 
-                                                OpCodes.Ldfld, OpCodes.Conv_R8, OpCodes.Bne_Un_S);
-            prefix.Body.Instructions.Insert(spot9 + 5, il.Create(OpCodes.Ldc_I4_0));
-            prefix.Body.Instructions.Insert(spot9 + 6, il.Create(OpCodes.Starg, 1));
-            prefix.Body.Instructions[spot9 + 7].OpCode = OpCodes.Ldc_I4_S;
-            prefix.Body.Instructions[spot9 + 7].Operand = (sbyte)59;
+                // Accessory - based on selection of Accessory Prefix combo box
+                int spot6 = IL.ScanForOpcodePattern(prefix,
+                    (i, instruction) => (sbyte) prefix.Body.Instructions[i].Operand == (sbyte) 62 &&
+                                        (sbyte) prefix.Body.Instructions[i + 1].Operand == (sbyte) 81,
+                    OpCodes.Ldc_I4_S, OpCodes.Ldc_I4_S, OpCodes.Callvirt);
+                prefix.Body.Instructions[spot6 - 1].OpCode = OpCodes.Nop;
+                prefix.Body.Instructions[spot6].Operand = (sbyte) accessoryPrefix;
+                prefix.Body.Instructions[spot6 + 1].OpCode = OpCodes.Nop;
+                prefix.Body.Instructions[spot6 + 2].OpCode = OpCodes.Nop;
 
-            // No attack speed - Godly
-            int spot10 = IL.ScanForOpcodePattern(prefix,
-                                                (i, instruction) =>
-                                                {
-                                                    var i0 = prefix.Body.Instructions[i].Operand as FieldReference;
-                                                    return i0 != null && i0.Name == "useAnimation";
-                                                }, 
-                                                OpCodes.Ldfld, OpCodes.Conv_R8, OpCodes.Bne_Un_S);
-            prefix.Body.Instructions.Insert(spot10 + 5, il.Create(OpCodes.Ldc_I4_0));
-            prefix.Body.Instructions.Insert(spot10 + 6, il.Create(OpCodes.Starg, 1));
-            prefix.Body.Instructions[spot10 + 7].OpCode = OpCodes.Ldc_I4_S;
-            prefix.Body.Instructions[spot10 + 7].Operand = (sbyte)59;
+                // No knockback - Demonic
+                int spot7 = IL.ScanForOpcodePattern(prefix,
+                    (i, instruction) =>
+                    {
+                        var i0 = prefix.Body.Instructions[i].Operand as FieldReference;
+                        return i0 != null && i0.Name == "knockBack";
+                    },
+                    OpCodes.Ldfld, OpCodes.Ldc_R4, OpCodes.Bne_Un_S);
+                prefix.Body.Instructions.Insert(spot7 + 5, il.Create(OpCodes.Ldc_I4_0));
+                prefix.Body.Instructions.Insert(spot7 + 6, il.Create(OpCodes.Starg, 1));
+                prefix.Body.Instructions[spot7 + 7].OpCode = OpCodes.Ldc_I4_S;
+                prefix.Body.Instructions[spot7 + 7].Operand = (sbyte) 60;
 
+                // No damage - Rapid
+                int spot8 = IL.ScanForOpcodePattern(prefix,
+                    (i, instruction) =>
+                    {
+                        var i0 = prefix.Body.Instructions[i].Operand as FieldReference;
+                        return i0 != null && i0.Name == "damage";
+                    },
+                    OpCodes.Ldfld, OpCodes.Conv_R8, OpCodes.Bne_Un_S);
+                prefix.Body.Instructions.Insert(spot8 + 5, il.Create(OpCodes.Ldc_I4_0));
+                prefix.Body.Instructions.Insert(spot8 + 6, il.Create(OpCodes.Starg, 1));
+                prefix.Body.Instructions[spot8 + 7].OpCode = OpCodes.Ldc_I4_S;
+                prefix.Body.Instructions[spot8 + 7].Operand = (sbyte) 17;
+
+                // No mana - Godly
+                int spot9 = IL.ScanForOpcodePattern(prefix,
+                    (i, instruction) =>
+                    {
+                        var i0 = prefix.Body.Instructions[i].Operand as FieldReference;
+                        return i0 != null && i0.Name == "mana";
+                    },
+                    OpCodes.Ldfld, OpCodes.Conv_R8, OpCodes.Bne_Un_S);
+                prefix.Body.Instructions.Insert(spot9 + 5, il.Create(OpCodes.Ldc_I4_0));
+                prefix.Body.Instructions.Insert(spot9 + 6, il.Create(OpCodes.Starg, 1));
+                prefix.Body.Instructions[spot9 + 7].OpCode = OpCodes.Ldc_I4_S;
+                prefix.Body.Instructions[spot9 + 7].Operand = (sbyte) 59;
+
+                // No attack speed - Godly
+                int spot10 = IL.ScanForOpcodePattern(prefix,
+                    (i, instruction) =>
+                    {
+                        var i0 = prefix.Body.Instructions[i].Operand as FieldReference;
+                        return i0 != null && i0.Name == "useAnimation";
+                    },
+                    OpCodes.Ldfld, OpCodes.Conv_R8, OpCodes.Bne_Un_S);
+                prefix.Body.Instructions.Insert(spot10 + 5, il.Create(OpCodes.Ldc_I4_0));
+                prefix.Body.Instructions.Insert(spot10 + 6, il.Create(OpCodes.Starg, 1));
+                prefix.Body.Instructions[spot10 + 7].OpCode = OpCodes.Ldc_I4_S;
+                prefix.Body.Instructions[spot10 + 7].Operand = (sbyte) 59;
+            }
         }
 
         private static void OneHitKill()
@@ -340,27 +357,30 @@ namespace TerrariaPatcher
             var npc = IL.GetTypeDefinition(_mainModule, "NPC");
             var strikeNPC = IL.GetMethodDefinition(npc, "StrikeNPC");
 
-            int spot = IL.ScanForOpcodePattern(strikeNPC,
-                OpCodes.Ldarg_1,
-                OpCodes.Conv_R8,
-                OpCodes.Stloc_1);
-            
-            var life = IL.GetFieldDefinition(npc, "life");
-            strikeNPC.Body.Instructions[spot].OpCode = OpCodes.Ldarg_0;
-            strikeNPC.Body.Instructions.Insert(spot + 1, Instruction.Create(OpCodes.Ldfld, life));
+            using (strikeNPC.JumpFix())
+            {
+                int spot = IL.ScanForOpcodePattern(strikeNPC,
+                    OpCodes.Ldarg_1,
+                    OpCodes.Conv_R8,
+                    OpCodes.Stloc_1);
 
-            int spot2 = IL.ScanForOpcodePattern(strikeNPC,
-                (i, instruction) =>
-                {
-                    var i0 = strikeNPC.Body.Instructions[i].Operand as ParameterReference;
-                    return i0 != null && i0.Name == "crit";
-                },
-                spot,
-                OpCodes.Ldarg_S,
-                OpCodes.Brfalse_S);
+                var life = IL.GetFieldDefinition(npc, "life");
+                strikeNPC.Body.Instructions[spot].OpCode = OpCodes.Ldarg_0;
+                strikeNPC.Body.Instructions.Insert(spot + 1, Instruction.Create(OpCodes.Ldfld, life));
 
-            for (int i = spot + 4; i < spot2; i++)
-                strikeNPC.Body.Instructions[i].OpCode = OpCodes.Nop;
+                int spot2 = IL.ScanForOpcodePattern(strikeNPC,
+                    (i, instruction) =>
+                    {
+                        var i0 = strikeNPC.Body.Instructions[i].Operand as ParameterReference;
+                        return i0 != null && i0.Name == "crit";
+                    },
+                    spot,
+                    OpCodes.Ldarg_S,
+                    OpCodes.Brfalse_S);
+
+                for (int i = spot + 4; i < spot2; i++)
+                    strikeNPC.Body.Instructions[i].OpCode = OpCodes.Nop;
+            }
         }
 
         private static void DisplayTime()
@@ -435,7 +455,7 @@ namespace TerrariaPatcher
             var player = IL.GetTypeDefinition(_mainModule, "Player");
             var quickHeal = IL.GetMethodDefinition(player, "QuickHeal");
             var quickMana = IL.GetMethodDefinition(player, "QuickMana");
-            var itemCheck = IL.GetMethodDefinition(player, "ItemCheck"); // regular potion usage
+            var applyPotionDelay = IL.GetMethodDefinition(player, "ApplyPotionDelay");
 
             // quick heal
 		    int spot1 = IL.ScanForOpcodePattern(quickHeal,
@@ -471,34 +491,9 @@ namespace TerrariaPatcher
             quickMana.Body.Instructions[spot2 + 5].OpCode = OpCodes.Br_S;
 
             // health/mana
-            int spot3 = IL.ScanForOpcodePattern(itemCheck,
-                                               (i, instruction) =>
-                                               {
-                                                   var i2 = itemCheck.Body.Instructions[i + 2].Operand as FieldReference;
-                                                   return i2 != null && i2.Name == "potionDelayTime";
-                                               },
-                                               OpCodes.Ldarg_0,
-                                               OpCodes.Ldarg_0,
-                                               OpCodes.Ldfld,
-                                               OpCodes.Stfld);
-
-            for (int i = 0; i < 10; i++)
-                itemCheck.Body.Instructions[spot3 + i].OpCode = OpCodes.Nop;
-
-            // rejuv
-            int spot4 = IL.ScanForOpcodePattern(itemCheck,
-                                               (i, instruction) =>
-                                               {
-                                                   var i2 = itemCheck.Body.Instructions[i + 2].Operand as FieldReference;
-                                                   return i2 != null && i2.Name == "restorationDelayTime";
-                                               },
-                                               OpCodes.Ldarg_0,
-                                               OpCodes.Ldarg_0,
-                                               OpCodes.Ldfld,
-                                               OpCodes.Stfld);
-
-            for (int i = 0; i < 10; i++)
-                itemCheck.Body.Instructions[spot4 + i].OpCode = OpCodes.Nop;
+            applyPotionDelay.Body.ExceptionHandlers.Clear();
+            applyPotionDelay.Body.Instructions.Clear();
+            applyPotionDelay.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
         }
 
         private static void RemoveManaCost()
@@ -532,35 +527,36 @@ namespace TerrariaPatcher
         private static void RemoveDiscordBuff()
         {
             var player = IL.GetTypeDefinition(_mainModule, "Player");
-            var itemCheck = IL.GetMethodDefinition(player, "ItemCheck");
+            var itemCheckUseRodOfDiscord = IL.GetMethodDefinition(player, "ItemCheck_UseRodOfDiscord");
 
-            int spot = IL.ScanForOpcodePattern(itemCheck, (i, instruction) =>
-            {
-                var fieldReference = instruction.Operand as FieldReference;
-                return fieldReference != null && fieldReference.Name == "chaosState";
-            },
+            int spot = IL.ScanForOpcodePattern(itemCheckUseRodOfDiscord, (i, instruction) =>
+                {
+                    var fieldReference = instruction.Operand as FieldReference;
+                    return fieldReference != null && fieldReference.Name == "chaosState";
+                },
                 OpCodes.Ldfld,
-                OpCodes.Brfalse_S);
-            
-            var target = itemCheck.Body.Instructions[spot + 1].Operand as Instruction;
+                OpCodes.Brfalse_S) - 1;
+
+            var target = itemCheckUseRodOfDiscord.Body.Instructions[spot];
             bool done = false;
             for (; !done; target = target.Next)
             {
-                if (target.OpCode == OpCodes.Call) done = true;
+                if (target.OpCode == OpCodes.Call && (target.Operand as MethodReference)?.Name == "AddBuff")
+                    done = true;
 
                 target.OpCode = OpCodes.Nop;
                 target.Operand = null;
             }
 
-            int spot2 = IL.ScanForOpcodePattern(itemCheck, (i, instruction) =>
-            {
-                var methodReference = instruction.Operand as MethodReference;
-                return methodReference != null && methodReference.Name == "SolidCollision";
-            },
+            int spot2 = IL.ScanForOpcodePattern(itemCheckUseRodOfDiscord, (i, instruction) =>
+                {
+                    var methodReference = instruction.Operand as MethodReference;
+                    return methodReference != null && methodReference.Name == "SolidCollision";
+                },
                 OpCodes.Call,
                 OpCodes.Brtrue);
 
-            itemCheck.Body.Instructions[spot2 + 1].OpCode = OpCodes.Pop;
+            itemCheckUseRodOfDiscord.Body.Instructions[spot2 + 1].OpCode = OpCodes.Pop;
         }
 
         private static void ModSpawnRateVoodooDemon(float rate)
@@ -593,28 +589,32 @@ namespace TerrariaPatcher
 
             var player = IL.GetTypeDefinition(_mainModule, "Player");
             var addBuff = IL.GetMethodDefinition(player, "AddBuff");
-
-            var first = update.Body.Instructions.First();
-
-            foreach (int buff in buffs)
+            
+            using (update.JumpFix())
             {
-                IL.MethodPrepend(update, new[]
+                var first = update.Body.Instructions.First();
+
+                foreach (int buff in buffs)
+                {
+                    IL.MethodPrepend(update, new[]
                     {
                         Instruction.Create(OpCodes.Ldsfld, playerArr),
                         Instruction.Create(OpCodes.Ldsfld, myPlayer),
                         Instruction.Create(OpCodes.Ldelem_Ref),
                         Instruction.Create(OpCodes.Ldc_I4, buff),
                         Instruction.Create(OpCodes.Ldc_I4_2),
+                        Instruction.Create(OpCodes.Ldc_I4_1),
                         Instruction.Create(OpCodes.Ldc_I4_0),
                         Instruction.Create(OpCodes.Call, addBuff)
                     });
-            }
+                }
 
-            IL.MethodPrepend(update, new[]
-            {
-                Instruction.Create(OpCodes.Ldsfld, gameMenu),
-                Instruction.Create(OpCodes.Brtrue, first)
-            });
+                IL.MethodPrepend(update, new[]
+                {
+                    Instruction.Create(OpCodes.Ldsfld, gameMenu),
+                    Instruction.Create(OpCodes.Brtrue, first)
+                });
+            }
         }
         
         private static void RecipeRange()
@@ -642,31 +642,36 @@ namespace TerrariaPatcher
             var wingsLogic = IL.GetFieldDefinition(player, "wingsLogic");
             var wingTimeMax = IL.GetFieldDefinition(player, "wingTimeMax");
 
-            IL.MethodAppend(updatePlayerEquips, updatePlayerEquips.Body.Instructions.Count - 1, 1, new[]
+            using (updatePlayerEquips.JumpFix())
             {
-                Instruction.Create(OpCodes.Ldarg_0),
-                Instruction.Create(OpCodes.Ldc_I4, 32),
-                Instruction.Create(OpCodes.Stfld, wings),
-                Instruction.Create(OpCodes.Ldarg_0),
-                Instruction.Create(OpCodes.Ldc_I4, 32),
-                Instruction.Create(OpCodes.Stfld, wingsLogic),
-                Instruction.Create(OpCodes.Ldarg_0),
-                Instruction.Create(OpCodes.Ldc_I4, int.MaxValue),
-                Instruction.Create(OpCodes.Stfld, wingTimeMax),
-                Instruction.Create(OpCodes.Ret)
-            });
+                IL.MethodAppend(updatePlayerEquips, updatePlayerEquips.Body.Instructions.Count - 1, 1, new[]
+                {
+                    Instruction.Create(OpCodes.Ldarg_0),
+                    Instruction.Create(OpCodes.Ldc_I4, 32),
+                    Instruction.Create(OpCodes.Stfld, wings),
+                    Instruction.Create(OpCodes.Ldarg_0),
+                    Instruction.Create(OpCodes.Ldc_I4, 32),
+                    Instruction.Create(OpCodes.Stfld, wingsLogic),
+                    Instruction.Create(OpCodes.Ldarg_0),
+                    Instruction.Create(OpCodes.Ldc_I4, int.MaxValue),
+                    Instruction.Create(OpCodes.Stfld, wingTimeMax),
+                    Instruction.Create(OpCodes.Ret)
+                });
+            }
         }
 
         private static void Plugins()
         {
             // Loader target methods
+            if (_mainModule.AssemblyReferences.Any(r => r.Name == "FNA"))
+                throw new NotSupportedException();
+            
             TypeDefinition loader;
-            var loaderFileName = _mainModule.AssemblyReferences.Any(r => r.Name == "FNA")
-                ? "PluginLoader.FNA.dll"
-                : "PluginLoader.XNA.dll";
+            var loaderFileName = "PluginLoader.XNA.dll";
             using (var fna = AssemblyDefinition.ReadAssembly(loaderFileName))
                 loader = _mainModule.ImportReference(new TypeReference("PluginLoader", "Loader", fna.MainModule, fna.MainModule)).Resolve();
             var onInitialize = _mainModule.Import(IL.GetMethodDefinition(loader, "OnInitialize"));
+            var onDrawSplash = _mainModule.Import(IL.GetMethodDefinition(loader, "OnDrawSplash"));
             var onDrawInterface = _mainModule.Import(IL.GetMethodDefinition(loader, "OnDrawInterface"));
             var onDrawInventory = _mainModule.Import(IL.GetMethodDefinition(loader, "OnDrawInventory"));
             var onPreUpdate = _mainModule.Import(IL.GetMethodDefinition(loader, "OnPreUpdate"));
@@ -706,9 +711,11 @@ namespace TerrariaPatcher
             var itemSlot = IL.GetTypeDefinition(_mainModule, "ItemSlot");
             var lighting = IL.GetTypeDefinition(_mainModule, "Lighting");
             var chest = IL.GetTypeDefinition(_mainModule, "Chest");
+            var soundEngine = IL.GetTypeDefinition(_mainModule, "SoundEngine");
 
             // Methods
-            var initialize = IL.GetMethodDefinition(main, "Initialize");
+            var initialize = IL.GetMethodDefinition(main, "Initialize_AlmostEverything");
+            var drawSplash = IL.GetMethodDefinition(main, "DrawSplash");
             var drawInterface = IL.GetMethodDefinition(main, "DrawInterface");
             var drawInventory = IL.GetMethodDefinition(main, "DrawInventory");
             var update = IL.GetMethodDefinition(main, "DoUpdate");
@@ -716,10 +723,10 @@ namespace TerrariaPatcher
             var updateTime = IL.GetMethodDefinition(main, "UpdateTime");
             var checkXmas = IL.GetMethodDefinition(main, "checkXMas");
             var checkHalloween = IL.GetMethodDefinition(main, "checkHalloween");
-            var playSound = IL.GetMethodDefinition(main, "PlaySound", 6);
+            var playSound = IL.GetMethodDefinition(soundEngine, "PlaySound", 6);
             var spawn = IL.GetMethodDefinition(player, "Spawn");
             var loadPlayer = IL.GetMethodDefinition(player, "LoadPlayer");
-            var savePlayer = IL.GetMethodDefinition(player, "SavePlayer");
+            var savePlayer = IL.GetMethodDefinition(player, "InternalSavePlayerFile");
             var updatePlayer = IL.GetMethodDefinition(player, "Update");
             var updatePlayerBuffs = IL.GetMethodDefinition(player, "UpdateBuffs");
             var updatePlayerEquips = IL.GetMethodDefinition(player, "UpdateEquips");
@@ -736,7 +743,8 @@ namespace TerrariaPatcher
             var setupShop = IL.GetMethodDefinition(chest, "SetupShop");
             var quickBuff = IL.GetMethodDefinition(player, "QuickBuff");
             var npcLoot = IL.GetMethodDefinition(npc, "NPCLoot");
-
+            
+            using (initialize.JumpFix())
             {
                 // Main.Initialize post hook
                 IL.MethodAppend(initialize, initialize.Body.Instructions.Count - 1, 1, new[]
@@ -745,7 +753,17 @@ namespace TerrariaPatcher
                     Instruction.Create(OpCodes.Ret)
                 });
             }
-
+            
+            using (drawSplash.JumpFix())
+            {
+                // Main.DrawSplash pre hook
+                IL.MethodPrepend(drawSplash, new[]
+                {
+                    Instruction.Create(OpCodes.Call, onDrawSplash)
+                });
+            }
+            
+            using (drawInventory.JumpFix())
             {
                 // Main.DrawInventory post hook
                 IL.MethodAppend(drawInventory, drawInventory.Body.Instructions.Count - 1, 1, new[]
@@ -754,7 +772,8 @@ namespace TerrariaPatcher
                     Instruction.Create(OpCodes.Ret)
                 });
             }
-
+            
+            using (drawInterface.JumpFix())
             {
                 // Main.DrawInterface post hook
                 IL.MethodAppend(drawInterface, drawInterface.Body.Instructions.Count - 1, 1, new[]
@@ -764,7 +783,7 @@ namespace TerrariaPatcher
                 });
             }
 
-            if (!IsModLoader)
+            /*if (!IsModLoader)
             {
                 // patch chat to allow on singleplayer
                 int spot = IL.ScanForOpcodePattern(updateEnterToggleChat, (i, instruction) =>
@@ -781,8 +800,9 @@ namespace TerrariaPatcher
                 updateEnterToggleChat.Body.Instructions[spot + 0].OpCode = OpCodes.Nop;
                 updateEnterToggleChat.Body.Instructions[spot + 1].OpCode = OpCodes.Nop;
                 updateEnterToggleChat.Body.Instructions[spot + 2].OpCode = OpCodes.Nop;
-            }
-
+            }*/
+            
+            using (update.JumpFix())
             {
                 // Main.Update pre hook
                 IL.MethodPrepend(update, new[]
@@ -797,7 +817,8 @@ namespace TerrariaPatcher
                     Instruction.Create(OpCodes.Ret)
                 });
             }
-
+            
+            using (updateTime.JumpFix())
             {
                 // Main.UpdateTime post hook
                 IL.MethodAppend(updateTime, updateTime.Body.Instructions.Count - 1, 1, new[]
@@ -807,6 +828,7 @@ namespace TerrariaPatcher
                 });
             }
 
+            using (checkXmas.JumpFix())
             {
                 // Main.checkXMas pre hook
                 var firstInstr = checkXmas.Body.Instructions.FirstOrDefault();
@@ -816,9 +838,12 @@ namespace TerrariaPatcher
                     Instruction.Create(OpCodes.Brfalse_S, firstInstr),
                     Instruction.Create(OpCodes.Ret)
                 });
-
+            }
+            
+            using (checkHalloween.JumpFix())
+            {
                 // Main.checkHalloween pre hook
-                firstInstr = checkHalloween.Body.Instructions.FirstOrDefault();
+                var firstInstr = checkHalloween.Body.Instructions.FirstOrDefault();
                 IL.MethodPrepend(checkHalloween, new[]
                 {
                     Instruction.Create(OpCodes.Call, onCheckHalloween),
@@ -826,9 +851,10 @@ namespace TerrariaPatcher
                     Instruction.Create(OpCodes.Ret)
                 });
             }
-
+            
+            using (playSound.JumpFix())
             {
-                // Main.PlaySound pre hook
+                // SoundEngine.PlaySound pre hook
                 var firstInstr = playSound.Body.Instructions.FirstOrDefault();
                 IL.MethodPrepend(playSound, new[]
                 {
@@ -842,7 +868,8 @@ namespace TerrariaPatcher
                     Instruction.Create(OpCodes.Ret)
                 });
             }
-
+            
+            using (loadPlayer.JumpFix())
             {
                 // Player.LoadPlayer inline hook
 
@@ -850,21 +877,15 @@ namespace TerrariaPatcher
                 var playerVar = loadPlayer.Body.Variables.FirstOrDefault(definition => definition.VariableType.Name == "Player");
                 var playerFileData = loadPlayer.Body.Variables.FirstOrDefault(definition => definition.VariableType.Name == "PlayerFileData");
                 var instr = Instruction.Create(OpCodes.Ldloc_S, playerFileData);
-                int spot = IL.ScanForOpcodePattern(loadPlayer, (i, instruction) =>
-                {
-                    var fieldReference = instruction.Operand as FieldReference;
-                    return loadPlayer.Body.Instructions[i - 2].OpCode.ToString().Contains("ldloc") &&
-                           loadPlayer.Body.Instructions[i - 1].OpCode.ToString().Contains("ldloc") &&
-                           fieldReference != null && fieldReference.Name == "skinVariant";
-                }, OpCodes.Ldfld);
+                int spot = IL.ScanForOpcodePattern(loadPlayer, (i, instruction) => (instruction.Operand as MethodReference)?.Name == "LoadPlayer_LastMinuteFixes", OpCodes.Call);
 
                 foreach (var instruction in loadPlayer.Body.Instructions)
                 {
-                    if (instruction.Operand == loadPlayer.Body.Instructions[spot - 2])
+                    if (instruction.Operand == loadPlayer.Body.Instructions[spot - 1])
                         instruction.Operand = instr;
                 }
 
-                IL.MethodPrepend(loadPlayer, loadPlayer.Body.Instructions[spot - 2], new[]
+                IL.MethodPrepend(loadPlayer, loadPlayer.Body.Instructions[spot - 1], new[]
                 {
                     instr, 
                     Instruction.Create(OpCodes.Ldloc_S, playerVar),
@@ -872,7 +893,8 @@ namespace TerrariaPatcher
                     Instruction.Create(OpCodes.Call, onPlayerLoad)
                 });
             }
-
+            
+            using (savePlayer.JumpFix())
             {
                 // Player.SavePlayer inline hook
                 int spot = IL.ScanForOpcodePattern(savePlayer, (i, instruction) =>
@@ -892,7 +914,8 @@ namespace TerrariaPatcher
                     Instruction.Create(OpCodes.Call, onPlayerSave)
                 });
             }
-
+            
+            using (spawn.JumpFix())
             {
                 // Player.Spawn pre hook
                 IL.MethodPrepend(spawn, new[]
@@ -909,7 +932,8 @@ namespace TerrariaPatcher
                     Instruction.Create(OpCodes.Ret)
                 });
             }
-
+            
+            using (updatePlayer.JumpFix())
             {
                 // Player.Update pre hook
                 IL.MethodPrepend(updatePlayer, new[]
@@ -926,7 +950,8 @@ namespace TerrariaPatcher
                     Instruction.Create(OpCodes.Ret)
                 });
             }
-
+            
+            using (updatePlayerBuffs.JumpFix())
             {
                 // Player.UpdateBuffs post hook
                 IL.MethodAppend(updatePlayerBuffs, updatePlayerBuffs.Body.Instructions.Count - 1, 1, new[]
@@ -936,7 +961,8 @@ namespace TerrariaPatcher
                     Instruction.Create(OpCodes.Ret)
                 });
             }
-
+            
+            using (updatePlayerEquips.JumpFix())
             {
                 // Player.UpdateEquips post hook
                 IL.MethodAppend(updatePlayerEquips, updatePlayerEquips.Body.Instructions.Count - 1, 1, new[]
@@ -946,7 +972,8 @@ namespace TerrariaPatcher
                     Instruction.Create(OpCodes.Ret)
                 });
             }
-
+            
+            using (updatePlayerArmorSets.JumpFix())
             {
                 // Player.UpdateArmorSets post hook
                 IL.MethodAppend(updatePlayerArmorSets, updatePlayerArmorSets.Body.Instructions.Count - 1, 1, new[]
@@ -956,7 +983,8 @@ namespace TerrariaPatcher
                     Instruction.Create(OpCodes.Ret)
                 });
             }
-
+            
+            using (killMe.JumpFix())
             {
                 // Player.KillMe pre hook
                 var firstInstr = killMe.Body.Instructions.FirstOrDefault();
@@ -972,7 +1000,8 @@ namespace TerrariaPatcher
                     Instruction.Create(OpCodes.Ret)
                 });
             }
-
+            
+            using (hurt.JumpFix())
             {
                 // Player.Hurt pre hook
                 var firstInstr = hurt.Body.Instructions.FirstOrDefault();
@@ -995,23 +1024,27 @@ namespace TerrariaPatcher
                     Instruction.Create(OpCodes.Ret)
                 });
             }
-
+            
+            using (pickAmmo.JumpFix())
             {
                 // Player.PickAmmo post hook
                 IL.MethodAppend(pickAmmo, pickAmmo.Body.Instructions.Count - 1, 1, new[]
                 {
                     Instruction.Create(OpCodes.Ldarg_0),
                     Instruction.Create(OpCodes.Ldarg_1),
-                    Instruction.Create(OpCodes.Ldarga_S, pickAmmo.Parameters.FirstOrDefault(def => def.Name == "shoot")),
+                    Instruction.Create(OpCodes.Ldarga_S, pickAmmo.Parameters.FirstOrDefault(def => def.Name == "projToShoot")),
                     Instruction.Create(OpCodes.Ldarga_S, pickAmmo.Parameters.FirstOrDefault(def => def.Name == "speed")),
                     Instruction.Create(OpCodes.Ldarga_S, pickAmmo.Parameters.FirstOrDefault(def => def.Name == "canShoot")),
                     Instruction.Create(OpCodes.Ldarga_S, pickAmmo.Parameters.FirstOrDefault(def => def.Name == "Damage")),
                     Instruction.Create(OpCodes.Ldarga_S, pickAmmo.Parameters.FirstOrDefault(def => def.Name == "KnockBack")),
+                    Instruction.Create(OpCodes.Ldarga_S, pickAmmo.Parameters.FirstOrDefault(def => def.Name == "usedAmmoItemId")),
+                    Instruction.Create(OpCodes.Ldarg_S, pickAmmo.Parameters.FirstOrDefault(def => def.Name == "dontConsume")),
                     Instruction.Create(OpCodes.Call, onPlayerPickAmmo),
                     Instruction.Create(OpCodes.Ret)
                 });
             }
-
+            
+            using (setDefaults.JumpFix())
             {
                 // Item.SetDefaults post hook
                 IL.MethodAppend(setDefaults, setDefaults.Body.Instructions.Count - 1, 1, new[]
@@ -1021,7 +1054,8 @@ namespace TerrariaPatcher
                     Instruction.Create(OpCodes.Ret)
                 });
             }
-
+            
+            using (ai.JumpFix())
             {
                 // Projectile.AI post hook
                 IL.MethodAppend(ai, ai.Body.Instructions.Count - 1, 1, new[]
@@ -1031,7 +1065,8 @@ namespace TerrariaPatcher
                     Instruction.Create(OpCodes.Ret)
                 });
             }
-
+            
+            using (rightClick.JumpFix())
             {
                 // ItemSlot.RightClick pre hook
                 var firstInstr = rightClick.Body.Instructions.FirstOrDefault();
@@ -1045,27 +1080,31 @@ namespace TerrariaPatcher
                     Instruction.Create(OpCodes.Ret)
                 });
             }
-            
+
+            using (doUpdateHandleChat.JumpFix())
             {
                 // Main.DoUpdate_HandleChat hook
                 int spot = IL.ScanForOpcodePattern(doUpdateHandleChat, (i, instruction) =>
                     {
-                        var fieldReference = doUpdateHandleChat.Body.Instructions[i + 1].Operand as FieldReference;
+                        var fieldReference = instruction.Operand as FieldReference;
                         return fieldReference != null && fieldReference.Name == "netMode";
                     },
-                    OpCodes.Call,
                     OpCodes.Ldsfld,
-                    OpCodes.Brtrue_S) - 1;
-                
-                var firstInstr = doUpdateHandleChat.Body.Instructions[spot + 3].Operand as Instruction;
-                IL.MethodAppend(doUpdateHandleChat, spot, 0, new[]
+                    OpCodes.Ldc_I4_1,
+                    OpCodes.Bne_Un_S);
+                int spot2 = IL.ScanForOpcodePattern(doUpdateHandleChat, (i, instruction) => instruction.Operand as string == "", spot, OpCodes.Ldstr);
+                var chatMessage = doUpdateHandleChat.Body.Variables.FirstOrDefault(definition => definition.VariableType.Name == "ChatMessage");
+
+                var skip = doUpdateHandleChat.Body.Instructions[spot2];
+                IL.MethodPrepend(doUpdateHandleChat, doUpdateHandleChat.Body.Instructions[spot], new[]
                 {
-                    Instruction.Create(doUpdateHandleChat.Body.Instructions[spot].OpCode), // text
+                    Instruction.Create(OpCodes.Ldloc_S, chatMessage), // text
                     Instruction.Create(OpCodes.Call, onSendChatMessageFromClient),
-                    Instruction.Create(OpCodes.Brtrue_S, firstInstr)
+                    Instruction.Create(OpCodes.Brtrue_S, skip)
                 });
             }
-
+            
+            using (getColor.JumpFix())
             {
                 // Lighting.GetColor pre hook
                 var firstInstr = getColor.Body.Instructions.FirstOrDefault();
@@ -1082,7 +1121,8 @@ namespace TerrariaPatcher
                     Instruction.Create(OpCodes.Ret)
                 });
             }
-
+            
+            using (getItem.JumpFix())
             {
                 // Player.GetItem pre hook
                 var firstInstr = getItem.Body.Instructions.FirstOrDefault();
@@ -1099,7 +1139,8 @@ namespace TerrariaPatcher
                     Instruction.Create(OpCodes.Ret)
                 });
             }
-
+            
+            using (setupShop.JumpFix())
             {
                 // Chest.SetupShop post hook
                 IL.MethodAppend(setupShop, setupShop.Body.Instructions.Count - 1, 1, new[]
@@ -1110,7 +1151,8 @@ namespace TerrariaPatcher
                     Instruction.Create(OpCodes.Ret)
                 });
             }
-
+            
+            using (quickBuff.JumpFix())
             {
                 // Player.QuickBuff pre hook
                 var firstInstr = quickBuff.Body.Instructions.FirstOrDefault();
@@ -1122,7 +1164,8 @@ namespace TerrariaPatcher
                     Instruction.Create(OpCodes.Ret)
                 });
             }
-
+            
+            using (npcLoot.JumpFix())
             {
                 // NPC.NPCLoot pre hook
                 var firstInstr = npcLoot.Body.Instructions.FirstOrDefault();

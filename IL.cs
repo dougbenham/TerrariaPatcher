@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Mono.Cecil.Rocks;
 using FieldAttributes = Mono.Cecil.FieldAttributes;
 
 namespace TerrariaPatcher
@@ -419,5 +420,26 @@ namespace TerrariaPatcher
 			else
 				return Instruction.Create(original.OpCode);
 		}
+
+        class JumpFixHelper : IDisposable
+        {
+            private readonly MethodDefinition _method;
+
+            public JumpFixHelper(MethodDefinition method)
+            {
+                _method = method;
+            }
+
+            public void Dispose()
+            {
+                _method.Body.SimplifyMacros();
+                _method.Body.OptimizeMacros();
+            }
+        }
+
+        public static IDisposable JumpFix(this MethodDefinition method)
+        {
+            return new JumpFixHelper(method);
+        }
     }
 }

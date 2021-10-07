@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Reflection;
-using Microsoft.Xna.Framework;
 using PluginLoader;
 using Terraria;
+using Terraria.Chat;
 using Terraria.GameContent.Achievements;
 using Keys = Microsoft.Xna.Framework.Input.Keys;
 
@@ -142,7 +142,7 @@ namespace TranscendPlugins
             if (Main.netMode == 0)
             {
                 Main.eclipse = true;
-                Main.NewText(Lang.misc[20].Value, 50, 255, 130, false);
+                Main.NewText(Lang.misc[20].Value, 50, 255, 130);
             }
             else
             {
@@ -156,11 +156,11 @@ namespace TranscendPlugins
             AchievementsHelper.NotifyProgressionEvent(4);
             if (Main.netMode == 0)
             {
-                Main.NewText(Lang.misc[8].Value, 50, 255, 130, false);
+                Main.NewText(Lang.misc[8].Value, 50, byte.MaxValue, 130);
             }
             else if (Main.netMode == 2)
             {
-                NetMessage.BroadcastChatMessage(Lang.misc[8].ToNetworkText(), new Color(50, 255, 130), -1);
+                ChatHelper.BroadcastChatMessage(Lang.misc[8].ToNetworkText(), new Microsoft.Xna.Framework.Color(50, 255, 130), -1);
             }
         }
 
@@ -178,7 +178,7 @@ namespace TranscendPlugins
 
         private void StopLunarEvent()
         {
-            Main.NewText("Stopped lunar event!", 50, 255, 130, false);
+            Main.NewText("Stopped lunar event!", 50, 255, 130);
             Terraria.NPC.LunarApocalypseIsUp = false;
             for (int i = 0; i < 200; i++)
             {

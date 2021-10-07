@@ -7,7 +7,7 @@ namespace TranscendPlugins.Shared.Extensions
         public static void SetValue(this ItemTooltip tooltip, string text)
         {
             tooltip._text.SetValue(text);
-            tooltip._lastCulture = null;
+            tooltip._validatorKey = 0;
         }
     }
 }

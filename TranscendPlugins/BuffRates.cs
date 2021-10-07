@@ -75,11 +75,9 @@ namespace TranscendPlugins
                             player.meleeCrit += r;
                             player.rangedCrit += r;
                             player.magicCrit += r;
-                            player.thrownCrit += r;
                             break;
                         case Indices.Wrath:
                             var w = wrath - 0.1f;
-                            player.thrownDamage += w;
                             player.meleeDamage += w;
                             player.rangedDamage += w;
                             player.magicDamage += w;
@@ -90,7 +88,7 @@ namespace TranscendPlugins
             }
         }
 
-        public void OnPlayerPickAmmo(Player player, Item item, ref int shoot, ref float speed, ref bool canShoot, ref int damage, ref float knockback)
+        public void OnPlayerPickAmmo(Player player, Item item, ref int shoot, ref float speed, ref bool canShoot, ref int damage, ref float knockback, ref int usedAmmoItemId, bool dontConsume)
         {
             if (item.useAmmo == 1 && player.archery)
             {

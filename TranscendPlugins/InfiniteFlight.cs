@@ -20,7 +20,7 @@ namespace ZeromaruPlugins
             Loader.RegisterHotkey(() =>
             {
                 flight = !flight;
-                Main.NewText("Infinite Flight " + (flight ? "Enabled" : "Disabled"), green.R, green.G, green.B, false);
+                Main.NewText("Infinite Flight " + (flight ? "Enabled" : "Disabled"), green.R, green.G, green.B);
             }, flightKey);
         }
 

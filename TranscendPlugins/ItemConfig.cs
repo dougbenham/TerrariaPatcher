@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using PluginLoader;
 using Terraria;
 using Terraria.ID;
@@ -36,6 +37,7 @@ namespace YellowAfterlifePlugins
         #region Read INI
 
         private string confPath = Environment.CurrentDirectory + "\\ItemConfig.ini";
+        private readonly HashSet<string> _sections;
 
         private string LoadString(string section, string field)
         {
@@ -79,11 +81,15 @@ namespace YellowAfterlifePlugins
         public ItemConfig()
         {
             IniAPI.WriteIni("header", "hint", "Add rules below; See ItemConfig.cs for instructions.", confPath);
+            _sections = new HashSet<string>(IniAPI.GetIniSections(confPath));
         }
 
         public void OnItemSetDefaults(Item item)
         {
             var section = "item" + item.type;
+            if (!_sections.Contains(section))
+                return;
+
             var name = LoadString(section, "name");
             var autoReuse = LoadBool(section, "autoReuse");
             var damage = LoadInt(section, "damage");

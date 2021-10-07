@@ -3,6 +3,8 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Terraria;
 using ReLogic.Graphics;
+using Terraria.Audio;
+using Terraria.GameContent;
 
 namespace GTRPlugins.UI
 {
@@ -34,7 +36,7 @@ namespace GTRPlugins.UI
 
         public void Draw()
         {
-            Vector2 size = Main.fontMouseText.MeasureString(Label) * Scale;
+            Vector2 size = FontAssets.MouseText.Value.MeasureString(Label) * Scale;
             float x = Position.X;
             float y = Position.Y;
             switch (RelateX)
@@ -108,19 +110,19 @@ namespace GTRPlugins.UI
                         color = _hover ? new Color((int)(HoverColor.R * pulse), (int)(HoverColor.G * pulse), (int)(HoverColor.B * pulse)) : new Color((int)(Color.R * pulse), (int)(Color.G * pulse), (int)(Color.B * pulse));
                         break;
                 }
-                Main.spriteBatch.DrawString(Main.fontMouseText, Label, new Vector2((float)(x + strokeX), (float)(y + strokeY)), color, 0f, origin, Scale, SpriteEffects.None, 0f);
+                Main.spriteBatch.DrawString(FontAssets.MouseText.Value, Label, new Vector2((float)(x + strokeX), (float)(y + strokeY)), color, 0f, origin, Scale, SpriteEffects.None, 0f);
             }
             if ((Main.mouseX > (x - anchorX - 3 * Scale)) && (Main.mouseX < (x + size.X - anchorX + 3 * Scale)) && (Main.mouseY > (y - anchorY) - 2 * Scale) && (Main.mouseY < (y + size.Y - anchorY - 7 * Scale)))
             {
                 if (!_hover)
                 {
-                    Main.PlaySound(12, -1, -1, 1);
+                    SoundEngine.PlaySound(12, -1, -1, 1);
                 }
                 _hover = true;
                 Main.player[Main.myPlayer].mouseInterface = true;
                 if (Main.mouseLeftRelease && Main.mouseLeft)
                 {
-                    Main.PlaySound(12, -1, -1, 1);
+                    SoundEngine.PlaySound(12, -1, -1, 1);
                     Main.mouseLeftRelease = false;
                     if (MouseDown != null)
                     {

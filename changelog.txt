@@ -1,3 +1,4 @@
+v1.3.0.0:	Updated for Terraria v1.4.2.3.
 v1.2.0.41:	Startup fix and fixed FNA.
 v1.2.0.40:	Fixed auto-updater to use TLS 1.2 with Github.
 v1.2.0.39:	Added support for tModLoader 64-bit.

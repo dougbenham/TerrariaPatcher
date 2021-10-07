@@ -27,7 +27,7 @@ namespace ZeromaruPlugins
             Action update = () =>
             {
                 IniAPI.WriteIni("GodMode", "Mode", mode.ToString());
-                Main.NewText("God Mode: " + mode, green.R, green.G, green.B, false);
+                Main.NewText("God Mode: " + mode, green.R, green.G, green.B);
             };
 
             Loader.RegisterHotkey(() =>

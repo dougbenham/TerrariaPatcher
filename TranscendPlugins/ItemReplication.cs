@@ -3,6 +3,7 @@ using System.Linq;
 using Microsoft.Xna.Framework.Input;
 using PluginLoader;
 using Terraria;
+using Terraria.Audio;
 
 namespace RyanPlugins
 {
@@ -60,9 +61,7 @@ namespace RyanPlugins
 
                     Main.mouseItem.stack++;
                     Recipe.FindRecipes();
-                    Main.soundInstanceMenuTick.Stop();
-                    Main.soundInstanceMenuTick = Main.soundMenuTick.CreateInstance();
-                    Main.PlaySound(12, -1, -1, 1);
+                    SoundEngine.PlaySound(12, -1, -1, 1);
 
                     if (Main.stackSplit == 0)
                     {

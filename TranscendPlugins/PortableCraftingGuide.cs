@@ -21,7 +21,7 @@ namespace TranscendPlugins
                 if (!pcg)
                 {
                     Main.InGuideCraftMenu = false;
-                    Main.player[Main.myPlayer].talkNPC = -1;
+                    Main.player[Main.myPlayer].SetTalkNPC(-1);
                 }
             }, pcgKey);
 
@@ -49,7 +49,7 @@ namespace TranscendPlugins
             {
                 Main.npcChatText = "";
                 Main.player[Main.myPlayer].chest = -1;
-                Main.player[Main.myPlayer].talkNPC = 22;
+                Main.player[Main.myPlayer].SetTalkNPC(22);
                 Main.InGuideCraftMenu = true;
                 Main.playerInventory = true;
             }

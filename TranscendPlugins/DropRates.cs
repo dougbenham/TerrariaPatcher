@@ -27,21 +27,21 @@ namespace BlahPlugins
             {
                 if (factor < 20) factor++;
                 IniAPI.WriteIni("DropRates", "Factor", factor.ToString());
-                Main.NewText("Drop Rates multiplied by " + factor, yellow.R, yellow.G, yellow.B, false);
+                Main.NewText("Drop Rates multiplied by " + factor, yellow.R, yellow.G, yellow.B);
             }, inc);
 
             Loader.RegisterHotkey(() =>
             {
                 if (factor > 1) factor--;
                 IniAPI.WriteIni("DropRates", "Factor", factor.ToString());
-                Main.NewText("Drop Rates multiplied by " + factor, yellow.R, yellow.G, yellow.B, false);
+                Main.NewText("Drop Rates multiplied by " + factor, yellow.R, yellow.G, yellow.B);
             }, dec);
 
             Loader.RegisterHotkey(() =>
             {
                 rare = !rare;
                 IniAPI.WriteIni("DropRates", "Rare", rare.ToString());
-                Main.NewText("Rare Drops Only " + (rare ? "On" : "Off"), yellow.R, yellow.G, yellow.B, false);
+                Main.NewText("Rare Drops Only " + (rare ? "On" : "Off"), yellow.R, yellow.G, yellow.B);
             }, toggle);
         }
         public bool OnNPCLoot(NPC npc)
@@ -88,7 +88,7 @@ namespace BlahPlugins
                         {
                             Item.NewItem((int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.CrimsonKey, 1, false, 0, false);
                         }
-                        if (Main.rand.Next(twentyFiveHundred) == 0 && Main.player[(int)Player.FindClosest(npc.position, npc.width, npc.height)].ZoneHoly)
+                        if (Main.rand.Next(twentyFiveHundred) == 0 && Main.player[(int)Player.FindClosest(npc.position, npc.width, npc.height)].ZoneHallow)
                         {
                             Item.NewItem((int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.HallowedKey, 1, false, 0, false);
                         }

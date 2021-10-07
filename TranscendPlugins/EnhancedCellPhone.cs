@@ -139,7 +139,7 @@ namespace BlahPlugins
                     if (mode == Mode.Random) mode = Mode.Home;
                     else mode++;
                     IniAPI.WriteIni("EnhancedCellPhone", "Mode", mode.ToString());
-                    Main.NewText("Enhanced CellPhone: " + mode, 255, 235, 150, false);
+                    Main.NewText("Enhanced CellPhone: " + mode, 255, 235, 150);
                 }
             }
         }

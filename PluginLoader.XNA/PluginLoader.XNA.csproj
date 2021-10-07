@@ -46,7 +46,7 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
     <Reference Include="Terraria">
-      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\ReferenceAssemblies\Terraria.exe</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

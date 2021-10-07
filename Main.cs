@@ -60,13 +60,20 @@ namespace TerrariaPatcher
 
                             // Rename the currently executing TerrariaPatcher.exe / PluginLoader.XNA.dll / PluginLoader.FNA.dll / Mono.Cecil.dll so that we can update
                             var location = Path.Combine(Environment.CurrentDirectory, "TerrariaPatcher.exe");
-                            File.Move(location, location.Replace("exe", "tmp"));
+                            if (File.Exists(location))
+                                File.Move(location, location.Replace("exe", "tmp"));
                             location = Path.Combine(Environment.CurrentDirectory, "PluginLoader.XNA.dll");
-                            File.Move(location, location.Replace("dll", "tmp"));
+                            if (File.Exists(location))
+                                File.Move(location, location.Replace("dll", "tmp"));
                             location = Path.Combine(Environment.CurrentDirectory, "PluginLoader.FNA.dll");
-                            File.Move(location, location.Replace("dll", "tmp"));
+                            if (File.Exists(location))
+                                File.Move(location, location.Replace("dll", "tmp"));
                             location = Path.Combine(Environment.CurrentDirectory, "Mono.Cecil.dll");
-                            File.Move(location, location.Replace("dll", "tmp"));
+                            if (File.Exists(location))
+                                File.Move(location, location.Replace("dll", "tmp"));
+                            location = Path.Combine(Environment.CurrentDirectory, "Mono.Cecil.Rocks.dll");
+                            if (File.Exists(location))
+                                File.Move(location, location.Replace("dll", "tmp"));
 
                             // Extract the update
                             using (var archive = ZipFile.OpenRead(zip))
@@ -381,11 +388,17 @@ namespace TerrariaPatcher
                     if (details.Plugins)
                     {
                         var targetFolder = Path.GetDirectoryName(saveFileDialog.FileName);
-                        foreach (var t in new[] {"PluginLoader.XNA.dll", "PluginLoader.FNA.dll"})
+                        foreach (var t in new[] {"PluginLoader.XNA.dll"})
                         {
                             var target = $"{targetFolder}\\{t}";
 
                             var pluginLoaderInfo = new FileInfo(target);
+                            if (!pluginLoaderInfo.Exists)
+                            {
+                                MessageBox.Show(target + " is missing.", Program.AssemblyName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                                continue;
+                            }
+
                             while (Utils.IsFileLocked(pluginLoaderInfo))
                             {
                                 var result = MessageBox.Show(target + " is in use. Please close Terraria then hit OK.", Program.AssemblyName, MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);

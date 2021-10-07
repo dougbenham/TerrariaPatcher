@@ -64,25 +64,25 @@ namespace TranscendPlugins
             Loader.RegisterHotkey(() =>
             {
                 ModifySpawnLimit(-1);
-                Main.NewText("Spawn limit: " + DefaultMaxSpawns, purple.R, purple.G, purple.B, false);
+                Main.NewText("Spawn limit: " + DefaultMaxSpawns, purple.R, purple.G, purple.B);
             }, decreaseKey, control: true);
 
             Loader.RegisterHotkey(() =>
             {
                 ModifySpawnRate(-20);
-                Main.NewText("Spawn rate: " + DefaultSpawnRate + "%", purple.R, purple.G, purple.B, false);
+                Main.NewText("Spawn rate: " + DefaultSpawnRate + "%", purple.R, purple.G, purple.B);
             }, decreaseKey, control: false);
 
             Loader.RegisterHotkey(() =>
             {
                 ModifySpawnLimit(1);
-                Main.NewText("Spawn limit: " + DefaultMaxSpawns, purple.R, purple.G, purple.B, false);
+                Main.NewText("Spawn limit: " + DefaultMaxSpawns, purple.R, purple.G, purple.B);
             }, increaseKey, control: true);
 
             Loader.RegisterHotkey(() =>
             {
                 ModifySpawnRate(20);
-                Main.NewText("Spawn rate: " + DefaultSpawnRate + "%", purple.R, purple.G, purple.B, false);
+                Main.NewText("Spawn rate: " + DefaultSpawnRate + "%", purple.R, purple.G, purple.B);
             }, increaseKey, control: false);
 
             Loader.RegisterHotkey(() =>
@@ -100,8 +100,8 @@ namespace TranscendPlugins
                     DefaultMaxSpawns = previousMaxSpawns;
                     DefaultSpawnRate = previousSpawnRate;
                 }
-                Main.NewText("Spawn rate: " + DefaultSpawnRate + "%", purple.R, purple.G, purple.B, false);
-                Main.NewText("Spawn limit: " + DefaultMaxSpawns, purple.R, purple.G, purple.B, false);
+                Main.NewText("Spawn rate: " + DefaultSpawnRate + "%", purple.R, purple.G, purple.B);
+                Main.NewText("Spawn limit: " + DefaultMaxSpawns, purple.R, purple.G, purple.B);
             }, toggleKey);
         }
 

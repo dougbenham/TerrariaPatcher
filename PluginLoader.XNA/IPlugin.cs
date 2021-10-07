@@ -21,6 +21,10 @@ namespace PluginLoader
     {
         void OnInitialize();
     }
+    public interface IPluginDrawSplash : IPlugin
+    {
+        void OnDrawSplash();
+    }
     public interface IPluginDrawInterface : IPlugin
     {
         void OnDrawInterface();
@@ -101,7 +105,7 @@ namespace PluginLoader
     }
     public interface IPluginPlayerPickAmmo : IPlugin
     {
-        void OnPlayerPickAmmo(Player player, Item weapon, ref int shoot, ref float speed, ref bool canShoot, ref int damage, ref float knockback);
+        void OnPlayerPickAmmo(Player player, Item weapon, ref int shoot, ref float speed, ref bool canShoot, ref int damage, ref float knockback, ref int usedAmmoItemId, bool dontConsume);
     }
     public interface IPluginPlayerGetItem : IPlugin
     {

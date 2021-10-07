@@ -25,7 +25,7 @@ namespace PluginLoader
         private static bool fresh = true;
 
         private static List<IPlugin> loadedPlugins = new List<IPlugin>();
-        private static bool loaded, ingame;
+        private static bool loaded, reachedMenu;
 
         #endregion
         
@@ -258,6 +258,12 @@ namespace PluginLoader
                 plugin.OnInitialize();
         }
 
+        public static void OnDrawSplash()
+        {
+            foreach (var plugin in loadedPlugins.OfType<IPluginDrawSplash>())
+                plugin.OnDrawSplash();
+        }
+
         public static void OnDrawInventory()
         {
             foreach (var plugin in loadedPlugins.OfType<IPluginDrawInventory>())
@@ -272,11 +278,11 @@ namespace PluginLoader
 
         public static void OnPreUpdate()
         {
-            if (!ingame)
-            {
-                ingame = true;
-                Main.NewText("Loaded " + loadedPlugins.Count + " plugins", Color.Purple.R, Color.Purple.G, Color.Purple.B, false);
-            }
+            if (Main.showSplash)
+                return;
+
+            if (Main.menuMode != 10)
+                return;
 
             if (!Main.blockInput && !Main.drawingPlayerChat && !Main.editSign && !Main.editChest)
             {
@@ -427,10 +433,10 @@ namespace PluginLoader
             return ret;
         }
 
-        public static void OnPlayerPickAmmo(Player player, Item weapon, ref int shoot, ref float speed, ref bool canShoot, ref int damage, ref float knockback)
+        public static void OnPlayerPickAmmo(Player player, Item weapon, ref int shoot, ref float speed, ref bool canShoot, ref int damage, ref float knockback, ref int usedAmmoItemId, bool dontConsume)
         {
             foreach (var plugin in loadedPlugins.OfType<IPluginPlayerPickAmmo>())
-                plugin.OnPlayerPickAmmo(player, weapon, ref shoot, ref speed, ref canShoot, ref damage, ref knockback);
+                plugin.OnPlayerPickAmmo(player, weapon, ref shoot, ref speed, ref canShoot, ref damage, ref knockback, ref usedAmmoItemId, dontConsume);
         }
 
         public static bool OnPlayerGetItem(Player player, Item newItem, out Item resultItem)

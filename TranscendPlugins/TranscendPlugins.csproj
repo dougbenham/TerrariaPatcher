@@ -37,10 +37,6 @@
     <Reference Include="Microsoft.Xna.Framework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="Microsoft.Xna.Framework.Game, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="Microsoft.Xna.Framework.Graphics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
-    <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Windows.Forms" />
@@ -50,10 +46,10 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="Terraria">
-      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\ReferenceAssemblies\Terraria.exe</HintPath>
     </Reference>
     <Reference Include="Terraria.Libraries.ReLogic.ReLogic">
-      <HintPath>References\Terraria.Libraries.ReLogic.ReLogic.dll</HintPath>
+      <HintPath>..\ReferenceAssemblies\Terraria.Libraries.ReLogic.ReLogic.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -101,7 +97,7 @@
     <Compile Include="Respawn.cs" />
     <Compile Include="Season.cs" />
     <Compile Include="ShopSellsScalingPotions.cs" />
-    <Compile Include="SkipSplash.cs" />
+    <Compile Include="FastSplash.cs" />
     <Compile Include="Time.cs" />
     <Compile Include="UseTime.cs" />
     <Compile Include="Teleport.cs" />
@@ -119,7 +115,15 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json">
+      <Version>7.0.1</Version>
+    </PackageReference>
+    <PackageReference Include="Krafs.Publicizer" Version="1.0.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <Publicize Include="Terraria;Terraria.Libraries.ReLogic.ReLogic" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
