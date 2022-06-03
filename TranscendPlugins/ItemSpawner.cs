@@ -33,7 +33,7 @@ namespace Ruffi123456789Plugins
             {
                 int id;
                 if (int.TryParse(toSpawn, out id))
-                    Main.player[Main.myPlayer].QuickSpawnItem(id);
+                    Main.player[Main.myPlayer].QuickSpawnItem(null, id);
                 toSpawn = "";
             }
         }
@@ -76,7 +76,7 @@ namespace Ruffi123456789Plugins
                 }
             }
 
-            Main.player[Main.myPlayer].QuickSpawnItem(itemId, count);
+            Main.player[Main.myPlayer].QuickSpawnItem(null, itemId, count);
             return true;
         }
     }

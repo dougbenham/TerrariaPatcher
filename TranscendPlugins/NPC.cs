@@ -128,9 +128,11 @@ namespace TranscendPlugins
         {
             for (int i = 0; i < Main.npc.Length; i++)
             {
-                if (Main.npc[i] != null && !Main.npc[i].townNPC)
+                var npc = Main.npc[i];
+                if (npc != null && !npc.townNPC)
                 {
-                    Main.npc[i].life = 0;
+                    npc.life = 0;
+                    npc.checkDead();
                     if (Main.netMode == 2)
                         NetMessage.SendData(23, -1, -1, null, i);
                 }
@@ -199,10 +201,7 @@ namespace TranscendPlugins
             }
             for (int i = 0; i < count; i++)
             {
-                if (npcId < 0)
-                    Main.npc[Terraria.NPC.NewNPC(x, y, 1)].SetDefaults(npcId); // special slime
-                else
-                    Terraria.NPC.NewNPC(x, y, npcId);
+                Terraria.NPC.NewNPC(Terraria.NPC.GetSpawnSourceForNaturalSpawn(), x, y, npcId);
             }
             return true;
         }

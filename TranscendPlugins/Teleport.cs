@@ -21,9 +21,9 @@ namespace TranscendPlugins
             {
                 var player = Main.player[Main.myPlayer];
                 var vector = new Vector2(Main.mouseX + Main.screenPosition.X, Main.mouseY + Main.screenPosition.Y);
-                player.Teleport(vector, 5, 0);
+                player.Teleport(vector, 1, 0);
                 player.velocity = Vector2.Zero;
-                NetMessage.SendData(65, -1, -1, null, 0, player.whoAmI, vector.X, vector.Y, 5, 0, 0);
+                NetMessage.SendData(65, -1, -1, null, 0, player.whoAmI, vector.X, vector.Y, 1, 0, 0);
             }, teleportKey);
         }
 
@@ -72,6 +72,7 @@ namespace TranscendPlugins
                 player.position = vector2;
                 player.velocity = Vector2.Zero;
                 player.fallStart = (int)(player.position.Y / 16f);
+                NetMessage.SendData(13, -1, -1, null, Main.myPlayer, 0f, 0f, 0f, 0, 0, 0);
             }
         }
 
@@ -105,6 +106,7 @@ namespace TranscendPlugins
                                 player.position = new Vector2(i * 16, j * 16);
                                 player.velocity = Vector2.Zero;
                                 player.fallStart = (int)(player.position.Y / 16f);
+                                NetMessage.SendData(13, -1, -1, null, Main.myPlayer, 0f, 0f, 0f, 0, 0, 0);
                                 return true;
                             }
                         }
@@ -125,6 +127,7 @@ namespace TranscendPlugins
                                 player.position = new Vector2(i * 16, j * 16);
                                 player.velocity = Vector2.Zero;
                                 player.fallStart = (int)(player.position.Y / 16f);
+                                NetMessage.SendData(13, -1, -1, null, Main.myPlayer, 0f, 0f, 0f, 0, 0, 0);
                                 return true;
                             }
                         }

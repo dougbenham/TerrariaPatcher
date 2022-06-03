@@ -90,7 +90,7 @@ namespace TerrariaPatcher
                     ModVampiricKnives(details.VampiricHealing / 100f);
                 if (Math.Abs(details.SpectreHealing - 20f) > 0.01)
                     ModSpectreArmor(details.SpectreHealing / 100f);
-                if (details.SpawnRateVoodoo != 15)
+                if (details.SpawnRateVoodoo != 10)
                     ModSpawnRateVoodooDemon(details.SpawnRateVoodoo / 100f);
                 //ModThornsBuff(details.Thorns / 100f);
 
@@ -108,26 +108,34 @@ namespace TerrariaPatcher
             var player = IL.GetTypeDefinition(_mainModule, "Player");
             var ctor = IL.GetMethodDefinition(player, ".ctor");
             var updateEquips = IL.GetMethodDefinition(player, "UpdateEquips");
-
+            
             int spot0 = IL.ScanForOpcodePattern(ctor, (i, instruction) =>
             {
                 var i3 = ctor.Body.Instructions[i + 3].Operand as FieldReference;
-                return i3 != null && i3.Name == "hideVisual";
+                return i3 != null && i3.Name == "hideVisibleAccessory";
             }, OpCodes.Ldarg_0, OpCodes.Ldc_I4_S, OpCodes.Newarr, OpCodes.Stfld);
-            ctor.Body.Instructions[spot0 + 1].Operand = (sbyte)20;
+            ctor.Body.Instructions[spot0 + 1].Operand = (sbyte) 20;
 
+            int spot = 0;
             while (true)
             {
-                int spot1 = IL.ScanForOpcodePattern(updateEquips, (i, instruction) =>
-                    {
-                        var i2 = updateEquips.Body.Instructions[i + 2].Operand as FieldReference;
-                        return i2 != null && i2.Name == "extraAccessorySlots";
-                    },
-                    OpCodes.Ldc_I4_8, OpCodes.Ldarg_0, OpCodes.Ldfld, OpCodes.Add);
-                if (spot1 < 0) break;
-
-                updateEquips.Body.Instructions[spot1] = Instruction.Create(OpCodes.Ldc_I4, 18);
+                spot = IL.ScanForOpcodePattern(updateEquips, (i, instruction) =>
+                {
+                    return (sbyte) updateEquips.Body.Instructions[i].Operand == (sbyte) 10 &&
+                           (updateEquips.Body.Instructions[i + 1].OpCode == OpCodes.Blt ||
+                            updateEquips.Body.Instructions[i + 1].OpCode == OpCodes.Blt_S);
+                }, spot, OpCodes.Ldc_I4_S);
+                if (spot < 0)
+                    break;
+                updateEquips.Body.Instructions[spot].Operand = (sbyte) 20;
+                spot++;
             }
+
+            var isAValidEquipmentSlotForIteration = IL.GetMethodDefinition(player, "IsAValidEquipmentSlotForIteration");
+            isAValidEquipmentSlotForIteration.Body.ExceptionHandlers.Clear();
+            isAValidEquipmentSlotForIteration.Body.Instructions.Clear();
+            isAValidEquipmentSlotForIteration.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_I4_1));
+            isAValidEquipmentSlotForIteration.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
         }
 
         private static void ModVampiricKnives(float healingRate) // default is 0.075
@@ -566,17 +574,17 @@ namespace TerrariaPatcher
 
             int spot = IL.ScanForOpcodePattern(spawn, (i, instruction) =>
                                            {
-                                               var instr = spawn.Body.Instructions[i + 11];
+                                               var instr = spawn.Body.Instructions[i + 12];
                                                return (instr.Operand as sbyte?) == 66;
                                            }, new[]
                                            {
-                                               OpCodes.Ldc_I4_7,
+                                               OpCodes.Ldc_I4_S,
                                                OpCodes.Callvirt,
                                                OpCodes.Brtrue_S
                                            });
 
-            spawn.Body.Instructions[spot].OpCode = OpCodes.Ldc_I4;
-            spawn.Body.Instructions[spot].Operand = Math.Abs(rate) < 0.001 ? int.MaxValue : (int)Math.Round(1 / rate);
+            spawn.Body.Instructions[spot].OpCode = OpCodes.Ldc_I4_S;
+            spawn.Body.Instructions[spot].Operand = Math.Abs(rate) < 0.001 ? sbyte.MaxValue : (sbyte) Math.Round(1 / rate);
         }
 
         private static void AddBuffs(IEnumerable<int> buffs)
