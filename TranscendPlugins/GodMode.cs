@@ -60,7 +60,7 @@ namespace ZeromaruPlugins
             }
         }
 
-        public bool OnPlayerHurt(Player player, PlayerDeathReason damageSource, int damage, int hitDirection, bool pvp, bool quiet, bool crit, int cooldownCounter, out double result)
+        public bool OnPlayerHurt(Player player, PlayerDeathReason damageSource, int damage, int hitDirection, bool pvp, bool quiet, bool crit, int cooldownCounter, bool dodgeable, out double result)
         {
             result = 0.0;
             return mode == Mode.God;

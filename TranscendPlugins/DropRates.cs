@@ -78,122 +78,122 @@ namespace BlahPlugins
                     {
                         if (Main.rand.Next(twentyFiveHundred) == 0 && Main.player[(int)Player.FindClosest(npc.position, npc.width, npc.height)].ZoneJungle)
                         {
-                            Item.NewItem((int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.JungleKey, 1, false, 0, false);
+                            Item.NewItem(npc.GetItemSource_Loot(), (int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.JungleKey, 1, false, 0, false, false);
                         }
                         if (Main.rand.Next(twentyFiveHundred) == 0 && Main.player[(int)Player.FindClosest(npc.position, npc.width, npc.height)].ZoneCorrupt)
                         {
-                            Item.NewItem((int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.CorruptionKey, 1, false, 0, false);
+                            Item.NewItem(npc.GetItemSource_Loot(), (int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.CorruptionKey, 1, false, 0, false);
                         }
                         if (Main.rand.Next(twentyFiveHundred) == 0 && Main.player[(int)Player.FindClosest(npc.position, npc.width, npc.height)].ZoneCrimson)
                         {
-                            Item.NewItem((int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.CrimsonKey, 1, false, 0, false);
+                            Item.NewItem(npc.GetItemSource_Loot(), (int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.CrimsonKey, 1, false, 0, false);
                         }
                         if (Main.rand.Next(twentyFiveHundred) == 0 && Main.player[(int)Player.FindClosest(npc.position, npc.width, npc.height)].ZoneHallow)
                         {
-                            Item.NewItem((int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.HallowedKey, 1, false, 0, false);
+                            Item.NewItem(npc.GetItemSource_Loot(), (int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.HallowedKey, 1, false, 0, false);
                         }
                         if (Main.rand.Next(twentyFiveHundred) == 0 && Main.player[(int)Player.FindClosest(npc.position, npc.width, npc.height)].ZoneSnow)
                         {
-                            Item.NewItem((int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.FrozenKey, 1, false, 0, false);
+                            Item.NewItem(npc.GetItemSource_Loot(), (int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.FrozenKey, 1, false, 0, false);
                         }
                     }
                     if (npc.type >= 212 && npc.type <= 215)
                     {
                         if (Main.rand.Next(eightThousand) == 0)
                         {
-                            Item.NewItem((int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.CoinGun, 1, false, -1, false);
+                            Item.NewItem(npc.GetItemSource_Loot(), (int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.CoinGun, 1, false, -1, false);
                         }
                         if (Main.rand.Next(fourThousand) == 0)
                         {
-                            Item.NewItem((int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.LuckyCoin, 1, false, -1, false);
+                            Item.NewItem(npc.GetItemSource_Loot(), (int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.LuckyCoin, 1, false, -1, false);
                         }
                         if (Main.rand.Next(twoThousand) == 0)
                         {
-                            Item.NewItem((int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.DiscountCard, 1, false, -1, false);
+                            Item.NewItem(npc.GetItemSource_Loot(), (int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.DiscountCard, 1, false, -1, false);
                         }
                         if (Main.rand.Next(twoThousand) == 0)
                         {
-                            Item.NewItem((int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.PirateStaff, 1, false, -1, false);
+                            Item.NewItem(npc.GetItemSource_Loot(), (int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.PirateStaff, 1, false, -1, false);
                         }
                         if (Main.rand.Next(thousand) == 0)
                         {
-                            Item.NewItem((int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.GoldRing, 1, false, -1, false);
+                            Item.NewItem(npc.GetItemSource_Loot(), (int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.GoldRing, 1, false, -1, false);
                         }
                     }
                     if (npc.type == 216)
                     {
                         if (Main.rand.Next(twoThousand) == 0)
                         {
-                            Item.NewItem((int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.CoinGun, 1, false, -1, false);
+                            Item.NewItem(npc.GetItemSource_Loot(), (int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.CoinGun, 1, false, -1, false);
                         }
                         if (Main.rand.Next(thousand) == 0)
                         {
-                            Item.NewItem((int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.LuckyCoin, 1, false, -1, false);
+                            Item.NewItem(npc.GetItemSource_Loot(), (int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.LuckyCoin, 1, false, -1, false);
                         }
                         if (Main.rand.Next(fiveHundred) == 0)
                         {
-                            Item.NewItem((int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.DiscountCard, 1, false, -1, false);
+                            Item.NewItem(npc.GetItemSource_Loot(), (int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.DiscountCard, 1, false, -1, false);
                         }
                         if (Main.rand.Next(fiveHundred) == 0)
                         {
-                            Item.NewItem((int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.PirateStaff, 1, false, -1, false);
+                            Item.NewItem(npc.GetItemSource_Loot(), (int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.PirateStaff, 1, false, -1, false);
                         }
                         if (Main.rand.Next(twoFifty) == 0)
                         {
-                            Item.NewItem((int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.GoldRing, 1, false, -1, false);
+                            Item.NewItem(npc.GetItemSource_Loot(), (int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.GoldRing, 1, false, -1, false);
                         }
                     }
                     if (npc.type == 110 && Main.rand.Next(twoHundred) == 0)
                     {
-                        Item.NewItem((int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.Marrow, 1, false, -1, false);
+                        Item.NewItem(npc.GetItemSource_Loot(), (int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.Marrow, 1, false, -1, false);
                     }
                     if (npc.type == 154 && Main.rand.Next(hundred) == 0)
                     {
-                        Item.NewItem((int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.FrozenTurtleShell, 1, false, -1, false);
+                        Item.NewItem(npc.GetItemSource_Loot(), (int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.FrozenTurtleShell, 1, false, -1, false);
                     }
                     if (npc.type == 198 || npc.type == 199 || npc.type == 226)
                     {
                         if (Main.rand.Next(thousand) == 0)
                         {
-                            Item.NewItem((int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.LizardEgg, 1, false, 0, false);
+                            Item.NewItem(npc.GetItemSource_Loot(), (int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.LizardEgg, 1, false, 0, false);
                         }
                     }
                     if (npc.type == 120 && Main.rand.Next(fiveHundred) == 0)
                     {
-                        Item.NewItem((int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.RodofDiscord, 1, false, 0, false);
+                        Item.NewItem(npc.GetItemSource_Loot(), (int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.RodofDiscord, 1, false, 0, false);
                     }
                     if (npc.type == 49 && Main.rand.Next(twoFifty) == 0)
                     {
-                        Item.NewItem((int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.ChainKnife, 1, false, -1, false);
+                        Item.NewItem(npc.GetItemSource_Loot(), (int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.ChainKnife, 1, false, -1, false);
                     }
                     if (npc.type == 185 && Main.rand.Next(oneFifty) == 0)
                     {
-                        Item.NewItem((int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.SnowballLauncher, 1, false, 0, false);
+                        Item.NewItem(npc.GetItemSource_Loot(), (int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.SnowballLauncher, 1, false, 0, false);
                     }
                     if (npc.type >= 269 && npc.type <= 280)
                     {
                         if (Main.rand.Next(fourHundred) == 0)
                         {
-                            Item.NewItem((int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.WispinaBottle, 1, false, 0, false);
+                            Item.NewItem(npc.GetItemSource_Loot(), (int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.WispinaBottle, 1, false, 0, false);
                         }
                         else if (Main.rand.Next(threeHundred) == 0)
                         {
-                            Item.NewItem((int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.MagnetSphere, 1, false, -1, false);
+                            Item.NewItem(npc.GetItemSource_Loot(), (int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.MagnetSphere, 1, false, -1, false);
                         }
                         else if (Main.rand.Next(twoHundred) == 0)
                         {
-                            Item.NewItem((int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.Keybrand, 1, false, -1, false);
+                            Item.NewItem(npc.GetItemSource_Loot(), (int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.Keybrand, 1, false, -1, false);
                         }
                     }
                     if (Main.bloodMoon && Main.hardMode && Main.rand.Next(thousand) == 0 && npc.value > 0f)
                     {
-                        Item.NewItem((int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.KOCannon, 1, false, -1, false);
+                        Item.NewItem(npc.GetItemSource_Loot(), (int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.KOCannon, 1, false, -1, false);
                     }
                     if (npc.type == 21 || npc.type == 201 || npc.type == 202 || npc.type == 203 || npc.type == 322 || npc.type == 323 || npc.type == 324 || (npc.type >= 449 && npc.type <= 452))
                     {
                         if (Main.rand.Next(fiveHundred) == 0)
                         {
-                            Item.NewItem((int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.Skull, 1, false, 0, false);
+                            Item.NewItem(npc.GetItemSource_Loot(), (int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.Skull, 1, false, 0, false);
                         }
                     }
                     else if (npc.type == 6)
@@ -203,15 +203,15 @@ namespace BlahPlugins
                             int num34 = Main.rand.Next(3);
                             if (num34 == 0)
                             {
-                                Item.NewItem((int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.AncientShadowHelmet, 1, false, 0, false);
+                                Item.NewItem(npc.GetItemSource_Loot(), (int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.AncientShadowHelmet, 1, false, 0, false);
                             }
                             else if (num34 == 1)
                             {
-                                Item.NewItem((int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.AncientShadowScalemail, 1, false, 0, false);
+                                Item.NewItem(npc.GetItemSource_Loot(), (int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.AncientShadowScalemail, 1, false, 0, false);
                             }
                             else
                             {
-                                Item.NewItem((int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.AncientShadowGreaves, 1, false, 0, false);
+                                Item.NewItem(npc.GetItemSource_Loot(), (int)npc.position.X, (int)npc.position.Y, npc.width, npc.height, ItemID.AncientShadowGreaves, 1, false, 0, false);
                             }
                         }
                     }

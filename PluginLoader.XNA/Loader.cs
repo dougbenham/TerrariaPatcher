@@ -11,6 +11,7 @@ using Terraria;
 using Terraria.Chat;
 using Terraria.DataStructures;
 using Terraria.IO;
+using Terraria.Utilities;
 using Keys = Microsoft.Xna.Framework.Input.Keys;
 
 namespace PluginLoader
@@ -371,10 +372,10 @@ namespace PluginLoader
                 plugin.OnPlayerLoad(playerFileData, player, binaryReader);
         }
 
-        public static void OnPlayerSave(PlayerFileData playerFileData, BinaryWriter binaryWriter)
+        public static void OnPlayerSave(PlayerFileData playerFileData, Player player, BinaryWriter binaryWriter)
         {
             foreach (var plugin in loadedPlugins.OfType<IPluginPlayerSave>())
-                plugin.OnPlayerSave(playerFileData, binaryWriter);
+                plugin.OnPlayerSave(playerFileData, player, binaryWriter);
         }
 
         public static void OnPlayerUpdate(Player player)
@@ -407,14 +408,13 @@ namespace PluginLoader
                 plugin.OnPlayerUpdateArmorSets(player);
         }
 
-        public static bool OnPlayerHurt(Player player, PlayerDeathReason damageSource, int damage, int hitDirection, bool pvp, bool quiet, bool crit, int cooldownCounter, out double result)
+        public static bool OnPlayerHurt(Player player, PlayerDeathReason damageSource, int damage, int hitDirection, bool pvp, bool quiet, bool crit, int cooldownCounter, bool dodgeable, out double result)
         {
             result = 0.0;
             var ret = false;
             foreach (var plugin in loadedPlugins.OfType<IPluginPlayerHurt>())
             {
-                double temp;
-                if (plugin.OnPlayerHurt(player, damageSource, damage, hitDirection, pvp, quiet, crit, cooldownCounter, out temp))
+	            if (plugin.OnPlayerHurt(player, damageSource, damage, hitDirection, pvp, quiet, crit, cooldownCounter, dodgeable, out var temp))
                 {
                     ret = true;
                     result = temp;
@@ -445,8 +445,7 @@ namespace PluginLoader
             var ret = false;
             foreach (var plugin in loadedPlugins.OfType<IPluginPlayerGetItem>())
             {
-                Item temp;
-                if (plugin.OnPlayerGetItem(player, newItem, out temp))
+	            if (plugin.OnPlayerGetItem(player, newItem, out var temp))
                 {
                     ret = true;
                     resultItem = temp;
@@ -484,6 +483,22 @@ namespace PluginLoader
                 ret = plugin.OnItemSlotRightClick(inv, context, slot) || ret;
 
             return ret;
+        }
+
+        public static bool OnItemRollAPrefix(Item item, UnifiedRandom random, ref int rolledPrefix, out bool result)
+        {
+	        result = false;
+	        var ret = false;
+	        foreach (var plugin in loadedPlugins.OfType<IPluginItemRollAPrefix>())
+	        {
+		        if (plugin.OnItemRollAPrefix(item, random, ref rolledPrefix, out var temp))
+		        {
+                    ret = true;
+                    result = temp;
+		        }
+	        }
+
+	        return ret;
         }
 
         #endregion
@@ -537,8 +552,7 @@ namespace PluginLoader
             var ret = false;
             foreach (var plugin in loadedPlugins.OfType<IPluginLightingGetColor>())
             {
-                Color temp;
-                var result = plugin.OnLightingGetColor(x, y, out temp);
+	            var result = plugin.OnLightingGetColor(x, y, out var temp);
                 if (result)
                 {
                     ret = true;

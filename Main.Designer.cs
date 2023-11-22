@@ -40,9 +40,6 @@
             this.plugins = new System.Windows.Forms.CheckBox();
             this.maxCraftingRange = new System.Windows.Forms.CheckBox();
             this.infiniteCloudJumps = new System.Windows.Forms.CheckBox();
-            this.label11 = new System.Windows.Forms.Label();
-            this.accessoryPrefix = new System.Windows.Forms.ComboBox();
-            this.fixedPrefixes = new System.Windows.Forms.CheckBox();
             this.infiniteAmmo = new System.Windows.Forms.CheckBox();
             this.oneHitKill = new System.Windows.Forms.CheckBox();
             this.removeDrowning = new System.Windows.Forms.CheckBox();
@@ -164,9 +161,6 @@
             this.groupBox2.Controls.Add(this.plugins);
             this.groupBox2.Controls.Add(this.maxCraftingRange);
             this.groupBox2.Controls.Add(this.infiniteCloudJumps);
-            this.groupBox2.Controls.Add(this.label11);
-            this.groupBox2.Controls.Add(this.accessoryPrefix);
-            this.groupBox2.Controls.Add(this.fixedPrefixes);
             this.groupBox2.Controls.Add(this.infiniteAmmo);
             this.groupBox2.Controls.Add(this.oneHitKill);
             this.groupBox2.Controls.Add(this.removeDrowning);
@@ -233,48 +227,6 @@
             this.infiniteCloudJumps.Text = "Infinite Cloud Jumps";
             this.infiniteCloudJumps.UseVisualStyleBackColor = true;
             this.infiniteCloudJumps.CheckedChanged += new System.EventHandler(this.wings_CheckedChanged);
-            // 
-            // label11
-            // 
-            this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(177, 185);
-            this.label11.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(88, 13);
-            this.label11.TabIndex = 23;
-            this.label11.Text = "Accessory Prefix:";
-            // 
-            // accessoryPrefix
-            // 
-            this.accessoryPrefix.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.accessoryPrefix.FormattingEnabled = true;
-            this.accessoryPrefix.Items.AddRange(new object[] {
-            "Arcane",
-            "Lucky",
-            "Menacing",
-            "Quick",
-            "Violent",
-            "Warding"});
-            this.accessoryPrefix.Location = new System.Drawing.Point(177, 202);
-            this.accessoryPrefix.Margin = new System.Windows.Forms.Padding(2);
-            this.accessoryPrefix.Name = "accessoryPrefix";
-            this.accessoryPrefix.Size = new System.Drawing.Size(122, 21);
-            this.accessoryPrefix.TabIndex = 22;
-            this.accessoryPrefix.SelectedIndexChanged += new System.EventHandler(this.config_Changed);
-            // 
-            // fixedPrefixes
-            // 
-            this.fixedPrefixes.AutoSize = true;
-            this.fixedPrefixes.Checked = true;
-            this.fixedPrefixes.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.fixedPrefixes.Location = new System.Drawing.Point(5, 203);
-            this.fixedPrefixes.Margin = new System.Windows.Forms.Padding(2);
-            this.fixedPrefixes.Name = "fixedPrefixes";
-            this.fixedPrefixes.Size = new System.Drawing.Size(144, 17);
-            this.fixedPrefixes.TabIndex = 21;
-            this.fixedPrefixes.Text = "Always Roll Best Prefixes";
-            this.fixedPrefixes.UseVisualStyleBackColor = true;
-            this.fixedPrefixes.CheckedChanged += new System.EventHandler(this.config_Changed);
             // 
             // infiniteAmmo
             // 
@@ -682,9 +634,6 @@
         private System.Windows.Forms.CheckBox oneHitKill;
         private System.Windows.Forms.CheckBox removeDrowning;
 		private System.Windows.Forms.CheckBox infiniteAmmo;
-        private System.Windows.Forms.CheckBox fixedPrefixes;
-		private System.Windows.Forms.Label label11;
-		private System.Windows.Forms.ComboBox accessoryPrefix;
         private System.Windows.Forms.CheckBox infiniteCloudJumps;
         private System.Windows.Forms.NumericUpDown vampiricKnivesHealingRate;
         private System.Windows.Forms.Label label12;

@@ -168,7 +168,7 @@ namespace TranscendPlugins
         {
             if (Main.netMode == 0)
             {
-                WorldGen.StartImpendingDoom();
+                WorldGen.StartImpendingDoom(720);
             }
             else
             {

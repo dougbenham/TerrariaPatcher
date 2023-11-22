@@ -1,12 +1,120 @@
 ﻿using System;
+using System.Reflection;
+using System.Windows.Forms;
 using PluginLoader;
 using Terraria;
+using Terraria.ID;
+using Terraria.Utilities;
 
 namespace TranscendPlugins
 {
-    public class ItemPrefix : MarshalByRefObject, IPluginChatCommand
+    public class ItemPrefix : MarshalByRefObject, IPluginChatCommand, IPluginItemRollAPrefix
     {
         private bool keepStats = false;
+        private bool enableFixedPrefixes;
+        private int fixedAccessoryPrefix;
+        
+        public ItemPrefix()
+        {
+	        if (!bool.TryParse(IniAPI.ReadIni("ItemPrefix", "EnableFixedPrefixes", "True", writeIt: true), out enableFixedPrefixes))
+		        enableFixedPrefixes = true;
+	        var temp = IniAPI.ReadIni("ItemPrefix", "FixedAccessoryPrefix", "Warding", writeIt: true);
+	        if (!int.TryParse(temp, out fixedAccessoryPrefix))
+	        {
+		        var field = typeof(PrefixID).GetField(temp, BindingFlags.Static | BindingFlags.Public);
+				var fieldValue = field == null ? null : field.GetValue(null) as int?;
+		        if (!fieldValue.HasValue)
+		        {
+			        MessageBox.Show(string.Format("[ItemPrefix] FixedAccessoryPrefix of '{0}' is invalid. Use a number or a valid prefix name.", temp), string.Empty, MessageBoxButtons.OK, MessageBoxIcon.Error);
+			        fixedAccessoryPrefix = PrefixID.Warding;
+		        }
+				else
+					fixedAccessoryPrefix = fieldValue.Value;
+	        }
+        }
+		
+        private bool Correct(Item item, ref int rolledPrefix)
+        {
+	        float num = 1f;
+	        float num2 = 1f;
+	        float num3 = 1f;
+	        float num4 = 1f;
+	        float num5 = 1f;
+	        float num6 = 1f;
+	        int num7 = 0;
+	        if (!item.TryGetPrefixStatMultipliersForItem(rolledPrefix, out num, out num2, out num3, out num4, out num5, out num6, out num7))
+	        {
+		        if (item.knockBack == 0)
+			        rolledPrefix = PrefixID.Demonic;
+		        else if (item.damage == 0)
+			        rolledPrefix = PrefixID.Rapid;
+		        else if (item.useAnimation == 0)
+			        rolledPrefix = PrefixID.Godly;
+		        else if (item.mana == 0)
+			        rolledPrefix = PrefixID.Godly;
+		        else
+			        return false;
+	        }
+	        return true;
+        }
+
+        public bool OnItemRollAPrefix(Item item, UnifiedRandom random, ref int rolledPrefix, out bool result)
+        {
+			result = false;
+			if (!enableFixedPrefixes)
+				return false;
+
+	        if (Terraria.GameContent.Prefixes.PrefixLegacy.ItemSets.SwordsHammersAxesPicks[item.type])
+	        {
+		        rolledPrefix = PrefixID.Legendary;
+		        if (!Correct(item, ref rolledPrefix)) return false;
+		        result = true;
+		        return true;
+	        }
+	        if (Terraria.GameContent.Prefixes.PrefixLegacy.ItemSets.SpearsMacesChainsawsDrillsPunchCannon[item.type])
+	        {
+		        rolledPrefix = PrefixID.Godly;
+		        if (!Correct(item, ref rolledPrefix)) return false;
+		        result = true;
+		        return true;
+	        }
+	        if (Terraria.GameContent.Prefixes.PrefixLegacy.ItemSets.GunsBows[item.type])
+	        {
+		        rolledPrefix = PrefixID.Unreal;
+		        if (!Correct(item, ref rolledPrefix)) return false;
+		        result = true;
+		        return true;
+	        }
+	        if (Terraria.GameContent.Prefixes.PrefixLegacy.ItemSets.MagicAndSummon[item.type])
+	        {
+		        rolledPrefix = PrefixID.Mythical;
+		        if (!Correct(item, ref rolledPrefix)) return false;
+		        result = true;
+		        return true;
+	        }
+	        if (Terraria.GameContent.Prefixes.PrefixLegacy.ItemSets.BoomerangsChakrams[item.type])
+	        {
+		        rolledPrefix = PrefixID.Godly;
+		        if (!Correct(item, ref rolledPrefix)) return false;
+		        result = true;
+		        return true;
+	        }
+	        if (Terraria.GameContent.Prefixes.PrefixLegacy.ItemSets.ItemsThatCanHaveLegendary2[item.type])
+	        {
+		        rolledPrefix = PrefixID.Legendary2;
+		        if (!Correct(item, ref rolledPrefix)) return false;
+		        result = true;
+		        return true;
+	        }
+	        if (item.IsAPrefixableAccessory())
+	        {
+		        rolledPrefix = fixedAccessoryPrefix;
+		        result = true;
+		        return true;
+	        }
+			
+	        return false;
+        }
 
         public bool OnChatCommand(string command, string[] args)
         {

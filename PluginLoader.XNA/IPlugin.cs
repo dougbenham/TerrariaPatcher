@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using Terraria;
 using Terraria.DataStructures;
 using Terraria.IO;
+using Terraria.Utilities;
 
 namespace PluginLoader
 {
@@ -73,7 +74,7 @@ namespace PluginLoader
     }
     public interface IPluginPlayerSave : IPlugin
     {
-        void OnPlayerSave(PlayerFileData playerFileData, BinaryWriter binaryWriter);
+        void OnPlayerSave(PlayerFileData playerFileData, Player player, BinaryWriter binaryWriter);
     }
     public interface IPluginPlayerUpdate : IPlugin
     {
@@ -97,7 +98,7 @@ namespace PluginLoader
     }
     public interface IPluginPlayerHurt : IPlugin
     {
-        bool OnPlayerHurt(Player player, PlayerDeathReason damageSource, int damage, int hitDirection, bool pvp, bool quiet, bool crit, int cooldownCounter, out double result);
+        bool OnPlayerHurt(Player player, PlayerDeathReason damageSource, int damage, int hitDirection, bool pvp, bool quiet, bool crit, int cooldownCounter, bool dodgeable, out double result);
     }
     public interface IPluginPlayerKillMe : IPlugin
     {
@@ -127,6 +128,11 @@ namespace PluginLoader
     public interface IPluginItemSlotRightClick : IPlugin
     {
         bool OnItemSlotRightClick(Item[] invObj, int context, int slot);
+    }
+
+    public interface IPluginItemRollAPrefix : IPlugin
+    {
+	    bool OnItemRollAPrefix(Item item, UnifiedRandom random, ref int rolledPrefix, out bool result);
     }
 
     #endregion

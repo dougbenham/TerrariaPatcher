@@ -161,8 +161,6 @@ namespace TerrariaPatcher
                 removeDrowning.Checked = bool.Parse(IniAPI.ReadIni("General", "RemoveDrowning", "true", 255, ConfigPath));
                 oneHitKill.Checked = bool.Parse(IniAPI.ReadIni("General", "OneHitKill", "false", 255, ConfigPath));
                 infiniteAmmo.Checked = bool.Parse(IniAPI.ReadIni("General", "InfiniteAmmo", "true", 255, ConfigPath));
-                fixedPrefixes.Checked = bool.Parse(IniAPI.ReadIni("General", "FixedPrefixes", "true", 255, ConfigPath));
-                accessoryPrefix.Text = IniAPI.ReadIni("General", "AccessoryPrefix", "Warding", 255, ConfigPath);
                 permanentWings.Checked = bool.Parse(IniAPI.ReadIni("General", "PermanentWings", "true", 255, ConfigPath));
                 infiniteCloudJumps.Checked = bool.Parse(IniAPI.ReadIni("General", "InfiniteCloudJumps", "false", 255, ConfigPath));
                 functionalSocialSlots.Checked = bool.Parse(IniAPI.ReadIni("General", "FunctionalSocialSlots", "true", 255, ConfigPath));
@@ -204,8 +202,6 @@ namespace TerrariaPatcher
             IniAPI.WriteIni("General", "RemoveDrowning", removeDrowning.Checked.ToString(), ConfigPath);
             IniAPI.WriteIni("General", "OneHitKill", oneHitKill.Checked.ToString(), ConfigPath);
             IniAPI.WriteIni("General", "InfiniteAmmo", infiniteAmmo.Checked.ToString(), ConfigPath);
-            IniAPI.WriteIni("General", "FixedPrefixes", fixedPrefixes.Checked.ToString(), ConfigPath);
-            IniAPI.WriteIni("General", "AccessoryPrefix", accessoryPrefix.Text, ConfigPath);
             IniAPI.WriteIni("General", "PermanentWings", permanentWings.Checked.ToString(), ConfigPath);
             IniAPI.WriteIni("General", "InfiniteCloudJumps", infiniteCloudJumps.Checked.ToString(), ConfigPath);
             IniAPI.WriteIni("General", "FunctionalSocialSlots", functionalSocialSlots.Checked.ToString(), ConfigPath);
@@ -364,8 +360,6 @@ namespace TerrariaPatcher
                     FunctionalSocialSlots = functionalSocialSlots.Checked,
                     VampiricHealing = (float)vampiricKnivesHealingRate.Value,
                     SpectreHealing = (float)spectreHealingRate.Value,
-                    FixedPrefixes = fixedPrefixes.Checked,
-					AccessoryPrefix = SetAccessoryPrefixValue(),
                     DisplayTime = timeEnabled.Checked,
                     PermanentBuffs = buffValues,
                     PermanentWings = permanentWings.Enabled && permanentWings.Checked,
@@ -425,38 +419,6 @@ namespace TerrariaPatcher
                 MessageBox.Show("Done.", Program.AssemblyName);
             }
         }
-        
-		private int SetAccessoryPrefixValue()
-		{
-			int accessoryValue;
-
-			switch (accessoryPrefix.Text)
-			{
-				case "Arcane":
-					accessoryValue = 66;
-					break;
-				case "Lucky":
-					accessoryValue = 68;
-					break;
-				case "Menacing":
-					accessoryValue = 72;
-					break;
-				case "Quick":
-					accessoryValue = 76;
-					break;
-				case "Violent":
-					accessoryValue = 80;
-					break;
-				case "Warding":
-					accessoryValue = 65;
-					break;
-				default:
-					accessoryValue = 65;
-					break;
-			}
-
-			return accessoryValue;
-		}
 
         private void wings_CheckedChanged(object sender, EventArgs e)
         {

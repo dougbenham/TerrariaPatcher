@@ -354,18 +354,16 @@ namespace TerrariaPatcher
         /// <returns></returns>
         public static int ScanForOpcodePattern(MethodDefinition m, Func<int, Instruction, bool> check, int nStartOffset, params OpCode[] inst)
         {
-            var il = m.Body.GetILProcessor();
-
-            for (var x = nStartOffset; x < il.Body.Instructions.Count - inst.Count(); x++)
+            for (var x = nStartOffset; x < m.Body.Instructions.Count - inst.Count(); x++)
             {
-                if (il.Body.Instructions[x].OpCode != inst[0])
+                if (m.Body.Instructions[x].OpCode != inst[0])
                     continue;
 
                 for (var y = 0; y < inst.Count(); y++)
                 {
-                    if (il.Body.Instructions[x + y].OpCode != inst[y])
+                    if (m.Body.Instructions[x + y].OpCode != inst[y])
                         break;
-                    if (y == inst.Count() - 1 && check(x, il.Body.Instructions[x]))
+                    if (y == inst.Count() - 1 && check(x, m.Body.Instructions[x]))
                         return x;
                 }
             }

@@ -10,9 +10,9 @@ namespace TranscendPlugins
     {
         private bool justLoadedIn = false;
 
-        public void OnPlayerSave(PlayerFileData playerFileData, BinaryWriter binaryWriter)
+        public void OnPlayerSave(PlayerFileData playerFileData, Player player, BinaryWriter binaryWriter)
         {
-            IniAPI.WriteIni("SavePosition", Main.worldID + "," + Main.player[Main.myPlayer].name, playerFileData.Player.position.ToString());
+            IniAPI.WriteIni("SavePosition", Main.worldID + "," + player.name, player.position.ToString());
         }
 
         public void OnPlayerLoad(PlayerFileData playerFileData, Player player, BinaryReader binaryReader)
