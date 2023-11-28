@@ -367,24 +367,13 @@ namespace TerrariaPatcher
         private static void RemoveManaCost()
         {
             var player = IL.GetTypeDefinition(_mainModule, "Player");
-            var itemCheck = IL.GetMethodDefinition(player, "ItemCheck");
+            var itemCheck = IL.GetMethodDefinition(player, "ItemCheck_PayMana");
             var checkMana = IL.GetMethodDefinition(player, "CheckMana");
-
-            int spot = IL.ScanForOpcodePattern(itemCheck, (i, instruction) =>
-            {
-                var in1 = itemCheck.Body.Instructions[i - 1].OpCode;
-                return in1.Name.ToLower().Contains("ldloc") && itemCheck.Body.Instructions[i + 1].Operand as sbyte? == 127;
-            },
-                OpCodes.Ldfld,
-                OpCodes.Ldc_I4_S,
-                OpCodes.Bne_Un_S);
-
-            if (spot >= 0)
-            {
-                for (int i = -1; i < 5; i++)
-                    itemCheck.Body.Instructions[spot + i].OpCode = OpCodes.Nop;
-                itemCheck.Body.Instructions[spot + 5].OpCode = OpCodes.Br;
-            }
+            
+            itemCheck.Body.ExceptionHandlers.Clear();
+            itemCheck.Body.Instructions.Clear();
+            itemCheck.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_I4_1));
+            itemCheck.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
 
             checkMana.Body.ExceptionHandlers.Clear();
             checkMana.Body.Instructions.Clear();
@@ -608,7 +597,11 @@ namespace TerrariaPatcher
             var ai = IL.GetMethodDefinition(projectile, "AI_001");
             var rightClick = IL.GetMethodDefinition(itemSlot, "RightClick", 3);
             var doUpdateHandleChat = IL.GetMethodDefinition(main, "DoUpdate_HandleChat");
-            var getColor = IL.GetMethodDefinition(lighting, "GetColor", 2);
+            var getColor = (from MethodDefinition m in lighting.Methods
+	            where m.Name == "GetColor" && m.Parameters.Count == 2
+	                                       && m.Parameters[0].ParameterType.FullName == "System.Int32"
+	                                       && m.Parameters[1].ParameterType.FullName == "System.Int32"
+	            select m).FirstOrDefault();
             var getItem = IL.GetMethodDefinition(player, "GetItem");
             var setupShop = IL.GetMethodDefinition(chest, "SetupShop");
             var quickBuff = IL.GetMethodDefinition(player, "QuickBuff");
