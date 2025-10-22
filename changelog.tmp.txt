@@ -1,3 +1,4 @@
+v1.3.0.3:	Fixed "Remove Mana Costs" feature and "Full Bright" plugin.
 v1.3.0.2:	Updated for Terraria v1.4.4.9. Converted Fixed Prefixes to plugin.
 v1.3.0.1:	More 1.4 compatibility updates.
 v1.3.0.0:	Updated for Terraria v1.4.2.3.

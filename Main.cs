@@ -25,6 +25,15 @@ namespace TerrariaPatcher
         private static string updateURL = "https://github.com/dougbenham/TerrariaPatcher/raw/master/TerrariaPatcher.zip";
 #endif
         private static List<Buff> buffs;
+        private static readonly int[] defaultBuffs = new[] { 3, 5, 11, 14, 26, 60, 58, 7, 146 };
+        private static readonly int[] goodBuffs =
+	        new[]
+	        {
+		        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 26, 29, 43, 48, 58, 59, 60, 62, 63, 71, 73, 74, 75, 76, 77, 78, 79, 87, 89, 93, 95, 96, 97, 98, 99, 100, 104, 105, 106,
+		        107,
+		        108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 121, 122, 123, 124, 146, 147, 150, 151, 157, 158, 159, 165, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 192, 198, 205,
+		        206, 207, 215, 257, 306, 308, 311, 312, 314, 343, 348
+	        };
         public static string ConfigPath = Environment.CurrentDirectory + "\\TerrariaPatcher.ini";
         private bool loading = false;
 
@@ -130,7 +139,7 @@ namespace TerrariaPatcher
             CheckInstallationFolder();
 
             buffs = new List<Buff>();
-            var buffNames = new string[] { "Obsidian Skin", "Regeneration", "Swiftness", "Gills", "Ironskin", "Mana Regeneration", "Magic Power", "Featherfall", "Spelunker", "Invisibility", "Shine", "Night Owl", "Battle", "Thorns", "Water Walking", "Archery", "Hunter", "Gravitation", "Shadow Orb", "Poisoned", "Potion Sickness", "Darkness", "Cursed", "On Fire!", "Tipsy", "Well Fed", "Fairy", "Werewolf", "Clairvoyance", "Bleeding", "Confused", "Slow", "Weak", "Merfolk", "Silenced", "Broken Armor", "Horrified", "The Tongue", "Cursed Inferno", "Pet Bunny", "Baby Penguin", "Pet Turtle", "Paladin's Shield", "Frostburn", "Baby Eater", "Chilled", "Frozen", "Honey", "Pygmies", "Baby Skeletron Head", "Baby Hornet", "Tiki Spirit", "Pet Lizard", "Pet Parrot", "Baby Truffle", "Pet Sapling", "Wisp", "Rapid Healing", "Shadow Dodge", "Leaf Crystal", "Baby Dinosaur", "Ice Barrier", "Panic!", "Baby Slime", "Eyeball Spring", "Baby Snowman", "Burning", "Suffocation", "Ichor", "Venom", "Midas", "Weapon Imbue: Venom", "Weapon Imbue: Cursed Flames", "Weapon Imbue: Fire", "Weapon Imbue: Gold", "Weapon Imbue: Ichor", "Weapon Imbue: Nanites", "Weapon Imbue: Confetti", "Weapon Imbue: Poison", "Blackout", "Pet Spider", "Squashling", "Ravens", "Black Cat", "Cursed Sapling", "Water Candle", "Campfire", "Chaos State", "Heart Lamp", "Rudolph", "Puppy", "Baby Grinch", "Ammo Box", "Mana Sickness", "Beetle Endurance", "Beetle Endurance", "Beetle Endurance", "Beetle Might", "Beetle Might", "Beetle Might", "Fairy", "Fairy", "Wet", "Mining", "Heartreach", "Calm", "Builder", "Titan", "Flipper", "Summoning", "Dangersense", "Ammo Reservation", "Lifeforce", "Endurance", "Rage", "Inferno", "Wrath", "Minecart", "Lovestruck", "Stinky", "Fishing", "Sonar", "Crate", "Warmth", "Hornet", "Imp", "Zephyr Fish", "Bunny Mount", "Pigron Mount", "Slime Mount", "Turtle Mount", "Bee Mount", "Spider", "Twins", "Pirate", "Mini Minotaur", "Slime", "Minecart", "Sharknado", "UFO", "UFO Mount", "Drill Mount", "Scutlix Mount", "Electrified", "The Line", "Happy!", "Banner", "Feral Bite", "Webbed", "Bewitched", "Life Drain", "Magic Lantern", "Shadowflame", "Baby Face Monster", "Crimson Heart", "Stoned", "Peace Candle", "Star in a Bottle", "Sharpened", "Dazed", "Deadly Sphere", "", "Obstructed", "Distorted", "Dryad's Blessing", "Minecart", "Minecart", "", "Penetrated", "Solar Blaze", "Solar Blaze", "Solar Blaze", "Life Nebula", "Life Nebula", "Life Nebula", "Mana Nebula", "Mana Nebula", "Mana Nebula", "Damage Nebula", "Damage Nebula", "Damage Nebula", "Stardust Cell", "Celled", "Minecart", "Minecart", "Dryad's Bane", "Stardust Guardian", "Stardust Dragon", "Daybroken", "Suspicious Looking Eye" };
+            var buffNames = new string[] { "Obsidian Skin", "Regeneration", "Swiftness", "Gills", "Ironskin", "Mana Regeneration", "Magic Power", "Featherfall", "Spelunker", "Invisibility", "Shine", "Night Owl", "Battle", "Thorns", "Water Walking", "Archery", "Hunter", "Gravitation", "Shadow Orb", "Poisoned", "Potion Sickness", "Darkness", "Cursed", "On Fire!", "Tipsy", "Well Fed", "Fairy (Blue)", "Werewolf", "Clairvoyance", "Bleeding", "Confused", "Slow", "Weak", "Merfolk", "Silenced", "Broken Armor", "Horrified", "The Tongue", "Cursed Inferno", "Pet Bunny", "Baby Penguin", "Pet Turtle", "Paladin's Shield", "Frostburn", "Baby Eater", "Chilled", "Frozen", "Honey", "Pygmies", "Baby Skeletron Head", "Baby Hornet", "Tiki Spirit", "Pet Lizard", "Pet Parrot", "Baby Truffle", "Pet Sapling", "Wisp", "Rapid Healing", "Holy Protection", "Leaf Crystal", "Baby Dinosaur", "Ice Barrier", "Panic!", "Baby Slime", "Eyeball Spring", "Baby Snowman", "Burning", "Suffocation", "Ichor", "Acid Venom", "Weapon Imbue: Acid Venom", "Midas", "Weapon Imbue: Cursed Flames", "Weapon Imbue: Fire", "Weapon Imbue: Gold", "Weapon Imbue: Ichor", "Weapon Imbue: Nanites", "Weapon Imbue: Confetti", "Weapon Imbue: Poison", "Blackout", "Pet Spider", "Squashling", "Ravens", "Black Cat", "Cursed Sapling", "Water Candle", "Cozy Fire", "Chaos State", "Heart Lamp", "Rudolph", "Puppy", "Baby Grinch", "Ammo Box", "Mana Sickness", "Beetle Endurance (15%)", "Beetle Endurance (30%)", "Beetle Endurance (45%)", "Beetle Might (10%)", "Beetle Might (20%)", "Beetle Might (30%)", "Fairy (Red)", "Fairy (Green)", "Wet", "Mining", "Heartreach", "Calm", "Builder", "Titan", "Flipper", "Summoning", "Dangersense", "Ammo Reservation", "Lifeforce", "Endurance", "Rage", "Inferno", "Wrath", "Minecart (Left)", "Lovestruck", "Stinky", "Fishing", "Sonar", "Crate", "Warmth", "Hornet", "Imp", "Zephyr Fish", "Bunny Mount", "Pigron Mount", "Slime Mount", "Turtle Mount", "Bee Mount", "Spider", "Twins", "Pirate", "Mini Minotaur", "Slime", "Minecart (Right)", "Sharknado", "UFO", "UFO Mount", "Drill Mount", "Scutlix Mount", "Electrified", "Moon Bite", "Happy!", "Banner", "Feral Bite", "Webbed", "Bewitched", "Life Drain", "Magic Lantern", "Shadowflame", "Baby Face Monster", "Crimson Heart", "Stoned", "Peace Candle", "Star in a Bottle", "Sharpened", "Dazed", "Deadly Sphere", "Unicorn Mount", "Obstructed", "Distorted", "Dryad's Blessing", "Minecart (Mechanical (Right))", "Minecart (Mechanical (Left))", "Cute Fishron Mount", "Penetrated", "Solar Blaze (1 stack)", "Solar Blaze (2 stacks)", "Solar Blaze (3 stacks)", "Life Nebula (1 stack)", "Life Nebula (2 stacks)", "Life Nebula (3 stacks)", "Mana Nebula (1 stack)", "Mana Nebula (2 stacks)", "Mana Nebula (3 stacks)", "Damage Nebula (1 stack)", "Damage Nebula (2 stacks)", "Damage Nebula (3 stacks)", "Stardust Cell (Stardust Minion)", "Celled", "Minecart (Wooden (Right))", "Minecart (Wooden (Left))", "Dryad's Bane", "Stardust Guardian", "Stardust Dragon", "Daybroken", "Suspicious Looking Eye", "Companion Cube", "Sugar Rush", "Basilisk Mount", "Mighty Wind", "Withered Armor", "Withered Weapon", "Oozed", "Striking Moment", "Creative Shock", "Propeller Gato", "Flickerwick", "Hoardagron", "Betsy's Curse", "Oiled", "Ballista Panic!", "Plenty Satisfied", "Exquisitely Stuffed", "Minecart (Desert (Right))", "Minecart (Desert (Left))", "Minecart (Minecarp (Right))", "Minecart (Minecarp (Left))", "Golf Cart", "Sanguine Bat", "Vampire Frog", "The Bast Defense", "Baby Finch", "Estee", "Sugar Glider", "Shark Pup", "Minecart (Bee (Right))", "Minecart (Bee (Left))", "Minecart (Ladybug (Right))", "Minecart (Ladybug (Left))", "Minecart (Pigron (Right))", "Minecart (Pigron (Left))", "Minecart (Sunflower (Right))", "Minecart (Sunflower (Left))", "Minecart (Demonic Hellcart (Right))", "Minecart (Demonic Hellcart (Left))", "Witch's Broom", "Minecart (Shroom (Right))", "Minecart (Shroom (Left))", "Minecart (Amethyst (Right))", "Minecart (Amethyst (Left))", "Minecart (Topaz (Right))", "Minecart (Topaz (Left))", "Minecart (Sapphire (Right))", "Minecart (Sapphire (Left))", "Minecart (Emerald (Right))", "Minecart (Emerald (Left))", "Minecart (Ruby (Right))", "Minecart (Ruby (Left))", "Minecart (Diamond (Right))", "Minecart (Diamond (Left))", "Minecart (Amber (Right))", "Minecart (Amber (Left))", "Minecart (Beetle (Right))", "Minecart (Beetle (Left))", "Minecart (Meowmere (Right))", "Minecart (Meowmere (Left))", "Minecart (Party (Right))", "Minecart (Party (Left))", "Minecart (The Dutchman (Right))", "Minecart (The Dutchman (Left))", "Minecart (Steampunk (Right))", "Minecart (Steampunk (Left))", "Lucky", "Lil' Harpy", "Fennec Fox", "Glittery Butterfly", "Baby Imp", "Baby Red Panda", "Desert Tiger", "Plantero", "Flamingo", "Dynamite Kitten", "Baby Werewolf", "Shadow Mimic", "Minecart (Coffin (Right))", "Minecart (Coffin (Left))", "Enchanted Daggers", "Digging Molecart (Left)", "Digging Molecart (Right)", "Volt Bunny", "Painted Horse Mount", "Majestic Horse Mount", "Dark Horse Mount", "Pogo Stick Mount", "Pirate Ship Mount", "Tree Mount", "Santank Mount", "Goat Mount", "Book Mount", "Slime Prince", "Suspicious Eye", "Eater of Worms", "Spider Brain", "Skeletron Jr.", "Honey Bee", "Destroyer-Lite", "Rez and Spaz", "Mini Prime", "Plantera Seedling", "Toy Golem", "Tiny Fishron", "Phantasmal Dragon", "Moonling", "Fairy Princess", "Jack 'O Lantern", "Everscream Sapling", "Ice Queen", "Alien Skater", "Baby Ogre", "Itsy Betsy", "Lava Shark Mount", "Titanium Barrier", "", "Durendal's Blessing", "", "", "Harvest Time", "A Nice Buff", "", "Jungle's Fury", "", "", "Slime Princess", "Winged Slime Mount", "", "Sparkle Slime", "Cerebral Mindtrick", "Terraprisma", "Hellfire", "Frostbite", "Flinx", "", "Bernie", "Glommer", "Tiny Deerclops", "Pig", "Chester", "Peckish", "Hungry", "Starving", "Abigail", "Hearty Meal", "", "Fart Kart", "Fart Kart", "", "Slime Royals", "Blessing of the Moon", "Biome Sight", "Blood Butchered", "Junimo", "Terra Fart Kart", "Terra Fart Kart", "Strategist", "Blue Chicken", "Shadow Candle", "Spiffo", "Caveling Gardener", "Shimmering", "The Dirtiest Block" };
             for (int i = 0; i < buffNames.Length; i++)
                 buffs.Add(new Buff() { Name = buffNames[i], Index = i + 1 });
             buffs.Sort();
@@ -179,11 +188,9 @@ namespace TerrariaPatcher
                 spawnRateVoodoo.Value = decimal.Parse(IniAPI.ReadIni("Spawning", "SpawnRateVoodoo", "15", 255, ConfigPath));
 
                 ResetBuffs();
-                foreach (var index in IniAPI.ReadIni("PermanentBuffs", "List", "3, 5, 11, 14, 26, 60, 58, 7, 146", 500, ConfigPath).Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries))
-                {
-                    var nIndex = int.Parse(index.Trim());
-                    MoveIn(buffs.Find(buff => buff.Index == nIndex));
-                }
+                MoveIn(IniAPI.ReadIni("PermanentBuffs", "List", string.Join(", ", defaultBuffs), 2048, ConfigPath)
+	                .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+	                .Select(s => int.Parse(s.Trim())));
             }
             finally
             {
@@ -220,7 +227,8 @@ namespace TerrariaPatcher
         private void buffs_Update(object sender, EventArgs e)
         {
             moveOut.Enabled = buffsIn.SelectedIndex >= 0;
-            moveIn.Enabled = buffsOut.SelectedIndex >= 0 && buffsIn.Items.Count < 22;
+            moveIn.Enabled = buffsOut.SelectedIndex >= 0;
+            allIn.Enabled = buffsOut.Items.Count > 0;
             allOut.Enabled = buffsIn.Items.Count > 0;
 
             buffsOutCount.Text = "(list of possibilities) [" + buffsOut.Items.Count + "]";
@@ -246,18 +254,33 @@ namespace TerrariaPatcher
 
         private void moveIn_Click(object sender, EventArgs e)
         {
-            MoveIn((Buff)buffsOut.SelectedItem);
+            MoveIn(new[] { (Buff)buffsOut.SelectedItem });
         }
 
-        private void MoveIn(Buff buff)
+        private bool MoveIn(IEnumerable<int> b)
         {
-            buff.Active = true;
-            buffsOut.Items.Remove(buff);
+            return MoveIn(b.Select(i => buffs.Find(buff => buff.Index == i)));
+        }
 
-            if (CheckIncludedByFilter(buff))
-                buffsIn.Items.Add(buff);
+        private bool MoveIn(IEnumerable<Buff> b)
+        {
+	        var any = false;
+	        foreach (var buff in b)
+	        {
+		        if (!buff.Active)
+		        {
+			        buff.Active = true;
+			        buffsOut.Items.Remove(buff);
 
-            buffs_Update(null, null);
+			        if (CheckIncludedByFilter(buff))
+				        buffsIn.Items.Add(buff);
+
+			        any = true;
+		        }
+	        }
+
+	        buffs_Update(null, null);
+	        return any;
         }
 
         private void moveOut_Click(object sender, EventArgs e)
@@ -283,6 +306,12 @@ namespace TerrariaPatcher
             }
 
             buffs_Update(null, null);
+        }
+
+        private void allIn_Click(object sender, EventArgs e)
+        {
+	        if (!MoveIn(goodBuffs))
+		        MoveIn(buffs);
         }
 
         private void allOut_Click(object sender, EventArgs e)
@@ -354,6 +383,9 @@ namespace TerrariaPatcher
                 }
 
                 var buffValues = (from Buff buff in buffs.Where(buff => buff.Active) select buff.Index).ToList();
+                if (buffValues.Count > 22)
+	                MessageBox.Show("Adding more than 22 persistent buffs is not possible without additional game modifications (tModLoader, etc).", Program.AssemblyName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                
                 var details = new TerrariaDetails()
                 {
                     InfiniteCloudJumps = infiniteCloudJumps.Checked,

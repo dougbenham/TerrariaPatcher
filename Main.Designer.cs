@@ -49,6 +49,7 @@
             this.removePotionSickness = new System.Windows.Forms.CheckBox();
             this.removeRodBuffEnabled = new System.Windows.Forms.CheckBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.allIn = new System.Windows.Forms.Button();
             this.filterBuffsIn = new System.Windows.Forms.TextBox();
             this.filterBuffsOut = new System.Windows.Forms.TextBox();
             this.allOut = new System.Windows.Forms.Button();
@@ -331,6 +332,7 @@
             // 
             // groupBox3
             // 
+            this.groupBox3.Controls.Add(this.allIn);
             this.groupBox3.Controls.Add(this.filterBuffsIn);
             this.groupBox3.Controls.Add(this.filterBuffsOut);
             this.groupBox3.Controls.Add(this.allOut);
@@ -346,6 +348,17 @@
             this.groupBox3.TabIndex = 6;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Persistent Buffs:";
+            // 
+            // allIn
+            // 
+            this.allIn.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.allIn.Location = new System.Drawing.Point(143, 106);
+            this.allIn.Name = "allIn";
+            this.allIn.Size = new System.Drawing.Size(23, 23);
+            this.allIn.TabIndex = 9;
+            this.allIn.Text = ">>";
+            this.allIn.UseVisualStyleBackColor = true;
+            this.allIn.Click += new System.EventHandler(this.allIn_Click);
             // 
             // filterBuffsIn
             // 
@@ -646,6 +659,7 @@
         private System.Windows.Forms.TextBox filterBuffsIn;
         private System.Windows.Forms.TextBox filterBuffsOut;
         private System.Windows.Forms.CheckBox functionalSocialSlots;
+        private System.Windows.Forms.Button allIn;
     }
 }
 

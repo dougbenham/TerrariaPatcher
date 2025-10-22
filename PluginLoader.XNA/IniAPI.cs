@@ -29,7 +29,7 @@ namespace PluginLoader
             if (path == null)
                 path = iniPath;
 
-            var temp = new StringBuilder(255);
+            var temp = new StringBuilder(size);
             GetPrivateProfileString(section, key, writeIt ? "" : def, temp, size, path);
             string ret = temp.ToString();
 
