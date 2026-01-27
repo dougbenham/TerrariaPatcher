@@ -32,7 +32,7 @@ namespace TranscendPlugins
             if (maxPickSpeed && (item.axe > 0 ||
                                  item.pick > 0 ||
                                  item.hammer > 0))
-                item.useTime = 0;
+                item.useTime = 1;
 
             if (maxTileSpeed &&
                 (item.createTile >= 0 ||
@@ -89,7 +89,7 @@ namespace TranscendPlugins
                 Main.NewText("   /usetime [num]");
                 Main.NewText("   /range");
                 Main.NewText("Example:");
-                Main.NewText("   /usetime 0");
+                Main.NewText("   /usetime 1");
                 return true;
             }
 
@@ -118,6 +118,11 @@ namespace TranscendPlugins
                             break;
                         }
 
+                        if (num == 0)
+                        {
+	                        Main.NewText("Warning, using 0 can break items.");
+                        }
+
                         item.useTime = num;
 
                         IniAPI.WriteIni("item" + item.type, "useTime", num.ToString(), confPath);
@@ -132,7 +137,7 @@ namespace TranscendPlugins
                         var prefix = item.prefix;
                         var autoreuse = item.autoReuse;
                         resetUseTime = true;
-                        item.netDefaults(item.netID);
+                        item.netDefaults(item.type);
                         resetUseTime = false;
                         item.Prefix(prefix);
                         item.autoReuse = autoreuse;

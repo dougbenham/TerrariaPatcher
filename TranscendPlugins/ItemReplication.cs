@@ -42,7 +42,7 @@ namespace RyanPlugins
 
             if (Main.stackSplit <= 1 && Main.mouseRight && Main.keyState.IsKeyDown(replicateKey) && contexts.Contains(context))
             {
-                if ((Main.mouseItem.IsTheSameAs(invItem) && Main.mouseItem.stack < Main.mouseItem.maxStack) || Main.mouseItem.type == 0)
+                if ((!Main.mouseItem.IsNotTheSameAs(invItem) && Main.mouseItem.stack < Main.mouseItem.maxStack) || Main.mouseItem.type == 0)
                 {
                     if (Main.mouseItem.type == 0)
                     {
@@ -60,7 +60,7 @@ namespace RyanPlugins
                     }
 
                     Main.mouseItem.stack++;
-                    Recipe.FindRecipes();
+                    Recipe.UpdateRecipeList();
                     SoundEngine.PlaySound(12, -1, -1, 1);
 
                     if (Main.stackSplit == 0)

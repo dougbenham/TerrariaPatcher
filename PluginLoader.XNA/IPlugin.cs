@@ -110,7 +110,7 @@ namespace PluginLoader
     }
     public interface IPluginPlayerGetItem : IPlugin
     {
-        bool OnPlayerGetItem(Player player, Item newItem, out Item resultItem);
+        bool OnPlayerGetItem(Player player, WorldItem newItem, GetItemSettings settings, out Item resultItem);
     }
     public interface IPluginPlayerQuickBuff : IPlugin
     {

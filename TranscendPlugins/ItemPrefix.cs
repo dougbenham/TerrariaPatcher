@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Reflection;
-using System.Windows.Forms;
 using PluginLoader;
 using Terraria;
 using Terraria.ID;
@@ -42,8 +41,11 @@ namespace TranscendPlugins
 	        float num5 = 1f;
 	        float num6 = 1f;
 	        int num7 = 0;
-	        if (!item.TryGetPrefixStatMultipliersForItem(rolledPrefix, out num, out num2, out num3, out num4, out num5, out num6, out num7))
-	        {
+	        int num8 = 0;
+	        int num9 = 0;
+	        float num10 = 0;
+	        if (!item.TryGetPrefixStatMultipliersForItem(rolledPrefix, out num, out num2, out num3, out num4, out num5, out num6, out num7, out num8, out num9, out num10))
+            {
 		        if (item.knockBack == 0)
 			        rolledPrefix = PrefixID.Demonic;
 		        else if (item.damage == 0)
@@ -85,14 +87,21 @@ namespace TranscendPlugins
 		        result = true;
 		        return true;
 	        }
-	        if (Terraria.GameContent.Prefixes.PrefixLegacy.ItemSets.MagicAndSummon[item.type])
+	        if (Terraria.GameContent.Prefixes.PrefixLegacy.ItemSets.Magic[item.type])
 	        {
 		        rolledPrefix = PrefixID.Mythical;
 		        if (!Correct(item, ref rolledPrefix)) return false;
 		        result = true;
 		        return true;
 	        }
-	        if (Terraria.GameContent.Prefixes.PrefixLegacy.ItemSets.BoomerangsChakrams[item.type])
+	        if (Terraria.GameContent.Prefixes.PrefixLegacy.ItemSets.Summon[item.type])
+	        {
+		        rolledPrefix = PrefixID.Ruthless;
+		        if (!Correct(item, ref rolledPrefix)) return false;
+		        result = true;
+		        return true;
+	        }
+            if (Terraria.GameContent.Prefixes.PrefixLegacy.ItemSets.BoomerangsChakrams[item.type])
 	        {
 		        rolledPrefix = PrefixID.Godly;
 		        if (!Correct(item, ref rolledPrefix)) return false;
@@ -176,7 +185,7 @@ namespace TranscendPlugins
                 // Clone item (preserve stack/favorited)
                 var stack = item.stack;
                 bool favorited = item.favorited;
-                item.netDefaults(item.netID);
+                item.netDefaults(item.type);
                 item.stack = stack;
                 item.favorited = favorited;
             }

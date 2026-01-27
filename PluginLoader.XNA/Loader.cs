@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Windows.Forms;
 using Microsoft.CSharp;
 using Microsoft.Xna.Framework;
 using Terraria;
@@ -87,7 +86,7 @@ namespace PluginLoader
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.ToString());
+                    MessageBox.Show(ex.ToString(), string.Empty);
                     throw;
                 }
             }
@@ -195,7 +194,7 @@ namespace PluginLoader
             hotkeys.RemoveAll(key => key.Equals(hotkey));
         }
 
-        public static IReadOnlyCollection<Hotkey> GetHotkeys()
+        public static ICollection<Hotkey> GetHotkeys()
         {
             return hotkeys.AsReadOnly();
         }
@@ -439,13 +438,13 @@ namespace PluginLoader
                 plugin.OnPlayerPickAmmo(player, weapon, ref shoot, ref speed, ref canShoot, ref damage, ref knockback, ref usedAmmoItemId, dontConsume);
         }
 
-        public static bool OnPlayerGetItem(Player player, Item newItem, out Item resultItem)
+        public static bool OnPlayerGetItem(Player player, WorldItem newItem, GetItemSettings settings, out Item resultItem)
         {
             resultItem = null;
             var ret = false;
             foreach (var plugin in loadedPlugins.OfType<IPluginPlayerGetItem>())
             {
-	            if (plugin.OnPlayerGetItem(player, newItem, out var temp))
+	            if (plugin.OnPlayerGetItem(player, newItem, settings, out var temp))
                 {
                     ret = true;
                     resultItem = temp;

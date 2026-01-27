@@ -279,22 +279,22 @@ namespace TerrariaPatcher
         private static void RemoveAnglerQuestLimit()
         {
             var main = IL.GetTypeDefinition(_mainModule, "Main");
-            var guiChatDrawInner = IL.GetMethodDefinition(main, "GUIChatDrawInner");
+            var npcChatTextDoAnglerQuest = IL.GetMethodDefinition(main, "NPCChatText_DoAnglerQuest");
             var questSwap = IL.GetMethodDefinition(main, "AnglerQuestSwap");
 
-            int spot = IL.ScanForOpcodePattern(guiChatDrawInner,
+            int spot = IL.ScanForOpcodePattern(npcChatTextDoAnglerQuest,
                                                (i, instruction) =>
                                                {
-                                                   var i3 = guiChatDrawInner.Body.Instructions[i + 3].Operand as FieldReference;
+                                                   var i3 = npcChatTextDoAnglerQuest.Body.Instructions[i + 3].Operand as FieldReference;
                                                    return   i3 != null && i3.Name == "anglerQuestFinished";
                                                },
-                                               OpCodes.Ldloc_S,
-                                               OpCodes.Brfalse,
+                                               OpCodes.Ldloc_0,
+                                               OpCodes.Brfalse_S,
                                                OpCodes.Ldc_I4_1);
 
-            guiChatDrawInner.Body.Instructions[spot + 2] = Instruction.Create(OpCodes.Call, questSwap);
-            for (int i = spot + 3; guiChatDrawInner.Body.Instructions[i].OpCode != OpCodes.Ret; i++)
-                guiChatDrawInner.Body.Instructions[i].OpCode = OpCodes.Nop;
+            npcChatTextDoAnglerQuest.Body.Instructions[spot + 2] = Instruction.Create(OpCodes.Call, questSwap);
+            for (int i = spot + 3; npcChatTextDoAnglerQuest.Body.Instructions[i].OpCode != OpCodes.Ret; i++)
+                npcChatTextDoAnglerQuest.Body.Instructions[i].OpCode = OpCodes.Nop;
         }
         
 		private static void InfiniteAmmo()
@@ -344,18 +344,17 @@ namespace TerrariaPatcher
 		        (i, instruction) =>
 		        {
 			        var i2 = applyLifeAndOrMana.Body.Instructions[i + 2].Operand as FieldReference;
-		            var i5 = applyLifeAndOrMana.Body.Instructions[i + 5].Operand as MethodReference;
+		            var i5 = applyLifeAndOrMana.Body.Instructions[i + 4].Operand as MethodReference;
 		            return i2 != null && i2.Name == "manaSickTime" &&
 		                   i5 != null && i5.Name == "AddBuff";
 		        },
 		        OpCodes.Ldarg_0,
 		        OpCodes.Ldc_I4_S,
                 OpCodes.Ldsfld,
-		        OpCodes.Ldc_I4_1,
 		        OpCodes.Ldc_I4_0,
 		        OpCodes.Call);
 
-            for (int i = 0; i < 6; i++)
+            for (int i = 0; i < 5; i++)
 	            applyLifeAndOrMana.Body.Instructions[spot2 + i].OpCode = OpCodes.Nop;
 
             // health/mana
@@ -367,18 +366,12 @@ namespace TerrariaPatcher
         private static void RemoveManaCost()
         {
             var player = IL.GetTypeDefinition(_mainModule, "Player");
-            var itemCheck = IL.GetMethodDefinition(player, "ItemCheck_PayMana");
-            var checkMana = IL.GetMethodDefinition(player, "CheckMana");
+            var skipManaUse = IL.GetMethodDefinition(player, "ItemCheck_PayMana_ShouldSkipManaUse");
             
-            itemCheck.Body.ExceptionHandlers.Clear();
-            itemCheck.Body.Instructions.Clear();
-            itemCheck.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_I4_1));
-            itemCheck.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
-
-            checkMana.Body.ExceptionHandlers.Clear();
-            checkMana.Body.Instructions.Clear();
-            checkMana.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_I4_1));
-            checkMana.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
+            skipManaUse.Body.ExceptionHandlers.Clear();
+            skipManaUse.Body.Instructions.Clear();
+            skipManaUse.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_I4_1));
+            skipManaUse.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
         }
 
         private static void RemoveDiscordBuff()
@@ -419,7 +412,8 @@ namespace TerrariaPatcher
         private static void ModSpawnRateVoodooDemon(float rate)
         {
             var npc = IL.GetTypeDefinition(_mainModule, "NPC");
-            var spawn = IL.GetMethodDefinition(npc, "SpawnNPC");
+            var spawner = npc.NestedTypes.First(t => t.Name == "Spawner");
+            var spawn = IL.GetMethodDefinition(spawner, "SpawnAnNPC");
 
             int spot = IL.ScanForOpcodePattern(spawn, (i, instruction) =>
                                            {
@@ -460,7 +454,6 @@ namespace TerrariaPatcher
                         Instruction.Create(OpCodes.Ldelem_Ref),
                         Instruction.Create(OpCodes.Ldc_I4, buff),
                         Instruction.Create(OpCodes.Ldc_I4_2),
-                        Instruction.Create(OpCodes.Ldc_I4_1),
                         Instruction.Create(OpCodes.Ldc_I4_0),
                         Instruction.Create(OpCodes.Call, addBuff)
                     });
@@ -476,19 +469,19 @@ namespace TerrariaPatcher
         
         private static void RecipeRange()
         {
-            var player = IL.GetTypeDefinition(_mainModule, "Player");
-            var adjTiles = IL.GetMethodDefinition(player, "AdjTiles");
+	        var tileReachCheckSettings = IL.GetTypeDefinition(_mainModule, "TileReachCheckSettings");
+	        var getRanges = IL.GetMethodDefinition(tileReachCheckSettings, "GetRanges");
+	        var tileReachLimit = IL.GetFieldDefinition(tileReachCheckSettings, "TileReachLimit");
 
-            int spot = IL.ScanForOpcodePattern(adjTiles, OpCodes.Ldc_I4_4,
-                OpCodes.Stloc_0,
-                OpCodes.Ldc_I4_3,
-                OpCodes.Stloc_1
-                );
-
-            adjTiles.Body.Instructions[spot].OpCode = OpCodes.Ldc_I4;
-            adjTiles.Body.Instructions[spot].Operand = 30;
-            adjTiles.Body.Instructions[spot + 2].OpCode = OpCodes.Ldc_I4;
-            adjTiles.Body.Instructions[spot + 2].Operand = 30;
+	        using (getRanges.JumpFix())
+	        {
+		        IL.MethodPrepend(getRanges, new[]
+		        {
+			        Instruction.Create(OpCodes.Ldarg_0),
+                    Instruction.Create(OpCodes.Ldflda, tileReachLimit),
+			        Instruction.Create(OpCodes.Initobj, _mainModule.ImportReference(typeof(int?)))
+		        });
+	        }
         }
 
         private static void AddWings()
@@ -592,7 +585,7 @@ namespace TerrariaPatcher
             var killMe = IL.GetMethodDefinition(player, "KillMe");
             var hurt = IL.GetMethodDefinition(player, "Hurt");
             var pickAmmo = IL.GetMethodDefinition(player, "PickAmmo");
-            var setDefaults = IL.GetMethodDefinition(item, "SetDefaults", 3);
+            var setDefaults = IL.GetMethodDefinition(item, "SetDefaults", 2);
             var rollAPrefix = IL.GetMethodDefinition(item, "RollAPrefix");
             var ai = IL.GetMethodDefinition(projectile, "AI_001");
             var rightClick = IL.GetMethodDefinition(itemSlot, "RightClick", 3);
@@ -1003,6 +996,7 @@ namespace TerrariaPatcher
                 IL.MethodPrepend(getItem, new[]
                 {
                     Instruction.Create(OpCodes.Ldarg_0),
+                    Instruction.Create(OpCodes.Ldarg_1),
                     Instruction.Create(OpCodes.Ldarg_2),
                     Instruction.Create(OpCodes.Ldloca_S, varItem),
                     Instruction.Create(OpCodes.Call, onGetItem),
