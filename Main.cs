@@ -414,25 +414,26 @@ namespace TerrariaPatcher
                     if (details.Plugins)
                     {
                         var targetFolder = Path.GetDirectoryName(saveFileDialog.FileName);
-                        foreach (var t in new[] {"PluginLoader.XNA.dll"})
+                        foreach (var source in new[] {"PluginLoader.XNA.dll"})
                         {
-                            var target = $"{targetFolder}\\{t}";
+	                        var sourceFileInfo = new FileInfo(source);
+                            var target = $"{targetFolder}\\{source}";
 
-                            var pluginLoaderInfo = new FileInfo(target);
-                            if (!pluginLoaderInfo.Exists)
+                            if (!sourceFileInfo.Exists)
                             {
-                                MessageBox.Show(target + " is missing.", Program.AssemblyName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                                MessageBox.Show(source + " is missing.", Program.AssemblyName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                                 continue;
                             }
 
-                            while (Utils.IsFileLocked(pluginLoaderInfo))
+                            var targetFileInfo = new FileInfo(target);
+                            while (Utils.IsFileLocked(targetFileInfo))
                             {
                                 var result = MessageBox.Show(target + " is in use. Please close Terraria then hit OK.", Program.AssemblyName, MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
                                 if (result == DialogResult.Cancel)
                                     return;
                             }
 
-                            File.Copy(t, target, true);
+                            File.Copy(source, target, true);
                         }
 
                         if (!Directory.Exists(@".\Plugins"))
