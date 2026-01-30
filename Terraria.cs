@@ -57,7 +57,11 @@ namespace TerrariaPatcher
                 if (details.SteamFix)
                     RemoveSteam();
                 if (details.PermanentBuffs.Count > 0)
+                {
+                    if (details.PermanentBuffs.Contains(147))
+                        EnableAllBannerBuffs();
                     AddBuffs(details.PermanentBuffs);
+                }
                 if (details.InfiniteAmmo)
                     InfiniteAmmo();
                 if (details.RemovePotionSickness)
@@ -465,6 +469,19 @@ namespace TerrariaPatcher
                     Instruction.Create(OpCodes.Brtrue, first)
                 });
             }
+        }
+
+        private static void EnableAllBannerBuffs()
+        {
+            var player = IL.GetTypeDefinition(_mainModule, "Player");
+            var hasNpcBannerBuff = IL.GetMethodDefinition(player, "HasNPCBannerBuff");
+
+            hasNpcBannerBuff.Body.ExceptionHandlers.Clear();
+            hasNpcBannerBuff.Body.Instructions.Clear();
+
+            var il = hasNpcBannerBuff.Body.GetILProcessor();
+            il.Emit(OpCodes.Ldc_I4_1); // true
+            il.Emit(OpCodes.Ret);
         }
         
         private static void RecipeRange()
