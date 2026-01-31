@@ -42,6 +42,36 @@ namespace RyanPlugins
 
             if (Main.stackSplit <= 1 && Main.mouseRight && Main.keyState.IsKeyDown(replicateKey) && contexts.Contains(context))
             {
+                bool shiftDown =
+                    Main.keyState.IsKeyDown(Keys.LeftShift) ||
+                    Main.keyState.IsKeyDown(Keys.RightShift);
+
+                if (shiftDown)
+                {
+                    if (invItem.stack < invItem.maxStack)
+                    {
+                        invItem.stack = invItem.maxStack;
+
+                        Recipe.UpdateRecipeList();
+                        SoundEngine.PlaySound(12, -1, -1, 1);
+
+                        if (Main.stackSplit == 0)
+                        {
+                            Main.stackSplit = 15;
+                        }
+                        else
+                        {
+                            Main.stackSplit = Main.stackDelay;
+                        }
+
+                        if (context == 3 && Main.netMode == 1)
+                        {
+                            NetMessage.SendData(32, -1, -1, null, Main.player[Main.myPlayer].chest, (float)slot, 0f, 0f, 0, 0, 0);
+                        }
+                    }
+                    return true;
+                }
+
                 if ((!Main.mouseItem.IsNotTheSameAs(invItem) && Main.mouseItem.stack < Main.mouseItem.maxStack) || Main.mouseItem.type == 0)
                 {
                     if (Main.mouseItem.type == 0)
