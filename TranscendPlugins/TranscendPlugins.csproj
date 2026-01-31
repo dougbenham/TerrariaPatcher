@@ -58,6 +58,7 @@
     <Compile Include="BuffImmunity.cs" />
     <Compile Include="BuffRates.cs" />
     <Compile Include="CoinGun.cs" />
+    <Compile Include="CreativeCrafting.cs" />
     <Compile Include="Flashlight.cs" />
     <Compile Include="FullBright.cs" />
     <Compile Include="GodMode.cs" />
