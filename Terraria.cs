@@ -1102,7 +1102,7 @@ namespace TerrariaPatcher
             var indexMap = instructions.Select((ins, idx) => new { ins, idx }).ToDictionary(x => x.ins, x => x.idx);
             var loot = new Dictionary<int, List<BossBagDrop>>();
             var coinIds = new HashSet<int> { 71, 72, 73, 74 }; // copper, silver, gold, platinum coins
-            var killInstructions = new HashSet<int>();
+            var killSegments = new List<List<Instruction>>();
 
             // Identify bag-specific code regions by branching pattern
             for (int i = 0; i < instructions.Count - 2; i++)
@@ -1134,6 +1134,17 @@ namespace TerrariaPatcher
                     var stackCandidates = ResolvePossibleInts(instructions, j - 1);
                     if (stackCandidates.Count == 0) stackCandidates.Add(1);
 
+                    // Fallback for switch-assigned locals (e.g., Moon Lord weapons)
+                    if (itemCandidates.Count == 0 && IsLoadLocal(instructions[j - 2]))
+                    {
+                        int localIdx = GetLocalIndex(instructions[j - 2]);
+                        if (localIdx >= 0)
+                        {
+                            var constants = CollectConstAssignments(instructions, localIdx);
+                            foreach (var c in constants) if (!itemCandidates.Contains(c)) itemCandidates.Add(c);
+                        }
+                    }
+
                     foreach (var item in itemCandidates)
                     {
                         if (coinIds.Contains(item)) continue; // let vanilla handle coin amounts
@@ -1157,17 +1168,12 @@ namespace TerrariaPatcher
                             IsAnyConstant(instructions[callStart + 2]) &&
                             IsAnyConstant(instructions[callStart + 3]))
                         {
-                            for (int k = callStart; k <= j; k++) killInstructions.Add(k);
+                            var segment = new List<Instruction>();
+                            for (int k = callStart; k <= j; k++) segment.Add(instructions[k]);
+                            killSegments.Add(segment);
                         }
                     }
                 }
-            }
-
-            // Remove original QuickSpawnItem calls for non-coin loot we already spawned
-            foreach (var idx in killInstructions.OrderByDescending(x => x))
-            {
-                instructions[idx].OpCode = OpCodes.Nop;
-                instructions[idx].Operand = null;
             }
 
             var helper = new MethodDefinition("ForceBossBagAllLoot", MethodAttributes.Private, _mainModule.TypeSystem.Boolean);
@@ -1215,6 +1221,16 @@ namespace TerrariaPatcher
                 Instruction.Create(OpCodes.Pop) // allow vanilla to continue (coins, dev armor)
             };
             IL.MethodPrepend(openBossBag, first, prepend);
+
+            // Remove original QuickSpawnItem calls for non-coin loot we already spawned (by reference, safe after prepend)
+            foreach (var segment in killSegments)
+            {
+                foreach (var instr in segment)
+                {
+                    instr.OpCode = OpCodes.Nop;
+                    instr.Operand = null;
+                }
+            }
         }
 
         private static List<int> ResolvePossibleInts(IList<Instruction> instrs, int index)
@@ -1333,6 +1349,21 @@ namespace TerrariaPatcher
                 default:
                     return false;
             }
+        }
+
+        private static List<int> CollectConstAssignments(IList<Instruction> instrs, int localIndex)
+        {
+            var result = new List<int>();
+            for (int i = 0; i < instrs.Count - 1; i++)
+            {
+                if (!IsStoreToLocal(instrs[i], localIndex)) continue;
+                int c;
+                if (TryGetConstantInt(instrs[i - 1], out c))
+                {
+                    if (!result.Contains(c)) result.Add(c);
+                }
+            }
+            return result;
         }
 
         private static bool IsStoreToLocal(Instruction instr, int localIndex)
