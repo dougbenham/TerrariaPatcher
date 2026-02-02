@@ -186,6 +186,7 @@ namespace TerrariaPatcher
                 spectreHealingRate.Value = decimal.Parse(IniAPI.ReadIni("Healing", "SpectreHealingRate", "20", 255, ConfigPath));
 
                 spawnRateVoodoo.Value = decimal.Parse(IniAPI.ReadIni("Spawning", "SpawnRateVoodoo", "15", 255, ConfigPath));
+                treasureBagsDropAll.Checked = bool.Parse(IniAPI.ReadIni("Spawning", "TreasureBagsDropAll", "false", 255, ConfigPath));
 
                 ResetBuffs();
                 MoveIn(IniAPI.ReadIni("PermanentBuffs", "List", string.Join(", ", defaultBuffs), 2048, ConfigPath)
@@ -220,6 +221,7 @@ namespace TerrariaPatcher
             IniAPI.WriteIni("Healing", "SpectreHealingRate", spectreHealingRate.Value.ToString(), ConfigPath);
 
             IniAPI.WriteIni("Spawning", "SpawnRateVoodoo", spawnRateVoodoo.Value.ToString(), ConfigPath);
+            IniAPI.WriteIni("Spawning", "TreasureBagsDropAll", treasureBagsDropAll.Checked.ToString(), ConfigPath);
 
             IniAPI.WriteIni("PermanentBuffs", "List", string.Join(", ", (from Buff buff in buffs.Where(buff => buff.Active) select buff.Index)), ConfigPath);
         }
@@ -404,6 +406,7 @@ namespace TerrariaPatcher
                     RemoveAnglerQuestLimit = removeAnglerQuestLimit.Checked,
                     MaxCraftingRange = maxCraftingRange.Checked,
                     SpawnRateVoodoo = (int)spawnRateVoodoo.Value,
+                    BossBagsDropAllLoot = treasureBagsDropAll.Checked,
                     SteamFix = steamFixEnabled.Enabled && steamFixEnabled.Checked,
                     Plugins = plugins.Checked,
                 };

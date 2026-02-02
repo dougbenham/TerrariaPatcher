@@ -28,11 +28,18 @@ namespace TerrariaPatcher
         public float SpectreHealing = 20f;
         public int Thorns = 33;
         public int SpawnRateVoodoo = 100;
+        public bool BossBagsDropAllLoot = false;
         public List<int> PermanentBuffs = new List<int>();
     }
 
     public class Terraria
     {
+        private class BossBagDrop
+        {
+            public int Item;
+            public int Stack;
+        }
+
         /// <summary>
         /// Gets or sets the main module definition.
         /// </summary>
@@ -92,6 +99,8 @@ namespace TerrariaPatcher
                     ModSpectreArmor(details.SpectreHealing / 100f);
                 if (details.SpawnRateVoodoo != 10)
                     ModSpawnRateVoodooDemon(details.SpawnRateVoodoo / 100f);
+                if (details.BossBagsDropAllLoot)
+                    TreasureBagsDropAll();
                 //ModThornsBuff(details.Thorns / 100f);
 
                 asm.Write(target + ".tmp");
@@ -1070,6 +1079,293 @@ namespace TerrariaPatcher
                 IL.MakeTypePublic(IL.GetTypeDefinition(_mainModule, "LocalizedText"));
                 IL.MakeTypePublic(IL.GetTypeDefinition(_mainModule, "ItemTooltip"));
                 IL.MakeTypePublic(IL.GetTypeDefinition(_mainModule, "Item"));
+            }
+        }
+
+        private static void TreasureBagsDropAll()
+        {
+            var player = IL.GetTypeDefinition(_mainModule, "Player");
+            var openBossBag = IL.GetMethodDefinition(player, "OpenBossBag");
+            if (openBossBag == null) return;
+
+            if (openBossBag.Body.Variables.Count < 2) return;
+            var entitySourceType = openBossBag.Body.Variables[1].VariableType;
+
+            var quickSpawn = player.Methods.FirstOrDefault(m =>
+                m.Name == "QuickSpawnItem" &&
+                m.Parameters.Count == 3 &&
+                m.Parameters[0].ParameterType.FullName.Contains("IEntitySource"));
+            var getItemSource = IL.GetMethodDefinition(player, "GetItemSource_OpenItem");
+            if (quickSpawn == null || getItemSource == null) return;
+
+            var instructions = openBossBag.Body.Instructions;
+            var indexMap = instructions.Select((ins, idx) => new { ins, idx }).ToDictionary(x => x.ins, x => x.idx);
+            var loot = new Dictionary<int, List<BossBagDrop>>();
+            var coinIds = new HashSet<int> { 71, 72, 73, 74 }; // copper, silver, gold, platinum coins
+            var killInstructions = new HashSet<int>();
+
+            // Identify bag-specific code regions by branching pattern
+            for (int i = 0; i < instructions.Count - 2; i++)
+            {
+                if (instructions[i].OpCode != OpCodes.Ldarg_1 || instructions[i + 1].OpCode != OpCodes.Ldc_I4)
+                    continue;
+
+                int bagId;
+                if (!int.TryParse(instructions[i + 1].Operand.ToString(), out bagId))
+                    continue;
+
+                var branch = instructions[i + 2];
+                if (branch == null || branch.Operand == null || !indexMap.ContainsKey(branch.Operand as Instruction))
+                    continue;
+
+                int start = i + 3;
+                int end = indexMap[(Instruction)branch.Operand] - 1;
+                if (end < start) continue;
+
+                for (int j = start; j <= end; j++)
+                {
+                    var instr = instructions[j];
+                    if (instr.OpCode != OpCodes.Call) continue;
+                    var mr = instr.Operand as MethodReference;
+                    if (mr == null || mr.Name != "QuickSpawnItem" || mr.Parameters.Count != 3) continue;
+                    if (j < 2) continue;
+
+                    var itemCandidates = ResolvePossibleInts(instructions, j - 2);
+                    var stackCandidates = ResolvePossibleInts(instructions, j - 1);
+                    if (stackCandidates.Count == 0) stackCandidates.Add(1);
+
+                    foreach (var item in itemCandidates)
+                    {
+                        if (coinIds.Contains(item)) continue; // let vanilla handle coin amounts
+                        foreach (var stack in stackCandidates)
+                        {
+                            if (!loot.ContainsKey(bagId))
+                                loot[bagId] = new List<BossBagDrop>();
+                            if (!loot[bagId].Any(x => x.Item == item))
+                                loot[bagId].Add(new BossBagDrop { Item = item, Stack = stack });
+                        }
+                    }
+
+                    // If this exact call is spawning non-coin items, mark to remove to avoid duplicates; keep coins/dev armor vanilla
+                    if (itemCandidates.Count > 0 && itemCandidates.All(x => !coinIds.Contains(x)))
+                    {
+                        // Expect pattern: ldarg.0, ldloc|ldloc.s source, ldc item, ldc stack, call QuickSpawnItem
+                        int callStart = j - 4;
+                        if (callStart >= 0 &&
+                            IsLoadPlayer(instructions[callStart]) &&
+                            IsLoadLocal(instructions[callStart + 1]) &&
+                            IsAnyConstant(instructions[callStart + 2]) &&
+                            IsAnyConstant(instructions[callStart + 3]))
+                        {
+                            for (int k = callStart; k <= j; k++) killInstructions.Add(k);
+                        }
+                    }
+                }
+            }
+
+            // Remove original QuickSpawnItem calls for non-coin loot we already spawned
+            foreach (var idx in killInstructions.OrderByDescending(x => x))
+            {
+                instructions[idx].OpCode = OpCodes.Nop;
+                instructions[idx].Operand = null;
+            }
+
+            var helper = new MethodDefinition("ForceBossBagAllLoot", MethodAttributes.Private, _mainModule.TypeSystem.Boolean);
+            helper.Parameters.Add(new ParameterDefinition(_mainModule.TypeSystem.Int32));      // bag type
+            helper.Parameters.Add(new ParameterDefinition(entitySourceType));                  // entity source
+            helper.Body.InitLocals = true;
+            player.Methods.Add(helper);
+
+            var hIL = helper.Body.GetILProcessor();
+            foreach (var kvp in loot)
+            {
+                var skip = Instruction.Create(OpCodes.Nop);
+                hIL.Emit(OpCodes.Ldarg_1);
+                hIL.Emit(OpCodes.Ldc_I4, kvp.Key);
+                hIL.Emit(OpCodes.Bne_Un, skip);
+                foreach (var drop in kvp.Value)
+                {
+                    hIL.Emit(OpCodes.Ldarg_0);
+                    hIL.Emit(OpCodes.Ldarg_2);
+                    hIL.Emit(OpCodes.Ldc_I4, drop.Item);
+                    hIL.Emit(OpCodes.Ldc_I4, drop.Stack);
+                    hIL.Emit(OpCodes.Call, quickSpawn);
+                }
+                hIL.Emit(OpCodes.Ldc_I4_1);
+                hIL.Emit(OpCodes.Ret);
+                hIL.Append(skip);
+            }
+            hIL.Emit(OpCodes.Ldc_I4_0);
+            hIL.Emit(OpCodes.Ret);
+
+            var newSourceVar = new VariableDefinition(entitySourceType);
+            openBossBag.Body.Variables.Add(newSourceVar);
+
+            var first = openBossBag.Body.Instructions.First();
+            var prepend = new List<Instruction>
+            {
+                Instruction.Create(OpCodes.Ldarg_0),
+                Instruction.Create(OpCodes.Ldarg_1),
+                Instruction.Create(OpCodes.Call, getItemSource),
+                Instruction.Create(OpCodes.Stloc, newSourceVar),
+                Instruction.Create(OpCodes.Ldarg_0),
+                Instruction.Create(OpCodes.Ldarg_1),
+                Instruction.Create(OpCodes.Ldloc, newSourceVar),
+                Instruction.Create(OpCodes.Call, helper),
+                Instruction.Create(OpCodes.Pop) // allow vanilla to continue (coins, dev armor)
+            };
+            IL.MethodPrepend(openBossBag, first, prepend);
+        }
+
+        private static List<int> ResolvePossibleInts(IList<Instruction> instrs, int index)
+        {
+            var result = new List<int>();
+            if (index < 0 || index >= instrs.Count) return result;
+
+            var instr = instrs[index];
+            int constant;
+            if (TryGetConstantInt(instr, out constant))
+            {
+                result.Add(constant);
+                return result;
+            }
+
+            // Handle locals coming from UnifiedRandom.Next
+            if (instr.OpCode.Code == Code.Ldloc || instr.OpCode.Code == Code.Ldloc_S ||
+                instr.OpCode.Code == Code.Ldloc_0 || instr.OpCode.Code == Code.Ldloc_1 ||
+                instr.OpCode.Code == Code.Ldloc_2 || instr.OpCode.Code == Code.Ldloc_3)
+            {
+                int localIndex = GetLocalIndex(instr);
+                for (int i = index - 1; i >= 0; i--)
+                {
+                    var prev = instrs[i];
+                    if (!IsStoreToLocal(prev, localIndex)) continue;
+
+                    // Expect callvirt UnifiedRandom::Next
+                    if (i > 0 && instrs[i - 1].OpCode == OpCodes.Callvirt &&
+                        instrs[i - 1].Operand is MethodReference mr &&
+                        mr.Name == "Next" &&
+                        mr.DeclaringType.FullName.Contains("UnifiedRandom"))
+                    {
+                        // Next(int max) or Next(int min, int max)
+                        if (mr.Parameters.Count == 1)
+                        {
+                            int max;
+                            if (TryGetConstantInt(instrs[i - 2], out max))
+                            {
+                                for (int v = 0; v < max; v++) result.Add(v);
+                            }
+                        }
+                        else if (mr.Parameters.Count == 2)
+                        {
+                            int min, max;
+                            if (TryGetConstantInt(instrs[i - 3], out min) && TryGetConstantInt(instrs[i - 2], out max))
+                            {
+                                for (int v = min; v < max; v++) result.Add(v);
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+
+            return result;
+        }
+
+        private static bool TryGetConstantInt(Instruction instr, out int value)
+        {
+            value = 0;
+            if (instr == null) return false;
+            switch (instr.OpCode.Code)
+            {
+                case Code.Ldc_I4:
+                    value = (int)instr.Operand; return true;
+                case Code.Ldc_I4_S:
+                    value = (sbyte)instr.Operand; return true;
+                case Code.Ldc_I4_M1:
+                    value = -1; return true;
+                case Code.Ldc_I4_0:
+                    value = 0; return true;
+                case Code.Ldc_I4_1:
+                    value = 1; return true;
+                case Code.Ldc_I4_2:
+                    value = 2; return true;
+                case Code.Ldc_I4_3:
+                    value = 3; return true;
+                case Code.Ldc_I4_4:
+                    value = 4; return true;
+                case Code.Ldc_I4_5:
+                    value = 5; return true;
+                case Code.Ldc_I4_6:
+                    value = 6; return true;
+                case Code.Ldc_I4_7:
+                    value = 7; return true;
+                case Code.Ldc_I4_8:
+                    value = 8; return true;
+                default:
+                    return false;
+            }
+        }
+
+        private static bool IsAnyConstant(Instruction instr)
+        {
+            int _;
+            return TryGetConstantInt(instr, out _);
+        }
+
+        private static bool IsLoadPlayer(Instruction instr)
+        {
+            return instr != null && (instr.OpCode == OpCodes.Ldarg_0 || instr.OpCode == OpCodes.Ldarg || instr.OpCode == OpCodes.Ldarg_S);
+        }
+
+        private static bool IsLoadLocal(Instruction instr)
+        {
+            if (instr == null) return false;
+            switch (instr.OpCode.Code)
+            {
+                case Code.Ldloc:
+                case Code.Ldloc_S:
+                case Code.Ldloc_0:
+                case Code.Ldloc_1:
+                case Code.Ldloc_2:
+                case Code.Ldloc_3:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        private static bool IsStoreToLocal(Instruction instr, int localIndex)
+        {
+            if (instr == null) return false;
+            switch (instr.OpCode.Code)
+            {
+                case Code.Stloc_0: return localIndex == 0;
+                case Code.Stloc_1: return localIndex == 1;
+                case Code.Stloc_2: return localIndex == 2;
+                case Code.Stloc_3: return localIndex == 3;
+                case Code.Stloc:
+                case Code.Stloc_S:
+                    return instr.Operand is VariableDefinition v && v.Index == localIndex;
+                default:
+                    return false;
+            }
+        }
+
+        private static int GetLocalIndex(Instruction instr)
+        {
+            switch (instr.OpCode.Code)
+            {
+                case Code.Ldloc_0: return 0;
+                case Code.Ldloc_1: return 1;
+                case Code.Ldloc_2: return 2;
+                case Code.Ldloc_3: return 3;
+                case Code.Ldloc:
+                case Code.Ldloc_S:
+                    var v = instr.Operand as VariableDefinition;
+                    return v != null ? v.Index : -1;
+                default:
+                    return -1;
             }
         }
 
