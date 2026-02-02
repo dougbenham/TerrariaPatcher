@@ -1104,6 +1104,8 @@ namespace TerrariaPatcher
             var coinIds = new HashSet<int> { 71, 72, 73, 74 }; // copper, silver, gold, platinum coins
             var killSegments = new List<List<Instruction>>();
             var listAdds = new Dictionary<int, List<int>>(); // bagId -> constants added to List<int> before weapon selection
+            var arrayAdds = new Dictionary<int, List<int>>(); // bagId -> constants stored into new int[] pools
+            var arrayFieldRefs = new Dictionary<int, List<FieldReference>>(); // bagId -> static int[] fields referenced
 
             // Identify bag-specific code regions by branching pattern
             for (int i = 0; i < instructions.Count - 2; i++)
@@ -1123,6 +1125,10 @@ namespace TerrariaPatcher
                 int end = indexMap[(Instruction)branch.Operand] - 1;
                 if (end < start) continue;
 
+                // track list variable -> elements for this bag
+                var listLocalMap = new Dictionary<int, List<int>>();
+                _currentBagListAdds = listLocalMap;
+
                 // collect List<int> constants (e.g., Moon Lord weapons)
                 for (int j = start; j <= end - 1; j++)
                 {
@@ -1141,9 +1147,66 @@ namespace TerrariaPatcher
                         }
                         if (added.Count > 0)
                         {
+                            // map to bag-level listAdds (bagId) and local variable if stored
                             if (!listAdds.ContainsKey(bagId)) listAdds[bagId] = new List<int>();
                             foreach (var c in added)
                                 if (!listAdds[bagId].Contains(c)) listAdds[bagId].Add(c);
+
+                            // find where list is stored (next stloc)
+                            int st = j + 1;
+                            while (st <= end && !IsStoreToAnyLocal(instructions[st])) st++;
+                            if (st <= end && IsStoreToAnyLocal(instructions[st]))
+                            {
+                                int lidx = GetStoreLocalIndex(instructions[st]);
+                                if (lidx >= 0)
+                                {
+                                    listLocalMap[lidx] = new List<int>(added);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // collect int[] constants (e.g., emblem pools) newarr + stelem
+                for (int j = start; j <= end - 3; j++)
+                {
+                    if (instructions[j].OpCode == OpCodes.Newarr &&
+                        instructions[j].Operand is TypeReference tr &&
+                        tr.FullName == "System.Int32")
+                    {
+                        var added = new List<int>();
+                        int k = j + 1;
+                        while (k <= end - 3 &&
+                               instructions[k].OpCode == OpCodes.Dup &&
+                               IsAnyConstant(instructions[k + 1]) &&
+                               IsAnyConstant(instructions[k + 2]) &&
+                               instructions[k + 3].OpCode == OpCodes.Stelem_I4)
+                        {
+                            int val;
+                            if (TryGetConstantInt(instructions[k + 2], out val))
+                                added.Add(val);
+                            k += 4; // dup, idx, val, stelem
+                        }
+                        if (added.Count > 0)
+                        {
+                            if (!arrayAdds.ContainsKey(bagId)) arrayAdds[bagId] = new List<int>();
+                            foreach (var c in added)
+                                if (!arrayAdds[bagId].Contains(c)) arrayAdds[bagId].Add(c);
+                        }
+                    }
+                }
+
+                // fallback: any stelem.i4 with constant within the bag block (covers non-sequential writes)
+                for (int j = start + 2; j <= end; j++)
+                {
+                    if (instructions[j].OpCode == OpCodes.Stelem_I4 &&
+                        IsAnyConstant(instructions[j - 1]))
+                    {
+                        int val;
+                        if (TryGetConstantInt(instructions[j - 1], out val))
+                        {
+                            if (!arrayAdds.ContainsKey(bagId)) arrayAdds[bagId] = new List<int>();
+                            if (!arrayAdds[bagId].Contains(val)) arrayAdds[bagId].Add(val);
                         }
                     }
                 }
@@ -1159,6 +1222,10 @@ namespace TerrariaPatcher
                     var itemCandidates = ResolvePossibleInts(instructions, j - 2);
                     var stackCandidates = ResolvePossibleInts(instructions, j - 1);
                     if (stackCandidates.Count == 0) stackCandidates.Add(1);
+                    if (stackCandidates.Count > 5) // e.g., large ranges like luminite 90-110
+                    {
+                        stackCandidates = new List<int> { stackCandidates.Max() };
+                    }
 
                     // Fallback for switch-assigned locals (e.g., Moon Lord weapons)
                     if (itemCandidates.Count == 0 && IsLoadLocal(instructions[j - 2]))
@@ -1168,6 +1235,24 @@ namespace TerrariaPatcher
                         {
                             var constants = CollectConstAssignments(instructions, localIdx);
                             foreach (var c in constants) if (!itemCandidates.Contains(c)) itemCandidates.Add(c);
+                        }
+                    }
+
+                    // Detect ldelem from static int[] field (e.g., emblem arrays)
+                    if (itemCandidates.Count == 0 &&
+                        instructions[j - 2].OpCode.Code == Code.Ldelem_I4)
+                    {
+                        for (int back = j - 3; back >= j - 8 && back >= start; back--)
+                        {
+                            if (instructions[back].OpCode == OpCodes.Ldsfld &&
+                                instructions[back].Operand is FieldReference fr &&
+                                fr.FieldType.FullName == "System.Int32[]")
+                            {
+                                if (!arrayFieldRefs.ContainsKey(bagId)) arrayFieldRefs[bagId] = new List<FieldReference>();
+                                if (!arrayFieldRefs[bagId].Any(x => x.FullName == fr.FullName))
+                                    arrayFieldRefs[bagId].Add(fr);
+                                break;
+                            }
                         }
                     }
 
@@ -1194,9 +1279,49 @@ namespace TerrariaPatcher
                             IsAnyConstantOrLocal(instructions[callStart + 2]) && // allow ldloc for Moon Lord weapons
                             IsAnyConstant(instructions[callStart + 3]))
                         {
-                            // special: if these items are from the collected listAdds (e.g., Moon Lord weapons), always remove vanilla call
-                            bool isListedSet = listAdds.TryGetValue(bagId, out var extras) &&
-                                               itemCandidates.All(x => extras.Contains(x));
+                            var segment = new List<Instruction>();
+                            for (int k = callStart; k <= j; k++) segment.Add(instructions[k]);
+                            killSegments.Add(segment);
+                        }
+                    }
+                }
+
+                _currentBagListAdds = null;
+            }
+
+            // Second pass: if vanilla QuickSpawnItem would drop an item we already inject, NOP it to prevent dupes.
+            for (int i = 0; i < instructions.Count - 2; i++)
+            {
+                if (instructions[i].OpCode != OpCodes.Ldarg_1 || instructions[i + 1].OpCode != OpCodes.Ldc_I4)
+                    continue;
+                int bagId;
+                if (!int.TryParse(instructions[i + 1].Operand.ToString(), out bagId)) continue;
+                if (!loot.ContainsKey(bagId)) continue;
+
+                var branch = instructions[i + 2] as Instruction;
+                if (branch == null || !indexMap.ContainsKey(branch)) continue;
+                int start = i + 3;
+                int end = indexMap[branch] - 1;
+                if (end < start) continue;
+
+                for (int j = start; j <= end; j++)
+                {
+                    var instr = instructions[j];
+                    if (instr.OpCode != OpCodes.Call) continue;
+                    var mr = instr.Operand as MethodReference;
+                    if (mr == null || mr.Name != "QuickSpawnItem" || mr.Parameters.Count != 3) continue;
+                    if (j < 2) continue;
+                    var items = ResolvePossibleInts(instructions, j - 2);
+                    if (items.Count == 0 && IsLoadLocal(instructions[j - 2]))
+                    {
+                        int li = GetLocalIndex(instructions[j - 2]);
+                        if (li >= 0) items = CollectConstAssignments(instructions, li);
+                    }
+                    if (items.Any(it => !coinIds.Contains(it) && loot[bagId].Any(x => x.Item == it)))
+                    {
+                        int callStart = j - 4;
+                        if (callStart >= 0)
+                        {
                             var segment = new List<Instruction>();
                             for (int k = callStart; k <= j; k++) segment.Add(instructions[k]);
                             killSegments.Add(segment);
@@ -1211,21 +1336,38 @@ namespace TerrariaPatcher
             helper.Body.InitLocals = true;
             player.Methods.Add(helper);
 
+            // union of all bag ids seen anywhere
+            var allBags = new HashSet<int>(loot.Keys);
+            foreach (var k in listAdds.Keys) allBags.Add(k);
+            foreach (var k in arrayAdds.Keys) allBags.Add(k);
+            foreach (var k in arrayFieldRefs.Keys) allBags.Add(k);
+
             var hIL = helper.Body.GetILProcessor();
-            foreach (var kvp in loot)
+            foreach (var bagId in allBags)
             {
-                if (listAdds.TryGetValue(kvp.Key, out var extras))
+                if (!loot.ContainsKey(bagId))
+                    loot[bagId] = new List<BossBagDrop>();
+
+                if (listAdds.TryGetValue(bagId, out var extras))
                 {
                     foreach (var ex in extras)
-                        if (!kvp.Value.Any(x => x.Item == ex))
-                            kvp.Value.Add(new BossBagDrop { Item = ex, Stack = 1 });
+                        if (!loot[bagId].Any(x => x.Item == ex))
+                            loot[bagId].Add(new BossBagDrop { Item = ex, Stack = 1 });
+                }
+                if (arrayAdds.TryGetValue(bagId, out var aextras))
+                {
+                    foreach (var ex in aextras)
+                        if (!loot[bagId].Any(x => x.Item == ex))
+                            loot[bagId].Add(new BossBagDrop { Item = ex, Stack = 1 });
                 }
 
                 var skip = Instruction.Create(OpCodes.Nop);
                 hIL.Emit(OpCodes.Ldarg_1);
-                hIL.Emit(OpCodes.Ldc_I4, kvp.Key);
+                hIL.Emit(OpCodes.Ldc_I4, bagId);
                 hIL.Emit(OpCodes.Bne_Un, skip);
-                foreach (var drop in kvp.Value)
+
+                // spawn loot list
+                foreach (var drop in loot[bagId])
                 {
                     hIL.Emit(OpCodes.Ldarg_0);
                     hIL.Emit(OpCodes.Ldarg_2);
@@ -1233,6 +1375,50 @@ namespace TerrariaPatcher
                     hIL.Emit(OpCodes.Ldc_I4, drop.Stack);
                     hIL.Emit(OpCodes.Call, quickSpawn);
                 }
+
+                // spawn any int[] static pools
+                if (arrayFieldRefs.TryGetValue(bagId, out var fields))
+                {
+                    foreach (var fr in fields)
+                    {
+                        var arrVar = new VariableDefinition(_mainModule.ImportReference(typeof(int[])));
+                        var idxVar = new VariableDefinition(_mainModule.TypeSystem.Int32);
+                        helper.Body.Variables.Add(arrVar);
+                        helper.Body.Variables.Add(idxVar);
+
+                        var loopStart = Instruction.Create(OpCodes.Ldloc, idxVar);
+                        var loopEnd = Instruction.Create(OpCodes.Nop);
+
+                        hIL.Emit(OpCodes.Ldsfld, fr);
+                        hIL.Emit(OpCodes.Stloc, arrVar);
+                        hIL.Emit(OpCodes.Ldc_I4_0);
+                        hIL.Emit(OpCodes.Stloc, idxVar);
+
+                        hIL.Append(loopStart);
+                        hIL.Emit(OpCodes.Ldloc, idxVar);
+                        hIL.Emit(OpCodes.Ldloc, arrVar);
+                        hIL.Emit(OpCodes.Ldlen);
+                        hIL.Emit(OpCodes.Conv_I4);
+                        hIL.Emit(OpCodes.Bge, loopEnd);
+
+                        hIL.Emit(OpCodes.Ldarg_0);
+                        hIL.Emit(OpCodes.Ldarg_2);
+                        hIL.Emit(OpCodes.Ldloc, arrVar);
+                        hIL.Emit(OpCodes.Ldloc, idxVar);
+                        hIL.Emit(OpCodes.Ldelem_I4);
+                        hIL.Emit(OpCodes.Ldc_I4_1);
+                        hIL.Emit(OpCodes.Call, quickSpawn);
+
+                        hIL.Emit(OpCodes.Ldloc, idxVar);
+                        hIL.Emit(OpCodes.Ldc_I4_1);
+                        hIL.Emit(OpCodes.Add);
+                        hIL.Emit(OpCodes.Stloc, idxVar);
+
+                        hIL.Emit(OpCodes.Br, loopStart);
+                        hIL.Append(loopEnd);
+                    }
+                }
+
                 hIL.Emit(OpCodes.Ldc_I4_1);
                 hIL.Emit(OpCodes.Ret);
                 hIL.Append(skip);
@@ -1267,6 +1453,7 @@ namespace TerrariaPatcher
                     instr.Operand = null;
                 }
             }
+            killSegments.Clear();
         }
 
         private static List<int> ResolvePossibleInts(IList<Instruction> instrs, int index)
@@ -1399,13 +1586,30 @@ namespace TerrariaPatcher
             {
                 if (!IsStoreToLocal(instrs[i], localIndex)) continue;
                 int c;
+                // direct constant
                 if (TryGetConstantInt(instrs[i - 1], out c))
                 {
                     if (!result.Contains(c)) result.Add(c);
                 }
+                // list[int] pattern: ldloc listVar; ldloc idx; callvirt get_Item
+                else if (i >= 3 &&
+                         instrs[i - 1].OpCode.Code == Code.Callvirt &&
+                         (instrs[i - 1].Operand as MethodReference)?.Name == "get_Item" &&
+                         IsLoadLocal(instrs[i - 2]) &&
+                         IsLoadLocal(instrs[i - 3]))
+                {
+                    var listVar = GetLocalIndex(instrs[i - 3]);
+                    if (listVar >= 0 && _currentBagListAdds != null && _currentBagListAdds.TryGetValue(listVar, out var elems))
+                    {
+                        foreach (var e in elems) if (!result.Contains(e)) result.Add(e);
+                    }
+                }
             }
             return result;
         }
+
+        // bag-scoped map of list variable index -> contents (set at traversal)
+        private static Dictionary<int, List<int>> _currentBagListAdds;
 
         private static bool IsStoreToLocal(Instruction instr, int localIndex)
         {
@@ -1421,6 +1625,40 @@ namespace TerrariaPatcher
                     return instr.Operand is VariableDefinition v && v.Index == localIndex;
                 default:
                     return false;
+            }
+        }
+
+        private static bool IsStoreToAnyLocal(Instruction instr)
+        {
+            if (instr == null) return false;
+            switch (instr.OpCode.Code)
+            {
+                case Code.Stloc:
+                case Code.Stloc_S:
+                case Code.Stloc_0:
+                case Code.Stloc_1:
+                case Code.Stloc_2:
+                case Code.Stloc_3:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        private static int GetStoreLocalIndex(Instruction instr)
+        {
+            if (instr == null) return -1;
+            switch (instr.OpCode.Code)
+            {
+                case Code.Stloc_0: return 0;
+                case Code.Stloc_1: return 1;
+                case Code.Stloc_2: return 2;
+                case Code.Stloc_3: return 3;
+                case Code.Stloc:
+                case Code.Stloc_S:
+                    return (instr.Operand as VariableDefinition)?.Index ?? -1;
+                default:
+                    return -1;
             }
         }
 
