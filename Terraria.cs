@@ -1194,6 +1194,9 @@ namespace TerrariaPatcher
                             IsAnyConstantOrLocal(instructions[callStart + 2]) && // allow ldloc for Moon Lord weapons
                             IsAnyConstant(instructions[callStart + 3]))
                         {
+                            // special: if these items are from the collected listAdds (e.g., Moon Lord weapons), always remove vanilla call
+                            bool isListedSet = listAdds.TryGetValue(bagId, out var extras) &&
+                                               itemCandidates.All(x => extras.Contains(x));
                             var segment = new List<Instruction>();
                             for (int k = callStart; k <= j; k++) segment.Add(instructions[k]);
                             killSegments.Add(segment);
