@@ -1103,6 +1103,7 @@ namespace TerrariaPatcher
             var loot = new Dictionary<int, List<BossBagDrop>>();
             var coinIds = new HashSet<int> { 71, 72, 73, 74 }; // copper, silver, gold, platinum coins
             var killSegments = new List<List<Instruction>>();
+            var listAdds = new Dictionary<int, List<int>>(); // bagId -> constants added to List<int> before weapon selection
 
             // Identify bag-specific code regions by branching pattern
             for (int i = 0; i < instructions.Count - 2; i++)
@@ -1121,6 +1122,31 @@ namespace TerrariaPatcher
                 int start = i + 3;
                 int end = indexMap[(Instruction)branch.Operand] - 1;
                 if (end < start) continue;
+
+                // collect List<int> constants (e.g., Moon Lord weapons)
+                for (int j = start; j <= end - 1; j++)
+                {
+                    if (instructions[j].OpCode == OpCodes.Newobj &&
+                        instructions[j].Operand is MethodReference ctor &&
+                        ctor.DeclaringType.FullName.Contains("System.Collections.Generic.List`1<System.Int32>"))
+                    {
+                        var added = new List<int>();
+                        int k = j + 1;
+                        while (k < end - 1 &&
+                               instructions[k].OpCode == OpCodes.Dup &&
+                               instructions[k + 1].OpCode == OpCodes.Ldc_I4)
+                        {
+                            added.Add((int)instructions[k + 1].Operand);
+                            k += 3; // dup, ldc.i4, callvirt Add
+                        }
+                        if (added.Count > 0)
+                        {
+                            if (!listAdds.ContainsKey(bagId)) listAdds[bagId] = new List<int>();
+                            foreach (var c in added)
+                                if (!listAdds[bagId].Contains(c)) listAdds[bagId].Add(c);
+                        }
+                    }
+                }
 
                 for (int j = start; j <= end; j++)
                 {
@@ -1165,7 +1191,7 @@ namespace TerrariaPatcher
                         if (callStart >= 0 &&
                             IsLoadPlayer(instructions[callStart]) &&
                             IsLoadLocal(instructions[callStart + 1]) &&
-                            IsAnyConstant(instructions[callStart + 2]) &&
+                            IsAnyConstantOrLocal(instructions[callStart + 2]) && // allow ldloc for Moon Lord weapons
                             IsAnyConstant(instructions[callStart + 3]))
                         {
                             var segment = new List<Instruction>();
@@ -1185,6 +1211,13 @@ namespace TerrariaPatcher
             var hIL = helper.Body.GetILProcessor();
             foreach (var kvp in loot)
             {
+                if (listAdds.TryGetValue(kvp.Key, out var extras))
+                {
+                    foreach (var ex in extras)
+                        if (!kvp.Value.Any(x => x.Item == ex))
+                            kvp.Value.Add(new BossBagDrop { Item = ex, Stack = 1 });
+                }
+
                 var skip = Instruction.Create(OpCodes.Nop);
                 hIL.Emit(OpCodes.Ldarg_1);
                 hIL.Emit(OpCodes.Ldc_I4, kvp.Key);
@@ -1327,6 +1360,11 @@ namespace TerrariaPatcher
         {
             int _;
             return TryGetConstantInt(instr, out _);
+        }
+
+        private static bool IsAnyConstantOrLocal(Instruction instr)
+        {
+            return IsAnyConstant(instr) || IsLoadLocal(instr);
         }
 
         private static bool IsLoadPlayer(Instruction instr)
