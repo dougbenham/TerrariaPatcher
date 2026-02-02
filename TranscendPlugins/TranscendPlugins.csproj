@@ -58,6 +58,7 @@
     <Compile Include="BuffImmunity.cs" />
     <Compile Include="BuffRates.cs" />
     <Compile Include="CoinGun.cs" />
+    <Compile Include="CreativeCrafting.cs" />
     <Compile Include="Flashlight.cs" />
     <Compile Include="FullBright.cs" />
     <Compile Include="GodMode.cs" />
@@ -80,6 +81,7 @@
     <Compile Include="NPC.cs" />
     <Compile Include="Respawn.cs" />
     <Compile Include="Season.cs" />
+    <Compile Include="SlashCommandPrivacy.cs" />
     <Compile Include="ShopSellsScalingPotions.cs" />
     <Compile Include="FastSplash.cs" />
     <Compile Include="Time.cs" />
