@@ -71,6 +71,8 @@
             this.groupBox6 = new System.Windows.Forms.GroupBox();
             this.spectreHealingRate = new System.Windows.Forms.NumericUpDown();
             this.linkLabel = new System.Windows.Forms.LinkLabel();
+            this.groupBox7 = new System.Windows.Forms.GroupBox();
+            this.treasureBagsDropAll = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.spawnRateVoodoo)).BeginInit();
             this.groupBox2.SuspendLayout();
@@ -129,6 +131,7 @@
             0,
             0});
             this.spawnRateVoodoo.ValueChanged += new System.EventHandler(this.config_Changed);
+            // 
             // 
             // timeEnabled
             // 
@@ -552,6 +555,27 @@
             this.groupBox6.TabStop = false;
             this.groupBox6.Text = "Healing:";
             // 
+            // groupBox7
+            // 
+            this.groupBox7.Controls.Add(this.treasureBagsDropAll);
+            this.groupBox7.Location = new System.Drawing.Point(640, 172);
+            this.groupBox7.Name = "groupBox7";
+            this.groupBox7.Size = new System.Drawing.Size(308, 52);
+            this.groupBox7.TabIndex = 29;
+            this.groupBox7.TabStop = false;
+            this.groupBox7.Text = "Boss Bags:";
+            // 
+            // treasureBagsDropAll
+            // 
+            this.treasureBagsDropAll.AutoSize = true;
+            this.treasureBagsDropAll.Location = new System.Drawing.Point(6, 22);
+            this.treasureBagsDropAll.Name = "treasureBagsDropAll";
+            this.treasureBagsDropAll.Size = new System.Drawing.Size(229, 17);
+            this.treasureBagsDropAll.TabIndex = 0;
+            this.treasureBagsDropAll.Text = "Treasure Bags always drop full loot table";
+            this.treasureBagsDropAll.UseVisualStyleBackColor = true;
+            this.treasureBagsDropAll.CheckedChanged += new System.EventHandler(this.config_Changed);
+            // 
             // spectreHealingRate
             // 
             this.spectreHealingRate.DecimalPlaces = 1;
@@ -588,6 +612,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(956, 436);
+            this.Controls.Add(this.groupBox7);
             this.Controls.Add(this.linkLabel);
             this.Controls.Add(this.save);
             this.Controls.Add(this.groupBox6);
@@ -611,6 +636,8 @@
             this.groupBox6.ResumeLayout(false);
             this.groupBox6.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.spectreHealingRate)).EndInit();
+            this.groupBox7.ResumeLayout(false);
+            this.groupBox7.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -660,6 +687,8 @@
         private System.Windows.Forms.TextBox filterBuffsOut;
         private System.Windows.Forms.CheckBox functionalSocialSlots;
         private System.Windows.Forms.Button allIn;
+        private System.Windows.Forms.GroupBox groupBox7;
+        private System.Windows.Forms.CheckBox treasureBagsDropAll;
     }
 }
 
