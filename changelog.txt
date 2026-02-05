@@ -1,3 +1,7 @@
+v1.3.0.8:	Added CreativeCrafting, SlashCommandPrivacy plugins (credit to @louanfontenele).
+		Added patch to make Treasure Bags drop all (credit to @louanfontenele).
+		Added JourneyEverywhere plugin (credit to @Tildemancer).
+		Improved ItemReplication plugin with shift-click to max stack items (credit to @Tildemancer).
 v1.3.0.7:	Added support for Banner Buff (id 147) to give every banner (credit to @louanfontenele).
 v1.3.0.6:	Updated packages (Newtonsoft.Json, Mono.Cecil).
 v1.3.0.5:	Updated for Terraria v1.4.5.0. Removed DropRates plugin.
