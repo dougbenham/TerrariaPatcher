@@ -15,7 +15,16 @@ namespace RyanPlugins
 		{
             if (!Keys.TryParse(IniAPI.ReadIni("ItemReplication", "ReplicateKey", "R", writeIt: true), out replicateKey))
 				replicateKey = Keys.R;
-		}
+        }
+
+        private static bool SameItemIgnoringStack(Item a, Item b)
+        {
+	        if (a == null || b == null) return false;
+	        if (a.type == 0 || b.type == 0) return false;
+	        if (a.type != b.type) return false;
+	        if (a.prefix != b.prefix) return false;
+	        return true;
+        }
 
         public bool OnItemSlotRightClick(Item[] inv, int context, int slot)
         {
@@ -55,14 +64,7 @@ namespace RyanPlugins
                         Recipe.UpdateRecipeList();
                         SoundEngine.PlaySound(12, -1, -1, 1);
 
-                        if (Main.stackSplit == 0)
-                        {
-                            Main.stackSplit = 15;
-                        }
-                        else
-                        {
-                            Main.stackSplit = Main.stackDelay;
-                        }
+                        Main.stackSplit = Main.stackSplit == 0 ? 15 : Main.stackDelay;
 
                         if (context == 3 && Main.netMode == 1)
                         {
@@ -72,7 +74,7 @@ namespace RyanPlugins
                     return true;
                 }
 
-                if ((!Main.mouseItem.IsNotTheSameAs(invItem) && Main.mouseItem.stack < Main.mouseItem.maxStack) || Main.mouseItem.type == 0)
+                if ((SameItemIgnoringStack(Main.mouseItem, invItem) && Main.mouseItem.stack < Main.mouseItem.maxStack) || Main.mouseItem.type == 0)
                 {
                     if (Main.mouseItem.type == 0)
                     {
