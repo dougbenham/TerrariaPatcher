@@ -67,14 +67,11 @@ namespace TerrariaPatcher
                             var zip = "update.tmp";
                             client.DownloadFile(updateURL, zip);
 
-                            // Rename the currently executing TerrariaPatcher.exe / PluginLoader.XNA.dll / PluginLoader.FNA.dll / Mono.Cecil.dll so that we can update
+                            // Rename the currently executing TerrariaPatcher.exe / PluginLoader.XNA.dll / Mono.Cecil.dll so that we can update
                             var location = Path.Combine(Environment.CurrentDirectory, "TerrariaPatcher.exe");
                             if (File.Exists(location))
                                 File.Move(location, location.Replace("exe", "tmp"));
                             location = Path.Combine(Environment.CurrentDirectory, "PluginLoader.XNA.dll");
-                            if (File.Exists(location))
-                                File.Move(location, location.Replace("dll", "tmp"));
-                            location = Path.Combine(Environment.CurrentDirectory, "PluginLoader.FNA.dll");
                             if (File.Exists(location))
                                 File.Move(location, location.Replace("dll", "tmp"));
                             location = Path.Combine(Environment.CurrentDirectory, "Mono.Cecil.dll");

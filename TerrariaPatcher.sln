@@ -1,13 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29123.88
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36414.22 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TerrariaPatcher", "TerrariaPatcher.csproj", "{80C7B8DD-7764-40BA-911A-EB83216F93DF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TranscendPlugins", "TranscendPlugins\TranscendPlugins.csproj", "{55C89F3A-2F84-4513-8D4C-905B8513C91C}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PluginLoader.FNA", "PluginLoader.FNA\PluginLoader.FNA.csproj", "{EF1E81A7-812F-4EC5-B8BB-4FF5264A3290}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PluginLoader.XNA", "PluginLoader.XNA\PluginLoader.XNA.csproj", "{A2185DCD-C7E8-4578-881C-B797D901A263}"
 EndProject
@@ -28,12 +26,6 @@ Global
 		{55C89F3A-2F84-4513-8D4C-905B8513C91C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{55C89F3A-2F84-4513-8D4C-905B8513C91C}.Release (Public)|Any CPU.ActiveCfg = Release|Any CPU
 		{55C89F3A-2F84-4513-8D4C-905B8513C91C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EF1E81A7-812F-4EC5-B8BB-4FF5264A3290}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EF1E81A7-812F-4EC5-B8BB-4FF5264A3290}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{EF1E81A7-812F-4EC5-B8BB-4FF5264A3290}.Release (Public)|Any CPU.ActiveCfg = Release|Any CPU
-		{EF1E81A7-812F-4EC5-B8BB-4FF5264A3290}.Release (Public)|Any CPU.Build.0 = Release|Any CPU
-		{EF1E81A7-812F-4EC5-B8BB-4FF5264A3290}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EF1E81A7-812F-4EC5-B8BB-4FF5264A3290}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A2185DCD-C7E8-4578-881C-B797D901A263}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A2185DCD-C7E8-4578-881C-B797D901A263}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A2185DCD-C7E8-4578-881C-B797D901A263}.Release (Public)|Any CPU.ActiveCfg = Release|Any CPU
