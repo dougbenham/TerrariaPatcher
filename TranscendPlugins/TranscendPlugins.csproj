@@ -68,6 +68,7 @@
     <Compile Include="InfiniteSundial.cs" />
     <Compile Include="ItemConfig.cs" />
     <Compile Include="ItemPrefix.cs" />
+    <Compile Include="JourneyEverywhere.cs" />
     <Compile Include="LoadoutSwap.cs" />
     <Compile Include="Shared\Extensions\ItemTooltipExtensions.cs" />
     <Compile Include="Turrets.cs" />
