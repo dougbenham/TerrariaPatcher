@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using Terraria;
 using PluginLoader;
@@ -12,6 +12,11 @@ namespace TranscendPlugins
 
         public void OnPlayerSave(PlayerFileData playerFileData, Player player, BinaryWriter binaryWriter)
         {
+            if (justLoadedIn) return;
+
+            if (Main.worldID == 0) return;
+            if (player.position.X == 0f && player.position.Y == 0f) return;
+
             IniAPI.WriteIni("SavePosition", Main.worldID + "," + player.name, player.position.ToString());
         }
 
@@ -19,7 +24,7 @@ namespace TranscendPlugins
         {
             justLoadedIn = true;
         }
-        
+		
         public void OnPlayerSpawn(Player player)
         {
             if (player.whoAmI != Main.myPlayer || !justLoadedIn) return;
