@@ -1,3 +1,4 @@
+v1.3.0.10:	Fixed SavePosition plugin.
 v1.3.0.9:	Fixed JourneyEverywhere plugin.
 v1.3.0.8:	Added CreativeCrafting, SlashCommandPrivacy plugins (credit to @louanfontenele).
 		Added patch to make Treasure Bags drop all (credit to @louanfontenele).
