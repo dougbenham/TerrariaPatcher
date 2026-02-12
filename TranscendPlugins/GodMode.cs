@@ -7,7 +7,7 @@ using Terraria.DataStructures;
 
 namespace ZeromaruPlugins
 {
-    public class GodMode : MarshalByRefObject, IPluginUpdate, IPluginPlayerHurt, IPluginPlayerKillMe
+    public class GodMode : MarshalByRefObject, IPluginUpdate, IPluginPlayerHurt, IPluginPlayerKillMe, IPluginChatCommand
     {
         enum Mode
         {
@@ -69,6 +69,58 @@ namespace ZeromaruPlugins
         public bool OnPlayerKillMe(Player player, PlayerDeathReason damageSource, double dmg, int hitDirection, bool pvp)
         {
             return mode == Mode.God || mode == Mode.DemiGod;
+        }
+
+        public bool OnChatCommand(string command, string[] args)
+        {
+            if (command != "godmode") return false;
+
+            if (args.Length == 0)
+            {
+                CycleUp();
+                return true;
+            }
+
+            switch (args[0].ToLower())
+            {
+                case "off":
+                    mode = Mode.Off;
+                    break;
+                case "demi":
+                case "semigod":
+                case "semigodmode":
+                    mode = Mode.DemiGod;
+                    break;
+                case "god":
+                    mode = Mode.God;
+                    break;
+                case "status":
+                    Announce();
+                    return true;
+                case "help":
+                    Main.NewText("Usage: /godmode [off|demi|god|status]");
+                    return true;
+                default:
+                    Main.NewText("Usage: /godmode [off|demi|god|status]");
+                    return true;
+            }
+
+            Announce();
+            return true;
+        }
+
+        private void CycleUp()
+        {
+            if (mode == Mode.God) mode = Mode.Off;
+            else mode++;
+            Announce();
+        }
+
+        private void Announce()
+        {
+            Color green = Color.Green;
+            IniAPI.WriteIni("GodMode", "Mode", mode.ToString());
+            Main.NewText("God Mode: " + mode, green.R, green.G, green.B);
         }
     }
 }

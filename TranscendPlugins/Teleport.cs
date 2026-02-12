@@ -11,14 +11,22 @@ namespace TranscendPlugins
     {
         private int planteraBulbTileLookup, plant1Lookup, plant2Lookup, plant3Lookup, plant4Lookup;
         private Keys teleportKey;
+        private bool hotkeyEnabled;
+        private bool fullscreenMapEnabled;
 
         public Teleport()
         {
+            if (!bool.TryParse(IniAPI.ReadIni("Teleport", "HotkeyEnabled", "true", writeIt: true), out hotkeyEnabled))
+                hotkeyEnabled = true;
+            if (!bool.TryParse(IniAPI.ReadIni("Teleport", "FullscreenMapEnabled", "true", writeIt: true), out fullscreenMapEnabled))
+                fullscreenMapEnabled = true;
+
             if (!Keys.TryParse(IniAPI.ReadIni("Teleport", "TeleportKey", "F", writeIt: true), out teleportKey))
                 teleportKey = Keys.F;
 
             Loader.RegisterHotkey(() =>
             {
+                if (!hotkeyEnabled) return;
                 var player = Main.player[Main.myPlayer];
                 var vector = new Vector2(Main.mouseX + Main.screenPosition.X, Main.mouseY + Main.screenPosition.Y);
                 player.Teleport(vector, 1, 0);
@@ -38,6 +46,8 @@ namespace TranscendPlugins
 
         public void OnUpdate()
         {
+            if (!fullscreenMapEnabled) return;
+
             if (Main.mapFullscreen && Main.mouseRight && Main.keyState.IsKeyUp(Keys.LeftControl))
             {
                 int num = Main.maxTilesX * 16;
@@ -85,6 +95,9 @@ namespace TranscendPlugins
                 Main.NewText("Usage:");
                 Main.NewText("  /teleport plantera");
                 Main.NewText("  /teleport strangeplant");
+                Main.NewText("  /teleport cursor");
+                Main.NewText("  /teleport togglehotkey");
+                Main.NewText("  /teleport togglemap");
             };
 
             if (args.Length < 1 || args.Length > 1 || args[0] == "help")
@@ -133,10 +146,32 @@ namespace TranscendPlugins
                         }
                     }
                     return true;
+                case "cursor":
+                    TeleportToCursor();
+                    return true;
+                case "togglehotkey":
+                    hotkeyEnabled = !hotkeyEnabled;
+                    IniAPI.WriteIni("Teleport", "HotkeyEnabled", hotkeyEnabled.ToString());
+                    Main.NewText("Teleport hotkey " + (hotkeyEnabled ? "enabled" : "disabled") + (hotkeyEnabled ? "." : " (F to toggle when enabled)"));
+                    return true;
+                case "togglemap":
+                    fullscreenMapEnabled = !fullscreenMapEnabled;
+                    IniAPI.WriteIni("Teleport", "FullscreenMapEnabled", fullscreenMapEnabled.ToString());
+                    Main.NewText("Fullscreen map teleport " + (fullscreenMapEnabled ? "enabled" : "disabled") + ".");
+                    return true;
                 default:
                     usage();
                     return true;
             }
+        }
+
+        private void TeleportToCursor()
+        {
+            var player = Main.player[Main.myPlayer];
+            var vector = new Vector2(Main.mouseX + Main.screenPosition.X, Main.mouseY + Main.screenPosition.Y);
+            player.Teleport(vector, 1, 0);
+            player.velocity = Vector2.Zero;
+            NetMessage.SendData(65, -1, -1, null, 0, player.whoAmI, vector.X, vector.Y, 1, 0, 0);
         }
     }
 }

@@ -33,7 +33,7 @@ namespace TranscendPlugins
 
             if (!Main.mapFullscreen || Main.Map == null)
             {
-                Main.NewText("Abra o mapa e use /reveal para revelar tudo.", 0, 200, 255);
+                Main.NewText("Open the map and use /reveal to uncover everything.", 0, 200, 255);
                 return true;
             }
 
