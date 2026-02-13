@@ -171,6 +171,7 @@ namespace TerrariaPatcher
                 infiniteCloudJumps.Checked = bool.Parse(IniAPI.ReadIni("General", "InfiniteCloudJumps", "false", 255, ConfigPath));
                 functionalSocialSlots.Checked = bool.Parse(IniAPI.ReadIni("General", "FunctionalSocialSlots", "true", 255, ConfigPath));
                 maxCraftingRange.Checked = bool.Parse(IniAPI.ReadIni("General", "MaxCraftingRange", "true", 255, ConfigPath));
+                pylonEverywhere.Checked = bool.Parse(IniAPI.ReadIni("General", "PylonEverywhere", "true", 255, ConfigPath));
 #if !PUBLIC
                 steamFixEnabled.Checked = bool.Parse(IniAPI.ReadIni("General", "SteamFixEnabled", "true", 255, ConfigPath));
 #else
@@ -211,6 +212,7 @@ namespace TerrariaPatcher
             IniAPI.WriteIni("General", "InfiniteCloudJumps", infiniteCloudJumps.Checked.ToString(), ConfigPath);
             IniAPI.WriteIni("General", "FunctionalSocialSlots", functionalSocialSlots.Checked.ToString(), ConfigPath);
             IniAPI.WriteIni("General", "MaxCraftingRange", maxCraftingRange.Checked.ToString(), ConfigPath);
+            IniAPI.WriteIni("General", "PylonEverywhere", pylonEverywhere.Checked.ToString(), ConfigPath);
             IniAPI.WriteIni("General", "SteamFixEnabled", steamFixEnabled.Checked.ToString(), ConfigPath);
             IniAPI.WriteIni("General", "Plugins", plugins.Checked.ToString(), ConfigPath);
 
@@ -402,6 +404,7 @@ namespace TerrariaPatcher
                     RemovePotionSickness = removePotionSickness.Checked,
                     RemoveAnglerQuestLimit = removeAnglerQuestLimit.Checked,
                     MaxCraftingRange = maxCraftingRange.Checked,
+                    PylonEverywhere = pylonEverywhere.Checked,
                     SpawnRateVoodoo = (int)spawnRateVoodoo.Value,
                     BossBagsDropAllLoot = treasureBagsDropAll.Checked,
                     SteamFix = steamFixEnabled.Enabled && steamFixEnabled.Checked,

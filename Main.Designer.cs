@@ -39,6 +39,7 @@
             this.functionalSocialSlots = new System.Windows.Forms.CheckBox();
             this.plugins = new System.Windows.Forms.CheckBox();
             this.maxCraftingRange = new System.Windows.Forms.CheckBox();
+            this.pylonEverywhere = new System.Windows.Forms.CheckBox();
             this.infiniteCloudJumps = new System.Windows.Forms.CheckBox();
             this.infiniteAmmo = new System.Windows.Forms.CheckBox();
             this.oneHitKill = new System.Windows.Forms.CheckBox();
@@ -163,6 +164,7 @@
             // 
             this.groupBox2.Controls.Add(this.functionalSocialSlots);
             this.groupBox2.Controls.Add(this.plugins);
+            this.groupBox2.Controls.Add(this.pylonEverywhere);
             this.groupBox2.Controls.Add(this.maxCraftingRange);
             this.groupBox2.Controls.Add(this.infiniteCloudJumps);
             this.groupBox2.Controls.Add(this.infiniteAmmo);
@@ -177,7 +179,7 @@
             this.groupBox2.Controls.Add(this.steamFixEnabled);
             this.groupBox2.Location = new System.Drawing.Point(12, 63);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(308, 361);
+            this.groupBox2.Size = new System.Drawing.Size(308, 384);
             this.groupBox2.TabIndex = 5;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "General:";
@@ -200,7 +202,7 @@
             this.plugins.AutoSize = true;
             this.plugins.Checked = true;
             this.plugins.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.plugins.Location = new System.Drawing.Point(6, 340);
+            this.plugins.Location = new System.Drawing.Point(6, 363);
             this.plugins.Name = "plugins";
             this.plugins.Size = new System.Drawing.Size(215, 17);
             this.plugins.TabIndex = 32;
@@ -220,6 +222,19 @@
             this.maxCraftingRange.Text = "Max Crafting Range";
             this.maxCraftingRange.UseVisualStyleBackColor = true;
             this.maxCraftingRange.CheckedChanged += new System.EventHandler(this.config_Changed);
+            // 
+            // pylonEverywhere
+            // 
+            this.pylonEverywhere.AutoSize = true;
+            this.pylonEverywhere.Checked = true;
+            this.pylonEverywhere.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.pylonEverywhere.Location = new System.Drawing.Point(6, 317);
+            this.pylonEverywhere.Name = "pylonEverywhere";
+            this.pylonEverywhere.Size = new System.Drawing.Size(210, 17);
+            this.pylonEverywhere.TabIndex = 34;
+            this.pylonEverywhere.Text = "Pylon Everywhere (No Restrictions)";
+            this.pylonEverywhere.UseVisualStyleBackColor = true;
+            this.pylonEverywhere.CheckedChanged += new System.EventHandler(this.config_Changed);
             // 
             // infiniteCloudJumps
             // 
@@ -611,7 +626,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(956, 436);
+            this.ClientSize = new System.Drawing.Size(956, 470);
             this.Controls.Add(this.groupBox7);
             this.Controls.Add(this.linkLabel);
             this.Controls.Add(this.save);
@@ -681,6 +696,7 @@
         private System.Windows.Forms.GroupBox groupBox6;
         private System.Windows.Forms.NumericUpDown spectreHealingRate;
         private System.Windows.Forms.CheckBox maxCraftingRange;
+        private System.Windows.Forms.CheckBox pylonEverywhere;
         private System.Windows.Forms.CheckBox plugins;
         private System.Windows.Forms.LinkLabel linkLabel;
         private System.Windows.Forms.TextBox filterBuffsIn;
