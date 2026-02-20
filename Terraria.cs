@@ -382,12 +382,36 @@ namespace TerrariaPatcher
         private static void RemoveManaCost()
         {
             var player = IL.GetTypeDefinition(_mainModule, "Player");
-            var skipManaUse = IL.GetMethodDefinition(player, "ItemCheck_PayMana_ShouldSkipManaUse");
-            
-            skipManaUse.Body.ExceptionHandlers.Clear();
-            skipManaUse.Body.Instructions.Clear();
-            skipManaUse.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_I4_1));
-            skipManaUse.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
+
+            // Try new method names first (Terraria v1.4.5+)
+            var checkMana = IL.GetMethodDefinition(player, "CheckMana", 3, verbose: false);
+            var actuallyPayMana = IL.GetMethodDefinition(player, "ItemCheck_ActuallyPayMana", 1, verbose: false);
+
+            if (checkMana != null && actuallyPayMana != null)
+            {
+                // Terraria v1.4.5+: Patch CheckMana to always return true without consuming mana.
+                // CheckMana(Item, int, bool pay) is called for all items including channeling.
+                checkMana.Body.ExceptionHandlers.Clear();
+                checkMana.Body.Instructions.Clear();
+                checkMana.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_I4_1));
+                checkMana.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
+
+                // Patch ItemCheck_ActuallyPayMana to return true without deducting.
+                // This is the method that actually subtracts statMana for channeling items.
+                actuallyPayMana.Body.ExceptionHandlers.Clear();
+                actuallyPayMana.Body.Instructions.Clear();
+                actuallyPayMana.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_I4_1));
+                actuallyPayMana.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
+            }
+            else
+            {
+                // Older Terraria (pre-1.4.5): Patch ItemCheck_PayMana_ShouldSkipManaUse
+                var skipManaUse = IL.GetMethodDefinition(player, "ItemCheck_PayMana_ShouldSkipManaUse");
+                skipManaUse.Body.ExceptionHandlers.Clear();
+                skipManaUse.Body.Instructions.Clear();
+                skipManaUse.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_I4_1));
+                skipManaUse.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
+            }
         }
 
         private static void RemoveDiscordBuff()
