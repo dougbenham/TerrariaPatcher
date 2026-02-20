@@ -6,10 +6,19 @@ using Terraria.ID;
 
 namespace TranscendPlugins
 {
-    public class HomingBullets : MarshalByRefObject, IPluginProjectileAI
+    public class HomingBullets : MarshalByRefObject, IPluginProjectileAI, IPluginChatCommand
     {
+        private bool enabled;
+
+        public HomingBullets()
+        {
+            if (!bool.TryParse(IniAPI.ReadIni("HomingBullets", "Enabled", "true", writeIt: true), out enabled))
+                enabled = true;
+        }
+
         public void OnProjectileAI001(Projectile pProjectile)
         {
+            if (!enabled) return;
             if (pProjectile.owner != Main.myPlayer) return;
             if (pProjectile.type == ProjectileID.LunarFlare) return;
             if (pProjectile.type == ProjectileID.NebulaBlaze1) return;
@@ -109,6 +118,36 @@ namespace TranscendPlugins
                 pProjectile.velocity.X = (pProjectile.velocity.X * (float)(num156 - 1) + num153) / (float)num156;
                 pProjectile.velocity.Y = (pProjectile.velocity.Y * (float)(num156 - 1) + num154) / (float)num156;
             }
+        }
+
+        public bool OnChatCommand(string command, string[] args)
+        {
+            if (command != "homing") return false;
+
+            string arg = args.Length > 0 ? args[0].ToLower() : "toggle";
+            switch (arg)
+            {
+                case "on":
+                    enabled = true;
+                    break;
+                case "off":
+                    enabled = false;
+                    break;
+                case "toggle":
+                case "":
+                    enabled = !enabled;
+                    break;
+                case "help":
+                    Main.NewText("Usage: /homing [on|off|toggle]");
+                    return true;
+                default:
+                    Main.NewText("Usage: /homing [on|off|toggle]");
+                    return true;
+            }
+
+            IniAPI.WriteIni("HomingBullets", "Enabled", enabled.ToString());
+            Main.NewText("Homing bullets " + (enabled ? "enabled" : "disabled") + ".");
+            return true;
         }
     }
 }

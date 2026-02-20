@@ -8,7 +8,7 @@ using Keys = Microsoft.Xna.Framework.Input.Keys;
 
 namespace TranscendPlugins
 {
-    public class Events : MarshalByRefObject, IPlugin
+    public class Events : MarshalByRefObject, IPlugin, IPluginChatCommand
     {
         private Keys bloodMoon, goblin, meteor, frost, pirates, martians, pumpkinMoon, frostMoon, lunarApocalypse, eclipse, moonLord;
         private MethodInfo triggerLunarApocalypse;
@@ -196,6 +196,137 @@ namespace TranscendPlugins
                     }
                 }
             }
+        }
+
+        public bool OnChatCommand(string command, string[] args)
+        {
+            if (command != "event" && command != "events") return false;
+
+            Action usage = () =>
+            {
+                Main.NewText("Usage:");
+                Main.NewText("  /event goblin|frostlegion|pirates|martians");
+                Main.NewText("  /event pumpkin|frostmoon|bloodmoon|eclipse|meteor");
+                Main.NewText("  /event lunar|moonlord|stoplunar");
+            };
+
+            if (args.Length == 0 || args[0] == "help")
+            {
+                usage();
+                return true;
+            }
+
+            switch (args[0].ToLower())
+            {
+                case "goblin":
+                    ToggleInvasion(1, "Goblin Army");
+                    return true;
+                case "frostlegion":
+                    ToggleInvasion(2, "Frost Legion");
+                    return true;
+                case "pirates":
+                    ToggleInvasion(3, "Pirate Invasion");
+                    return true;
+                case "martians":
+                    ToggleInvasion(4, "Martian Madness");
+                    return true;
+                case "pumpkin":
+                    TogglePumpkinMoon();
+                    return true;
+                case "frostmoon":
+                    ToggleFrostMoon();
+                    return true;
+                case "bloodmoon":
+                    ToggleBloodMoon();
+                    return true;
+                case "eclipse":
+                    ToggleEclipse();
+                    return true;
+                case "meteor":
+                    ForceMeteor();
+                    return true;
+                case "lunar":
+                    ToggleLunarApocalypse();
+                    return true;
+                case "moonlord":
+                    ToggleMoonLord();
+                    return true;
+                case "stoplunar":
+                    StopLunarEvent();
+                    return true;
+                default:
+                    usage();
+                    return true;
+            }
+        }
+
+        private void ToggleInvasion(int invasionId, string label)
+        {
+            if (Main.invasionType > 0)
+            {
+                Main.invasionSize = 0;
+                Main.NewText(label + " stopped.");
+            }
+            else
+            {
+                Main.StartInvasion(invasionId);
+                Main.NewText(label + " started.");
+            }
+        }
+
+        private void TogglePumpkinMoon()
+        {
+            if (Main.pumpkinMoon)
+                Main.stopMoonEvent();
+            else
+                Main.startPumpkinMoon();
+        }
+
+        private void ToggleFrostMoon()
+        {
+            if (Main.snowMoon)
+                Main.stopMoonEvent();
+            else
+                Main.startSnowMoon();
+        }
+
+        private void ToggleLunarApocalypse()
+        {
+            if (Terraria.NPC.LunarApocalypseIsUp || Terraria.NPC.AnyNPCs(398))
+                StopLunarEvent();
+            else
+                TriggerLunarApocalypse();
+        }
+
+        private void ToggleMoonLord()
+        {
+            if (Terraria.NPC.LunarApocalypseIsUp || Terraria.NPC.AnyNPCs(398))
+                StopLunarEvent();
+            else
+                SpawnMoonLord();
+        }
+
+        private void ToggleBloodMoon()
+        {
+            if (Main.bloodMoon)
+                Main.bloodMoon = false;
+            else
+                TriggerBloodMoon();
+        }
+
+        private void ToggleEclipse()
+        {
+            if (Main.eclipse)
+                Main.eclipse = false;
+            else
+                TriggerEclipse();
+        }
+
+        private void ForceMeteor()
+        {
+            SpawnMeteor = false;
+            DropMeteor();
+            Main.NewText("Meteor forced.");
         }
     }
 }

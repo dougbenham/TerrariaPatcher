@@ -24,6 +24,7 @@ namespace TerrariaPatcher
         public bool InfiniteCloudJumps = false;
         public bool FunctionalSocialSlots = false;
         public bool MaxCraftingRange = false;
+        public bool PylonEverywhere = false;
         public float VampiricHealing = 7.5f;
         public float SpectreHealing = 20f;
         public int Thorns = 33;
@@ -91,6 +92,8 @@ namespace TerrariaPatcher
                     OneHitKill();
                 if (details.RemoveAnglerQuestLimit)
                     RemoveAnglerQuestLimit();
+                if (details.PylonEverywhere)
+                    PylonEverywhere();
                 if (details.Plugins)
                     Plugins();
                 if (Math.Abs(details.VampiricHealing - 7.5f) > 0.01)
@@ -379,12 +382,36 @@ namespace TerrariaPatcher
         private static void RemoveManaCost()
         {
             var player = IL.GetTypeDefinition(_mainModule, "Player");
-            var skipManaUse = IL.GetMethodDefinition(player, "ItemCheck_PayMana_ShouldSkipManaUse");
-            
-            skipManaUse.Body.ExceptionHandlers.Clear();
-            skipManaUse.Body.Instructions.Clear();
-            skipManaUse.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_I4_1));
-            skipManaUse.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
+
+            // Try new method names first (Terraria v1.4.5+)
+            var checkMana = IL.GetMethodDefinition(player, "CheckMana", 3, verbose: false);
+            var actuallyPayMana = IL.GetMethodDefinition(player, "ItemCheck_ActuallyPayMana", 1, verbose: false);
+
+            if (checkMana != null && actuallyPayMana != null)
+            {
+                // Terraria v1.4.5+: Patch CheckMana to always return true without consuming mana.
+                // CheckMana(Item, int, bool pay) is called for all items including channeling.
+                checkMana.Body.ExceptionHandlers.Clear();
+                checkMana.Body.Instructions.Clear();
+                checkMana.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_I4_1));
+                checkMana.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
+
+                // Patch ItemCheck_ActuallyPayMana to return true without deducting.
+                // This is the method that actually subtracts statMana for channeling items.
+                actuallyPayMana.Body.ExceptionHandlers.Clear();
+                actuallyPayMana.Body.Instructions.Clear();
+                actuallyPayMana.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_I4_1));
+                actuallyPayMana.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
+            }
+            else
+            {
+                // Older Terraria (pre-1.4.5): Patch ItemCheck_PayMana_ShouldSkipManaUse
+                var skipManaUse = IL.GetMethodDefinition(player, "ItemCheck_PayMana_ShouldSkipManaUse");
+                skipManaUse.Body.ExceptionHandlers.Clear();
+                skipManaUse.Body.Instructions.Clear();
+                skipManaUse.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_I4_1));
+                skipManaUse.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
+            }
         }
 
         private static void RemoveDiscordBuff()
@@ -493,6 +520,89 @@ namespace TerrariaPatcher
             il.Emit(OpCodes.Ret);
         }
         
+        /// <summary>
+        /// Removes all pylon teleportation restrictions:
+        /// - Player is always considered "near" a pylon (IsPlayerNearAPylon → true)
+        /// - No longer requires 2 NPCs near pylons (DoesPylonHaveEnoughNPCsAroundIt → true)
+        /// - No longer requires correct biome (DoesPylonAcceptTeleportation → true)
+        /// - Source pylon proximity check bypassed (InTileEntityInteractionRange ignored)
+        /// Patches TeleportPylonsSystem to bypass all checks.
+        /// </summary>
+        private static void PylonEverywhere()
+        {
+            var pylonSystem = IL.GetTypeDefinition(_mainModule, "TeleportPylonsSystem");
+            if (pylonSystem == null) return;
+
+            // Patch IsPlayerNearAPylon to always return true
+            // This bypasses the first proximity check in HandleTeleportRequest
+            var isNearPylon = IL.GetMethodDefinition(pylonSystem, "IsPlayerNearAPylon");
+            if (isNearPylon != null)
+            {
+                isNearPylon.Body.ExceptionHandlers.Clear();
+                isNearPylon.Body.Instructions.Clear();
+                var il0 = isNearPylon.Body.GetILProcessor();
+                il0.Emit(OpCodes.Ldc_I4_1);
+                il0.Emit(OpCodes.Ret);
+            }
+
+            // Patch DoesPylonHaveEnoughNPCsAroundIt to always return true
+            // This removes the "2 NPCs required" restriction for both source and destination pylons
+            var doesHaveNPCs = IL.GetMethodDefinition(pylonSystem, "DoesPylonHaveEnoughNPCsAroundIt");
+            if (doesHaveNPCs != null)
+            {
+                doesHaveNPCs.Body.ExceptionHandlers.Clear();
+                doesHaveNPCs.Body.Instructions.Clear();
+                var il1 = doesHaveNPCs.Body.GetILProcessor();
+                il1.Emit(OpCodes.Ldc_I4_1);
+                il1.Emit(OpCodes.Ret);
+            }
+
+            // Patch DoesPylonAcceptTeleportation to always return true
+            // This removes the biome check restriction for both source and destination pylons
+            var doesAccept = IL.GetMethodDefinition(pylonSystem, "DoesPylonAcceptTeleportation");
+            if (doesAccept != null)
+            {
+                doesAccept.Body.ExceptionHandlers.Clear();
+                doesAccept.Body.Instructions.Clear();
+                var il2 = doesAccept.Body.GetILProcessor();
+                il2.Emit(OpCodes.Ldc_I4_1);
+                il2.Emit(OpCodes.Ret);
+            }
+
+            // Patch HandleTeleportRequest to bypass the source pylon proximity loop
+            // HandleTeleportRequest has a second proximity check: it loops through all placed pylons
+            // and calls Player.InTileEntityInteractionRange() for each one. If the player isn't
+            // physically near ANY pylon, the teleport fails even if IsPlayerNearAPylon was patched.
+            // We find that brfalse after InTileEntityInteractionRange and replace it with pop
+            // so the range check result is consumed but never branches to "skip".
+            var handleRequest = IL.GetMethodDefinition(pylonSystem, "HandleTeleportRequest");
+            if (handleRequest != null)
+            {
+                for (int i = 0; i < handleRequest.Body.Instructions.Count; i++)
+                {
+                    var instr = handleRequest.Body.Instructions[i];
+                    if (instr.OpCode == OpCodes.Callvirt)
+                    {
+                        var methodRef = instr.Operand as MethodReference;
+                        if (methodRef != null && methodRef.Name == "InTileEntityInteractionRange")
+                        {
+                            // The next instruction should be brfalse/brfalse.s - replace with pop
+                            if (i + 1 < handleRequest.Body.Instructions.Count)
+                            {
+                                var branch = handleRequest.Body.Instructions[i + 1];
+                                if (branch.OpCode == OpCodes.Brfalse || branch.OpCode == OpCodes.Brfalse_S)
+                                {
+                                    branch.OpCode = OpCodes.Pop;
+                                    branch.Operand = null;
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
         private static void RecipeRange()
         {
 	        var tileReachCheckSettings = IL.GetTypeDefinition(_mainModule, "TileReachCheckSettings");
