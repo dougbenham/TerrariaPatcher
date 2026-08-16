@@ -29,10 +29,7 @@ namespace PluginLoader
 
         private static readonly Dictionary<Type, Array> dispatchCache = new Dictionary<Type, Array>();
 
-        public static readonly string DataFolder = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "TerrariaPatcher");
-
-        private static string LogPath => Path.Combine(DataFolder, "PluginLoader.log");
+        private static string LogPath => Path.Combine(".", "PluginLoader.log");
 
         #endregion
 
@@ -42,7 +39,6 @@ namespace PluginLoader
         {
             try
             {
-                Directory.CreateDirectory(DataFolder);
                 File.AppendAllText(LogPath, DateTime.Now.ToString("s") + " " + message + Environment.NewLine);
             }
             catch
@@ -303,8 +299,7 @@ namespace PluginLoader
                 var resourceName = assembly.GetManifestResourceNames().FirstOrDefault(s => s.Contains(dllName));
                 if (resourceName == null) throw new Exception(error);
 
-                Directory.CreateDirectory(DataFolder);
-                var path = Path.Combine(DataFolder, dllName);
+                var path = Path.Combine(".", dllName);
                 if (!File.Exists(path) || forceExtract)
                 {
                     using (var stream = assembly.GetManifestResourceStream(resourceName))
