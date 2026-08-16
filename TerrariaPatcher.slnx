@@ -1,0 +1,14 @@
+<Solution>
+  <Configurations>
+    <BuildType Name="Debug" />
+    <BuildType Name="Release" />
+    <BuildType Name="Release (Public)" />
+  </Configurations>
+  <Project Path="PluginLoader.XNA/PluginLoader.XNA.csproj">
+    <BuildType Solution="Release (Public)|*" Project="Release" />
+  </Project>
+  <Project Path="TranscendPlugins/TranscendPlugins.csproj">
+    <BuildType Solution="Release (Public)|*" Project="Release" />
+  </Project>
+  <Project Path="TerrariaPatcher/TerrariaPatcher.csproj" />
+</Solution>
