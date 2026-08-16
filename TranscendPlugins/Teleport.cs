@@ -9,8 +9,12 @@ namespace TranscendPlugins
 {
     public class Teleport : MarshalByRefObject, IPluginInitialize, IPluginUpdate, IPluginChatCommand
     {
+        private const int NoSearch = 0, PlanteraSearch = 1, StrangePlantSearch = 2;
+        private const int CellsPerFrame = 200000;
+
         private int planteraBulbTileLookup, plant1Lookup, plant2Lookup, plant3Lookup, plant4Lookup;
         private Keys teleportKey;
+        private int searchMode, searchX;
 
         public Teleport()
         {
@@ -38,6 +42,8 @@ namespace TranscendPlugins
 
         public void OnUpdate()
         {
+            StepSearch();
+
             if (Main.mapFullscreen && Main.mouseRight && Main.keyState.IsKeyUp(Keys.LeftControl))
             {
                 int num = Main.maxTilesX * 16;
@@ -96,47 +102,65 @@ namespace TranscendPlugins
             switch (args[0])
             {
                 case "plantera":
-                    for (int i = 0; i < Main.Map.MaxWidth; i++)
-                    {
-                        for (int j = 0; j < Main.Map.MaxHeight; j++)
-                        {
-                            if (Main.Map[i, j].Type == planteraBulbTileLookup)
-                            {
-                                Player player = Main.player[Main.myPlayer];
-                                player.position = new Vector2(i * 16, j * 16);
-                                player.velocity = Vector2.Zero;
-                                player.fallStart = (int)(player.position.Y / 16f);
-                                NetMessage.SendData(13, -1, -1, null, Main.myPlayer, 0f, 0f, 0f, 0, 0, 0);
-                                return true;
-                            }
-                        }
-                    }
+                    BeginSearch(PlanteraSearch);
                     return true;
                 case "strangeplant":
-                    for (int i = 0; i < Main.Map.MaxWidth; i++)
-                    {
-                        for (int j = 0; j < Main.Map.MaxHeight; j++)
-                        {
-                            var type = Main.Map[i, j].Type;
-                            if (type == plant1Lookup ||
-                                type == plant2Lookup ||
-                                type == plant3Lookup ||
-                                type == plant4Lookup)
-                            {
-                                Player player = Main.player[Main.myPlayer];
-                                player.position = new Vector2(i * 16, j * 16);
-                                player.velocity = Vector2.Zero;
-                                player.fallStart = (int)(player.position.Y / 16f);
-                                NetMessage.SendData(13, -1, -1, null, Main.myPlayer, 0f, 0f, 0f, 0, 0, 0);
-                                return true;
-                            }
-                        }
-                    }
+                    BeginSearch(StrangePlantSearch);
                     return true;
                 default:
                     usage();
                     return true;
             }
+        }
+
+        private void BeginSearch(int mode)
+        {
+            searchMode = mode;
+            searchX = 0;
+            Main.NewText("Searching the map...");
+        }
+
+        private void StepSearch()
+        {
+            if (searchMode == NoSearch) return;
+
+            int width = Main.Map.MaxWidth;
+            int height = Main.Map.MaxHeight;
+            int columns = Math.Max(1, CellsPerFrame / Math.Max(1, height));
+            int limit = Math.Min(width, searchX + columns);
+
+            for (; searchX < limit; searchX++)
+            {
+                for (int j = 0; j < height; j++)
+                {
+                    if (!IsSearchMatch(Main.Map[searchX, j].Type)) continue;
+
+                    Player player = Main.player[Main.myPlayer];
+                    player.position = new Vector2(searchX * 16, j * 16);
+                    player.velocity = Vector2.Zero;
+                    player.fallStart = (int)(player.position.Y / 16f);
+                    NetMessage.SendData(13, -1, -1, null, Main.myPlayer, 0f, 0f, 0f, 0, 0, 0);
+                    searchMode = NoSearch;
+                    return;
+                }
+            }
+
+            if (searchX >= width)
+            {
+                Main.NewText("Nothing found on the explored map.");
+                searchMode = NoSearch;
+            }
+        }
+
+        private bool IsSearchMatch(int type)
+        {
+            if (searchMode == PlanteraSearch)
+                return type == planteraBulbTileLookup;
+
+            return type == plant1Lookup ||
+                   type == plant2Lookup ||
+                   type == plant3Lookup ||
+                   type == plant4Lookup;
         }
     }
 }
