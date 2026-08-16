@@ -46,67 +46,7 @@ namespace TerrariaPatcher
             this.Icon = Icon.ExtractAssociatedIcon(asm.Location);
             this.Text = asmName.Name + " v" + asmName.Version;
 
-            new Thread(() =>
-            {
-                try
-                {
-                    // Delete leftover update files
-                    foreach (var tmp in Directory.GetFiles(Environment.CurrentDirectory, "*.tmp"))
-                        File.Delete(tmp);
-
-                    ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-                    var client = new WebClient();
-                    client.CachePolicy = new RequestCachePolicy(RequestCacheLevel.NoCacheNoStore);
-                    var str = client.DownloadString(changelogURL + "?random=" + new Random().Next());
-                    var version = str.Substring(1, str.IndexOf(':') - 1);
-                    if (version != asmName.Version.ToString())
-                    {
-                        if (MessageBox.Show(version + " is available. Would you like to automatically update?", Program.AssemblyName, MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation) == DialogResult.Yes)
-                        {
-                            // Download the update
-                            var zip = "update.tmp";
-                            client.DownloadFile(updateURL, zip);
-
-                            // Rename the currently executing TerrariaPatcher.exe / PluginLoader.XNA.dll / Mono.Cecil.dll so that we can update
-                            var location = Path.Combine(Environment.CurrentDirectory, "TerrariaPatcher.exe");
-                            if (File.Exists(location))
-                                File.Move(location, location.Replace("exe", "tmp"));
-                            location = Path.Combine(Environment.CurrentDirectory, "PluginLoader.XNA.dll");
-                            if (File.Exists(location))
-                                File.Move(location, location.Replace("dll", "tmp"));
-                            location = Path.Combine(Environment.CurrentDirectory, "Mono.Cecil.dll");
-                            if (File.Exists(location))
-                                File.Move(location, location.Replace("dll", "tmp"));
-                            location = Path.Combine(Environment.CurrentDirectory, "Mono.Cecil.Rocks.dll");
-                            if (File.Exists(location))
-                                File.Move(location, location.Replace("dll", "tmp"));
-
-                            // Extract the update
-                            using (var archive = ZipFile.OpenRead(zip))
-                            {
-                                foreach (ZipArchiveEntry file in archive.Entries)
-                                {
-                                    string completeFileName = Path.Combine(Environment.CurrentDirectory, file.FullName);
-                                    string directory = Path.GetDirectoryName(completeFileName);
-
-                                    if (!Directory.Exists(directory))
-                                        Directory.CreateDirectory(directory);
-
-                                    if (file.Name != "")
-                                        file.ExtractToFile(completeFileName, true);
-                                }
-                            }
-
-                            // Restart
-                            Application.Restart();
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Failed to check for updates." + Environment.NewLine + Environment.NewLine + ex, Program.AssemblyName);
-                }
-            }) {IsBackground = true}.Start();
+            this.Load += (sender, args) => StartUpdateCheck();
 
             terrariaPath.Text = "";
 
@@ -152,43 +92,148 @@ namespace TerrariaPatcher
                 Environment.Exit(0);
             }
         }
-        
+
+        private void OnUiThread(Action action)
+        {
+            if (InvokeRequired)
+                Invoke(action);
+            else
+                action();
+        }
+
+        private void StartUpdateCheck()
+        {
+            var currentVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+
+            new Thread(() =>
+            {
+                try
+                {
+                    // Delete leftover update files
+                    foreach (var tmp in Directory.GetFiles(Environment.CurrentDirectory, "*.tmp"))
+                        File.Delete(tmp);
+
+                    ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+                    var client = new WebClient();
+                    client.CachePolicy = new RequestCachePolicy(RequestCacheLevel.NoCacheNoStore);
+                    var str = client.DownloadString(changelogURL + "?random=" + new Random().Next());
+                    var version = str.Substring(1, str.IndexOf(':') - 1);
+                    if (version == currentVersion)
+                        return;
+
+                    var update = false;
+                    OnUiThread(() => update = MessageBox.Show(version + " is available. Would you like to automatically update?", Program.AssemblyName, MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation) == DialogResult.Yes);
+                    if (!update)
+                        return;
+
+                    // Download the update
+                    var zip = "update.tmp";
+                    client.DownloadFile(updateURL, zip);
+
+                    // Rename the currently executing files out of the way so that we can overwrite them
+                    foreach (var name in new[] { "TerrariaPatcher.exe", "PluginLoader.XNA.dll", "Mono.Cecil.dll", "Mono.Cecil.Rocks.dll" })
+                    {
+                        var location = Path.Combine(Environment.CurrentDirectory, name);
+                        if (File.Exists(location))
+                            File.Move(location, Path.ChangeExtension(location, ".tmp"));
+                    }
+
+                    ExtractUpdate(zip, Environment.CurrentDirectory);
+
+                    // Restart
+                    OnUiThread(() => Application.Restart());
+                }
+                catch (Exception ex)
+                {
+                    OnUiThread(() => MessageBox.Show("Failed to check for updates." + Environment.NewLine + Environment.NewLine + ex, Program.AssemblyName));
+                }
+            }) {IsBackground = true}.Start();
+        }
+
+        private static void ExtractUpdate(string zip, string targetFolder)
+        {
+            var root = Path.GetFullPath(targetFolder);
+            if (!root.EndsWith(Path.DirectorySeparatorChar.ToString()))
+                root += Path.DirectorySeparatorChar;
+
+            using (var archive = ZipFile.OpenRead(zip))
+            {
+                foreach (ZipArchiveEntry file in archive.Entries)
+                {
+                    if (file.Name == "") continue; // directory entry
+
+                    var completeFileName = Path.GetFullPath(Path.Combine(root, file.FullName));
+                    if (!completeFileName.StartsWith(root, StringComparison.OrdinalIgnoreCase))
+                        throw new IOException("Update archive contains an entry outside the target folder: " + file.FullName);
+
+                    var directory = Path.GetDirectoryName(completeFileName);
+                    if (!Directory.Exists(directory))
+                        Directory.CreateDirectory(directory);
+
+                    file.ExtractToFile(completeFileName, true);
+                }
+            }
+        }
+        public static bool ReadBool(string section, string key, bool def, string path = null, bool writeIt = false)
+        {
+            return bool.TryParse(IniAPI.ReadIni(section, key, def.ToString(), 255, path ?? ConfigPath, writeIt), out var result) ? result : def;
+        }
+
+        private static decimal ReadDecimal(string section, string key, decimal def, NumericUpDown control)
+        {
+            if (!decimal.TryParse(IniAPI.ReadIni(section, key, def.ToString(), 255, ConfigPath), out var result))
+                result = def;
+
+            return Math.Min(Math.Max(result, control.Minimum), control.Maximum);
+        }
+
+        private static IEnumerable<int> ParseBuffList(string list)
+        {
+            foreach (var entry in list.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                if (int.TryParse(entry.Trim(), out var index))
+                    yield return index;
+            }
+        }
+
         public void LoadConfig()
         {
             loading = true;
 
             try
             {
-                timeEnabled.Checked = bool.Parse(IniAPI.ReadIni("General", "DisplayTime", "true", 255, ConfigPath));
-                removeRodBuffEnabled.Checked = bool.Parse(IniAPI.ReadIni("General", "RemoveRodOfDiscordBuff", "true", 255, ConfigPath));
-                removePotionSickness.Checked = bool.Parse(IniAPI.ReadIni("General", "RemovePotionSickness", "true", 255, ConfigPath));
-                removeManaCosts.Checked = bool.Parse(IniAPI.ReadIni("General", "RemoveManaCosts", "true", 255, ConfigPath));
-                removeAnglerQuestLimit.Checked = bool.Parse(IniAPI.ReadIni("General", "RemoveAnglerQuestLimit", "false", 255, ConfigPath));
-                removeDrowning.Checked = bool.Parse(IniAPI.ReadIni("General", "RemoveDrowning", "true", 255, ConfigPath));
-                oneHitKill.Checked = bool.Parse(IniAPI.ReadIni("General", "OneHitKill", "false", 255, ConfigPath));
-                infiniteAmmo.Checked = bool.Parse(IniAPI.ReadIni("General", "InfiniteAmmo", "true", 255, ConfigPath));
-                permanentWings.Checked = bool.Parse(IniAPI.ReadIni("General", "PermanentWings", "true", 255, ConfigPath));
-                infiniteCloudJumps.Checked = bool.Parse(IniAPI.ReadIni("General", "InfiniteCloudJumps", "false", 255, ConfigPath));
-                functionalSocialSlots.Checked = bool.Parse(IniAPI.ReadIni("General", "FunctionalSocialSlots", "true", 255, ConfigPath));
-                maxCraftingRange.Checked = bool.Parse(IniAPI.ReadIni("General", "MaxCraftingRange", "true", 255, ConfigPath));
+                timeEnabled.Checked = ReadBool("General", "DisplayTime", true);
+                removeRodBuffEnabled.Checked = ReadBool("General", "RemoveRodOfDiscordBuff", true);
+                removePotionSickness.Checked = ReadBool("General", "RemovePotionSickness", true);
+                removeManaCosts.Checked = ReadBool("General", "RemoveManaCosts", true);
+                removeAnglerQuestLimit.Checked = ReadBool("General", "RemoveAnglerQuestLimit", false);
+                removeDrowning.Checked = ReadBool("General", "RemoveDrowning", true);
+                oneHitKill.Checked = ReadBool("General", "OneHitKill", false);
+                infiniteAmmo.Checked = ReadBool("General", "InfiniteAmmo", true);
+                permanentWings.Checked = ReadBool("General", "PermanentWings", true);
+                infiniteCloudJumps.Checked = ReadBool("General", "InfiniteCloudJumps", false);
+                functionalSocialSlots.Checked = ReadBool("General", "FunctionalSocialSlots", true);
+                maxCraftingRange.Checked = ReadBool("General", "MaxCraftingRange", true);
 #if !PUBLIC
-                steamFixEnabled.Checked = bool.Parse(IniAPI.ReadIni("General", "SteamFixEnabled", "true", 255, ConfigPath));
+                steamFixEnabled.Checked = ReadBool("General", "SteamFixEnabled", true);
 #else
                 steamFixEnabled.Enabled = false;
                 steamFixEnabled.Checked = false;
 #endif
-                plugins.Checked = bool.Parse(IniAPI.ReadIni("General", "Plugins", "true", 255, ConfigPath));
-                
-                vampiricKnivesHealingRate.Value = decimal.Parse(IniAPI.ReadIni("Healing", "VampiricKnivesHealingRate", (7.5f).ToString(), 255, ConfigPath));
-                spectreHealingRate.Value = decimal.Parse(IniAPI.ReadIni("Healing", "SpectreHealingRate", "20", 255, ConfigPath));
+                plugins.Checked = ReadBool("General", "Plugins", true);
 
-                spawnRateVoodoo.Value = decimal.Parse(IniAPI.ReadIni("Spawning", "SpawnRateVoodoo", "15", 255, ConfigPath));
-                treasureBagsDropAll.Checked = bool.Parse(IniAPI.ReadIni("Spawning", "TreasureBagsDropAll", "false", 255, ConfigPath));
+                vampiricKnivesHealingRate.Value = ReadDecimal("Healing", "VampiricKnivesHealingRate", 7.5m, vampiricKnivesHealingRate);
+                spectreHealingRate.Value = ReadDecimal("Healing", "SpectreHealingRate", 20m, spectreHealingRate);
+
+                spawnRateVoodoo.Value = ReadDecimal("Spawning", "SpawnRateVoodoo", 15m, spawnRateVoodoo);
+                treasureBagsDropAll.Checked = ReadBool("Spawning", "TreasureBagsDropAll", false);
 
                 ResetBuffs();
-                MoveIn(IniAPI.ReadIni("PermanentBuffs", "List", string.Join(", ", defaultBuffs), 2048, ConfigPath)
-	                .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-	                .Select(s => int.Parse(s.Trim())));
+                MoveIn(ParseBuffList(IniAPI.ReadIni("PermanentBuffs", "List", string.Join(", ", defaultBuffs), 2048, ConfigPath)));
+            }
+            catch (Exception ex)
+            {
+                Program.ShowErrorMessage("Failed to read " + ConfigPath + ", continuing with defaults." + Environment.NewLine + Environment.NewLine + ex);
             }
             finally
             {
@@ -258,7 +303,7 @@ namespace TerrariaPatcher
 
         private bool MoveIn(IEnumerable<int> b)
         {
-            return MoveIn(b.Select(i => buffs.Find(buff => buff.Index == i)));
+            return MoveIn(b.Select(i => buffs.Find(buff => buff.Index == i)).Where(buff => buff != null));
         }
 
         private bool MoveIn(IEnumerable<Buff> b)

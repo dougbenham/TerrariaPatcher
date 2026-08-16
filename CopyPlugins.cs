@@ -22,19 +22,19 @@ namespace TerrariaPatcher
 
             InitializeComponent();
 
-            clearExisting.Checked = bool.Parse(IniAPI.ReadIni("ActivePlugins", "ClearExisting", "true", 255, Main.ConfigPath, true));
+            clearExisting.Checked = Main.ReadBool("ActivePlugins", "ClearExisting", true, writeIt: true);
 
             foreach (var folder in Directory.EnumerateDirectories(sourceFolder).Where(s => s != sourceSharedFolder))
             {
                 var name = Path.GetFileName(folder);
                 checkedListBox.Items.Add(name);
-                checkedListBox.SetItemChecked(checkedListBox.Items.Count - 1, bool.Parse(IniAPI.ReadIni("ActivePlugins", name, "true", 255, Main.ConfigPath, true)));
+                checkedListBox.SetItemChecked(checkedListBox.Items.Count - 1, Main.ReadBool("ActivePlugins", name, true, writeIt: true));
             }
             foreach (var filename in Directory.EnumerateFiles(sourceFolder, "*.cs"))
             {
                 var name = Path.GetFileNameWithoutExtension(filename);
                 checkedListBox.Items.Add(name);
-                checkedListBox.SetItemChecked(checkedListBox.Items.Count - 1, bool.Parse(IniAPI.ReadIni("ActivePlugins", name, "true", 255, Main.ConfigPath, true)));
+                checkedListBox.SetItemChecked(checkedListBox.Items.Count - 1, Main.ReadBool("ActivePlugins", name, true, writeIt: true));
             }
         }
 
