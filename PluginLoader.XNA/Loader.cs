@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
@@ -25,70 +25,270 @@ namespace PluginLoader
         private static bool fresh = true;
 
         private static List<IPlugin> loadedPlugins = new List<IPlugin>();
-        private static bool loaded, reachedMenu;
+        private static bool loaded;
+
+        private static readonly Dictionary<Type, Array> dispatchCache = new Dictionary<Type, Array>();
+
+        public static readonly string DataFolder = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "TerrariaPatcher");
+
+        private static string LogPath => Path.Combine(DataFolder, "PluginLoader.log");
 
         #endregion
-        
+
+        #region Diagnostics
+
+        private static void Log(string message)
+        {
+            try
+            {
+                Directory.CreateDirectory(DataFolder);
+                File.AppendAllText(LogPath, DateTime.Now.ToString("s") + " " + message + Environment.NewLine);
+            }
+            catch
+            { }
+        }
+
+        private static void ReportLoadError(string message)
+        {
+            Log(message);
+            MessageBox.Show(message + Environment.NewLine + Environment.NewLine + "See " + LogPath + " for details.",
+                "Terraria", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
+
+        private static void Disable(IPlugin plugin, Exception ex)
+        {
+            var name = plugin.GetType().Name;
+
+            loadedPlugins.Remove(plugin);
+            dispatchCache.Clear();
+
+            Log("Plugin '" + name + "' threw and has been disabled for this session." + Environment.NewLine + ex);
+
+            try
+            {
+                Main.NewText("Plugin '" + name + "' errored and has been disabled. See " + LogPath, Color.Red.R, Color.Red.G, Color.Red.B);
+            }
+            catch
+            { }
+        }
+
+        #endregion
+
+        #region Dispatch
+
+        private static T[] PluginsOf<T>() where T : class, IPlugin
+        {
+	        if (!dispatchCache.TryGetValue(typeof(T), out var cached))
+            {
+                cached = loadedPlugins.OfType<T>().ToArray();
+                dispatchCache[typeof(T)] = cached;
+            }
+
+            return (T[]) cached;
+        }
+
+        private static void Dispatch<T>(Action<T> action) where T : class, IPlugin
+        {
+            foreach (var plugin in PluginsOf<T>())
+            {
+                try
+                {
+                    action(plugin);
+                }
+                catch (Exception ex)
+                {
+                    Disable(plugin, ex);
+                }
+            }
+        }
+
+        private static bool DispatchAny<T>(Func<T, bool> func) where T : class, IPlugin
+        {
+            var ret = false;
+
+            foreach (var plugin in PluginsOf<T>())
+            {
+                try
+                {
+                    ret = func(plugin) || ret;
+                }
+                catch (Exception ex)
+                {
+                    Disable(plugin, ex);
+                }
+            }
+
+            return ret;
+        }
+
+        #endregion
+
         #region Load
 
         private static void Load()
         {
-            if (!loaded)
+            if (loaded) return;
+            loaded = true;
+
+            try
             {
-                loaded = true;
-                
+                var pluginsFolder = @".\Plugins\";
+                var sharedFolder = Path.Combine(pluginsFolder, "Shared");
+
+                if (!Utils.IsFolderWritable(Environment.CurrentDirectory))
+                {
+                    MessageBox.Show(
+                        "Terraria cannot write to its own folder, so plugin settings (Plugins.ini) will not be saved." + Environment.NewLine + Environment.NewLine +
+                        "If you are running via Steam, start Steam with elevated administrator privileges.", "Terraria",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+
+                if (!Directory.Exists(pluginsFolder))
+                {
+                    MessageBox.Show(@"Your Terraria\Plugins folder is missing.", "Terraria",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    Environment.Exit(0);
+                }
+
+                if (!Directory.Exists(sharedFolder))
+                {
+                    MessageBox.Show(@"Your Terraria\Plugins\Shared folder is missing.", "Terraria",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    Environment.Exit(0);
+                }
+
+                var references = AppDomain.CurrentDomain
+                    .GetAssemblies()
+                    .Where(a => !a.IsDynamic && !string.IsNullOrEmpty(a.Location))
+                    .Select(a => a.Location).ToList();
+                ExtractAndReference(references, "Newtonsoft.Json.dll");
+                ExtractAndReference(references, "ReLogic.dll", true);
+
+                Compile(references.ToArray(), sharedFolder, GetPluginUnits(pluginsFolder, sharedFolder));
+
+                LoadHotkeyBinds();
+            }
+            catch (Exception ex)
+            {
+                ReportLoadError("Failed to load plugins." + Environment.NewLine + ex);
+            }
+        }
+
+        private static Dictionary<string, string[]> GetPluginUnits(string pluginsFolder, string sharedFolder)
+        {
+            var units = new Dictionary<string, string[]>();
+
+            foreach (var file in Directory.EnumerateFiles(pluginsFolder, "*.cs"))
+                units[Path.GetFileNameWithoutExtension(file)] = new[] { file };
+
+            foreach (var folder in Directory.EnumerateDirectories(pluginsFolder))
+            {
+                if (string.Equals(Path.GetFullPath(folder), Path.GetFullPath(sharedFolder), StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                var sources = Directory.EnumerateFiles(folder, "*.cs", SearchOption.AllDirectories).ToArray();
+                if (sources.Length > 0)
+                    units[Path.GetFileName(folder)] = sources;
+            }
+
+            return units;
+        }
+
+        /// <summary>
+        /// Compiles every plugin into one assembly. If that fails, falls back to compiling each plugin on its
+        /// own so that a single plugin with a compile error does not cost the player every other plugin.
+        /// </summary>
+        private static void Compile(string[] references, string sharedFolder, Dictionary<string, string[]> units)
+        {
+            var shared = Directory.EnumerateFiles(sharedFolder, "*.cs", SearchOption.AllDirectories).ToArray();
+            var everything = shared.Concat(units.Values.SelectMany(sources => sources)).ToArray();
+
+            if (TryCompile(references, everything, out var assembly, out var combinedErrors))
+            {
+                Instantiate(assembly);
+                return;
+            }
+
+            Log("Compiling all plugins together failed, retrying one plugin at a time." + Environment.NewLine + combinedErrors);
+
+            var failures = new List<string>();
+            foreach (var unit in units)
+            {
+	            if (TryCompile(references, shared.Concat(unit.Value).ToArray(), out var single, out var errors))
+                    Instantiate(single);
+                else
+                {
+                    failures.Add(unit.Key);
+                    Log("Plugin '" + unit.Key + "' failed to compile:" + Environment.NewLine + errors);
+                }
+            }
+
+            if (failures.Count > 0)
+                ReportLoadError("These plugins failed to compile and were skipped: " + string.Join(", ", failures.ToArray()) + ".");
+        }
+
+        private static bool TryCompile(string[] references, string[] sources, out Assembly assembly, out string errors)
+        {
+            assembly = null;
+            errors = null;
+
+            // http://ayende.com/blog/1376/solving-the-assembly-load-context-problem
+            var compilerParams = new CompilerParameters();
+            compilerParams.GenerateInMemory = true;
+            compilerParams.GenerateExecutable = false;
+            compilerParams.TreatWarningsAsErrors = false;
+            compilerParams.CompilerOptions = "/optimize";
+            compilerParams.ReferencedAssemblies.AddRange(references);
+
+            try
+            {
+                var compile = new CSharpCodeProvider().CompileAssemblyFromFile(compilerParams, sources);
+
+                if (compile.Errors.HasErrors)
+                {
+                    errors = compile.Errors.Cast<CompilerError>().Aggregate("", (current, ce) => current + (ce + Environment.NewLine));
+                    return false;
+                }
+
+                assembly = compile.CompiledAssembly;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                errors = ex.ToString();
+                return false;
+            }
+        }
+
+        private static void Instantiate(Assembly assembly)
+        {
+            foreach (var type in assembly.GetTypes().Where(t => typeof(IPlugin).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract))
+            {
                 try
                 {
-                    var pluginsFolder = @".\Plugins\";
-                    var sharedFolder = Path.Combine(pluginsFolder, "Shared");
-
-                    if (!Utils.IsProcessElevated)
-                    {
-                        MessageBox.Show("Elevated administrator privileges not detected, you may run into issues! If you are running via Steam, please start Steam with elevated administrator privileges.", "Terraria",
-                            MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    }
-
-                    if (!Directory.Exists(pluginsFolder))
-                    {
-                        MessageBox.Show(@"Your Terraria\Plugins folder is missing.", "Terraria",
-                            MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        Environment.Exit(0);
-                    }
-
-                    if (!Directory.Exists(sharedFolder))
-                    {
-                        MessageBox.Show(@"Your Terraria\Plugins\Shared folder is missing.", "Terraria",
-                            MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        Environment.Exit(0);
-                    }
-                    
-                    var references = AppDomain.CurrentDomain
-                        .GetAssemblies()
-                        .Where(a => !a.IsDynamic && !string.IsNullOrEmpty(a.Location))
-                        .Select(a => a.Location).ToList();
-                    ExtractAndReference(references, "Newtonsoft.Json.dll");
-                    ExtractAndReference(references, "ReLogic.dll", true);
-
-                    Load(references.ToArray(), Directory.EnumerateFiles(pluginsFolder, "*.cs", SearchOption.AllDirectories).ToArray());
-
-                    // Load hotkey binds
-                    var result = IniAPI.GetIniKeys("HotkeyBinds").ToList();
-                    foreach (var keys in result)
-                    {
-                        var val = IniAPI.ReadIni("HotkeyBinds", keys, null);
-                        var key = ParseHotkey(keys);
-
-                        if (string.IsNullOrEmpty(val) || !val.StartsWith("/") || key == null)
-                            MessageBox.Show("Invalid record in [HotkeyBinds]: " + key + ".", "", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                        else
-                            RegisterHotkey(val, key);
-                    }
+                    loadedPlugins.Add((IPlugin) Activator.CreateInstance(type));
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.ToString(), string.Empty);
-                    throw;
+                    ReportLoadError("Plugin '" + type.Name + "' failed to initialise and was skipped." + Environment.NewLine + ex);
                 }
+            }
+
+            dispatchCache.Clear();
+        }
+
+        private static void LoadHotkeyBinds()
+        {
+            foreach (var keys in IniAPI.GetIniKeys("HotkeyBinds").ToList())
+            {
+                var val = IniAPI.ReadIni("HotkeyBinds", keys, null);
+                var key = ParseHotkey(keys);
+
+                if (string.IsNullOrEmpty(val) || !val.StartsWith("/") || key == null)
+                    MessageBox.Show("Invalid record in [HotkeyBinds]: " + keys + ".", "", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                else
+                    RegisterHotkey(val, key);
             }
         }
 
@@ -96,13 +296,15 @@ namespace PluginLoader
         {
             if (!references.Any(s => s.Contains(dllName)))
             {
-                // Dynamic compilation requires assemblies to be stored on file, thus we must extract the Newtonsoft.Json.dll embedded resource to a temp file if we want to use it.
+                // Dynamic compilation requires assemblies to be stored on file, thus we must extract the embedded
+                // resource to a file if we want to use it.
                 var assembly = Assembly.GetEntryAssembly();
                 var error = "Could not extract " + dllName + " from Terraria.";
                 var resourceName = assembly.GetManifestResourceNames().FirstOrDefault(s => s.Contains(dllName));
                 if (resourceName == null) throw new Exception(error);
 
-                var path = Path.Combine(".", dllName);
+                Directory.CreateDirectory(DataFolder);
+                var path = Path.Combine(DataFolder, dllName);
                 if (!File.Exists(path) || forceExtract)
                 {
                     using (var stream = assembly.GetManifestResourceStream(resourceName))
@@ -120,32 +322,8 @@ namespace PluginLoader
             }
         }
 
-        private static void Load(string[] references, params string[] sources)
-        {
-            // http://ayende.com/blog/1376/solving-the-assembly-load-context-problem
-            var compilerParams = new CompilerParameters();
-            compilerParams.GenerateInMemory = true;
-            compilerParams.GenerateExecutable = false;
-            compilerParams.TreatWarningsAsErrors = false;
-            compilerParams.CompilerOptions = "/optimize";
-            compilerParams.ReferencedAssemblies.AddRange(references);
-
-            var provider = new CSharpCodeProvider();
-            var compile = provider.CompileAssemblyFromFile(compilerParams, sources);
-
-            if (compile.Errors.HasErrors)
-            {
-                throw new Exception(compile.Errors.Cast<CompilerError>().Aggregate("", (current, ce) => current + (ce + Environment.NewLine)));
-            }
-
-            foreach (var type in compile.CompiledAssembly.GetTypes().Where(type1 => type1.GetInterfaces().Contains(typeof (IPlugin))))
-            {
-                loadedPlugins.Add(Activator.CreateInstance(type) as IPlugin);
-            }
-        }
-
         #endregion
-        
+
         #region Hotkeys
 
         public static void RegisterHotkey(string command, Keys key, bool control = false, bool shift = false, bool alt = false, bool ignoreModifierKeys = false)
@@ -162,8 +340,7 @@ namespace PluginLoader
                 var cmd = split[0].ToLower();
                 var args = split.Length > 1 ? split[1].Split(' ') : new string[0];
 
-                foreach (var plugin in loadedPlugins.OfType<IPluginChatCommand>())
-                    plugin.OnChatCommand(cmd, args);
+                DispatchAny<IPluginChatCommand>(plugin => plugin.OnChatCommand(cmd, args));
             };
             RegisterHotkey(key);
         }
@@ -249,31 +426,27 @@ namespace PluginLoader
         #endregion
 
         #region Main
-        
+
         public static void OnInitialize()
         {
             Load();
 
-            foreach (var plugin in loadedPlugins.OfType<IPluginInitialize>())
-                plugin.OnInitialize();
+            Dispatch<IPluginInitialize>(plugin => plugin.OnInitialize());
         }
 
         public static void OnDrawSplash()
         {
-            foreach (var plugin in loadedPlugins.OfType<IPluginDrawSplash>())
-                plugin.OnDrawSplash();
+            Dispatch<IPluginDrawSplash>(plugin => plugin.OnDrawSplash());
         }
 
         public static void OnDrawInventory()
         {
-            foreach (var plugin in loadedPlugins.OfType<IPluginDrawInventory>())
-                plugin.OnDrawInventory();
+            Dispatch<IPluginDrawInventory>(plugin => plugin.OnDrawInventory());
         }
 
         public static void OnDrawInterface()
         {
-            foreach (var plugin in loadedPlugins.OfType<IPluginDrawInterface>())
-                plugin.OnDrawInterface();
+            Dispatch<IPluginDrawInterface>(plugin => plugin.OnDrawInterface());
         }
 
         public static void OnPreUpdate()
@@ -291,62 +464,56 @@ namespace PluginLoader
                 shift = keysdown.Contains(Keys.LeftShift) || keysdown.Contains(Keys.RightShift);
                 alt = keysdown.Contains(Keys.LeftAlt) || keysdown.Contains(Keys.RightAlt);
                 var anyPresses = false;
-                foreach (var hotkey in hotkeys)
+
+                foreach (var hotkey in hotkeys.ToArray())
                 {
                     if (keysdown.Contains(hotkey.Key) &&
                         (hotkey.IgnoreModifierKeys || (control == hotkey.Control && shift == hotkey.Shift && alt == hotkey.Alt)))
                     {
                         anyPresses = true;
-                        if (fresh) hotkey.Action();
+                        if (fresh)
+                        {
+                            try
+                            {
+                                hotkey.Action();
+                            }
+                            catch (Exception ex)
+                            {
+                                Log("Hotkey '" + hotkey + "' threw." + Environment.NewLine + ex);
+                            }
+                        }
                     }
                 }
 
                 fresh = !anyPresses;
             }
 
-            foreach (var plugin in loadedPlugins.OfType<IPluginPreUpdate>())
-                plugin.OnPreUpdate();
+            Dispatch<IPluginPreUpdate>(plugin => plugin.OnPreUpdate());
         }
 
         public static void OnUpdate()
         {
-            foreach (var plugin in loadedPlugins.OfType<IPluginUpdate>())
-                plugin.OnUpdate();
+            Dispatch<IPluginUpdate>(plugin => plugin.OnUpdate());
         }
 
         public static void OnUpdateTime()
         {
-            foreach (var plugin in loadedPlugins.OfType<IPluginUpdateTime>())
-                plugin.OnUpdateTime();
+            Dispatch<IPluginUpdateTime>(plugin => plugin.OnUpdateTime());
         }
 
         public static bool OnCheckXmas()
         {
-            var ret = false;
-
-            foreach (var plugin in loadedPlugins.OfType<IPluginCheckSeason>())
-                ret = plugin.OnCheckXmas() || ret;
-
-            return ret;
+            return DispatchAny<IPluginCheckSeason>(plugin => plugin.OnCheckXmas());
         }
 
         public static bool OnCheckHalloween()
         {
-            var ret = false;
-
-            foreach (var plugin in loadedPlugins.OfType<IPluginCheckSeason>())
-                ret = plugin.OnCheckHalloween() || ret;
-
-            return ret;
+            return DispatchAny<IPluginCheckSeason>(plugin => plugin.OnCheckHalloween());
         }
 
         public static bool OnPlaySound(int type, int x, int y, int style)
         {
-            var ret = false;
-            foreach (var plugin in loadedPlugins.OfType<IPluginPlaySound>())
-                ret = plugin.OnPlaySound(type, x, y, style) || ret;
-
-            return ret;
+            return DispatchAny<IPluginPlaySound>(plugin => plugin.OnPlaySound(type, x, y, style));
         }
 
         #endregion
@@ -355,146 +522,145 @@ namespace PluginLoader
 
         public static void OnPlayerPreSpawn(Player player)
         {
-            foreach (var plugin in loadedPlugins.OfType<IPluginPlayerPreSpawn>())
-                plugin.OnPlayerPreSpawn(player);
+            Dispatch<IPluginPlayerPreSpawn>(plugin => plugin.OnPlayerPreSpawn(player));
         }
 
         public static void OnPlayerSpawn(Player player)
         {
-            foreach (var plugin in loadedPlugins.OfType<IPluginPlayerSpawn>())
-                plugin.OnPlayerSpawn(player);
+            Dispatch<IPluginPlayerSpawn>(plugin => plugin.OnPlayerSpawn(player));
         }
 
         public static void OnPlayerLoad(PlayerFileData playerFileData, Player player, BinaryReader binaryReader)
         {
-            foreach (var plugin in loadedPlugins.OfType<IPluginPlayerLoad>())
-                plugin.OnPlayerLoad(playerFileData, player, binaryReader);
+            Dispatch<IPluginPlayerLoad>(plugin => plugin.OnPlayerLoad(playerFileData, player, binaryReader));
         }
 
         public static void OnPlayerSave(PlayerFileData playerFileData, Player player, BinaryWriter binaryWriter)
         {
-            foreach (var plugin in loadedPlugins.OfType<IPluginPlayerSave>())
-                plugin.OnPlayerSave(playerFileData, player, binaryWriter);
+            Dispatch<IPluginPlayerSave>(plugin => plugin.OnPlayerSave(playerFileData, player, binaryWriter));
         }
 
         public static void OnPlayerUpdate(Player player)
         {
-            foreach (var plugin in loadedPlugins.OfType<IPluginPlayerUpdate>())
-                plugin.OnPlayerUpdate(player);
+            Dispatch<IPluginPlayerUpdate>(plugin => plugin.OnPlayerUpdate(player));
         }
 
         public static void OnPlayerPreUpdate(Player player)
         {
-            foreach (var plugin in loadedPlugins.OfType<IPluginPlayerPreUpdate>())
-                plugin.OnPlayerPreUpdate(player);
+            Dispatch<IPluginPlayerPreUpdate>(plugin => plugin.OnPlayerPreUpdate(player));
         }
 
         public static void OnPlayerUpdateBuffs(Player player)
         {
-            foreach (var plugin in loadedPlugins.OfType<IPluginPlayerUpdateBuffs>())
-                plugin.OnPlayerUpdateBuffs(player);
+            Dispatch<IPluginPlayerUpdateBuffs>(plugin => plugin.OnPlayerUpdateBuffs(player));
         }
 
         public static void OnPlayerUpdateEquips(Player player)
         {
-            foreach (var plugin in loadedPlugins.OfType<IPluginPlayerUpdateEquips>())
-                plugin.OnPlayerUpdateEquips(player);
+            Dispatch<IPluginPlayerUpdateEquips>(plugin => plugin.OnPlayerUpdateEquips(player));
         }
 
         public static void OnPlayerUpdateArmorSets(Player player)
         {
-            foreach (var plugin in loadedPlugins.OfType<IPluginPlayerUpdateArmorSets>())
-                plugin.OnPlayerUpdateArmorSets(player);
+            Dispatch<IPluginPlayerUpdateArmorSets>(plugin => plugin.OnPlayerUpdateArmorSets(player));
         }
 
         public static bool OnPlayerHurt(Player player, PlayerDeathReason damageSource, int damage, int hitDirection, bool pvp, bool quiet, bool crit, int cooldownCounter, bool dodgeable, out double result)
         {
-            result = 0.0;
-            var ret = false;
-            foreach (var plugin in loadedPlugins.OfType<IPluginPlayerHurt>())
-            {
-	            if (plugin.OnPlayerHurt(player, damageSource, damage, hitDirection, pvp, quiet, crit, cooldownCounter, dodgeable, out var temp))
-                {
-                    ret = true;
-                    result = temp;
-                }
-            }
+            var captured = 0.0;
 
+            var ret = DispatchAny<IPluginPlayerHurt>(plugin =>
+            {
+                if (!plugin.OnPlayerHurt(player, damageSource, damage, hitDirection, pvp, quiet, crit, cooldownCounter, dodgeable, out var temp))
+                    return false;
+
+                captured = temp;
+                return true;
+            });
+
+            result = captured;
             return ret;
         }
 
         public static bool OnPlayerKillMe(Player player, PlayerDeathReason damageSource, double dmg, int hitDirection, bool pvp)
         {
-            var ret = false;
-            foreach (var plugin in loadedPlugins.OfType<IPluginPlayerKillMe>())
-                ret = plugin.OnPlayerKillMe(player, damageSource, dmg, hitDirection, pvp) || ret;
-
-            return ret;
+            return DispatchAny<IPluginPlayerKillMe>(plugin => plugin.OnPlayerKillMe(player, damageSource, dmg, hitDirection, pvp));
         }
 
         public static void OnPlayerPickAmmo(Player player, Item weapon, ref int shoot, ref float speed, ref bool canShoot, ref int damage, ref float knockback, ref int usedAmmoItemId, bool dontConsume)
         {
-            foreach (var plugin in loadedPlugins.OfType<IPluginPlayerPickAmmo>())
-                plugin.OnPlayerPickAmmo(player, weapon, ref shoot, ref speed, ref canShoot, ref damage, ref knockback, ref usedAmmoItemId, dontConsume);
+            // Written out rather than using Dispatch() because ref parameters cannot be captured by a lambda.
+            foreach (var plugin in PluginsOf<IPluginPlayerPickAmmo>())
+            {
+                try
+                {
+                    plugin.OnPlayerPickAmmo(player, weapon, ref shoot, ref speed, ref canShoot, ref damage, ref knockback, ref usedAmmoItemId, dontConsume);
+                }
+                catch (Exception ex)
+                {
+                    Disable(plugin, ex);
+                }
+            }
         }
 
         public static bool OnPlayerGetItem(Player player, WorldItem newItem, GetItemSettings settings, out Item resultItem)
         {
-            resultItem = null;
-            var ret = false;
-            foreach (var plugin in loadedPlugins.OfType<IPluginPlayerGetItem>())
-            {
-	            if (plugin.OnPlayerGetItem(player, newItem, settings, out var temp))
-                {
-                    ret = true;
-                    resultItem = temp;
-                }
-            }
+            Item captured = null;
 
+            var ret = DispatchAny<IPluginPlayerGetItem>(plugin =>
+            {
+                if (!plugin.OnPlayerGetItem(player, newItem, settings, out var temp))
+                    return false;
+
+                captured = temp;
+                return true;
+            });
+
+            resultItem = captured;
             return ret;
         }
 
         public static bool OnPlayerQuickBuff(Player player)
         {
-            var ret = false;
-            foreach (var plugin in loadedPlugins.OfType<IPluginPlayerQuickBuff>())
-                ret = plugin.OnPlayerQuickBuff(player) || ret;
-
-            return ret;
+            return DispatchAny<IPluginPlayerQuickBuff>(plugin => plugin.OnPlayerQuickBuff(player));
         }
 
         #endregion
-        
+
         #region Item
 
         public static void OnItemSetDefaults(Item item)
         {
             Load();
 
-            foreach (var plugin in loadedPlugins.OfType<IPluginItemSetDefaults>())
-                plugin.OnItemSetDefaults(item);
+            Dispatch<IPluginItemSetDefaults>(plugin => plugin.OnItemSetDefaults(item));
         }
 
         public static bool OnItemSlotRightClick(Item[] inv, int context, int slot)
         {
-            var ret = false;
-            foreach (var plugin in loadedPlugins.OfType<IPluginItemSlotRightClick>())
-                ret = plugin.OnItemSlotRightClick(inv, context, slot) || ret;
-
-            return ret;
+            return DispatchAny<IPluginItemSlotRightClick>(plugin => plugin.OnItemSlotRightClick(inv, context, slot));
         }
 
         public static bool OnItemRollAPrefix(Item item, UnifiedRandom random, ref int rolledPrefix, out bool result)
         {
 	        result = false;
 	        var ret = false;
-	        foreach (var plugin in loadedPlugins.OfType<IPluginItemRollAPrefix>())
+
+            // Written out rather than using DispatchAny() because ref parameters cannot be captured by a lambda.
+	        foreach (var plugin in PluginsOf<IPluginItemRollAPrefix>())
 	        {
-		        if (plugin.OnItemRollAPrefix(item, random, ref rolledPrefix, out var temp))
-		        {
-                    ret = true;
-                    result = temp;
-		        }
+                try
+                {
+			        if (plugin.OnItemRollAPrefix(item, random, ref rolledPrefix, out var temp))
+			        {
+                        ret = true;
+                        result = temp;
+			        }
+                }
+                catch (Exception ex)
+                {
+                    Disable(plugin, ex);
+                }
 	        }
 
 	        return ret;
@@ -506,8 +672,7 @@ namespace PluginLoader
 
         public static void OnProjectileAI001(Projectile projectile)
         {
-            foreach (var plugin in loadedPlugins.OfType<IPluginProjectileAI>())
-                plugin.OnProjectileAI001(projectile);
+            Dispatch<IPluginProjectileAI>(plugin => plugin.OnProjectileAI001(projectile));
         }
 
         #endregion
@@ -518,7 +683,7 @@ namespace PluginLoader
         {
             var text = msg.Text;
             bool chatRet = false;
-            
+
             if (!string.IsNullOrEmpty(text) && text[0] == '/')
             {
                 var split = text.Substring(1).Split(new[] {' '}, 2);
@@ -532,8 +697,7 @@ namespace PluginLoader
                         chatRet = true;
                         break;
                     default:
-                        foreach (var plugin in loadedPlugins.OfType<IPluginChatCommand>())
-                            chatRet = plugin.OnChatCommand(cmd, args) || chatRet;
+                        chatRet = DispatchAny<IPluginChatCommand>(plugin => plugin.OnChatCommand(cmd, args));
                         break;
                 }
             }
@@ -547,18 +711,18 @@ namespace PluginLoader
 
         public static bool OnLightingGetColor(int x, int y, out Color color)
         {
-            color = Color.White;
-            var ret = false;
-            foreach (var plugin in loadedPlugins.OfType<IPluginLightingGetColor>())
-            {
-	            var result = plugin.OnLightingGetColor(x, y, out var temp);
-                if (result)
-                {
-                    ret = true;
-                    color = temp;
-                }
-            }
+            var captured = Color.White;
 
+            var ret = DispatchAny<IPluginLightingGetColor>(plugin =>
+            {
+                if (!plugin.OnLightingGetColor(x, y, out var temp))
+                    return false;
+
+                captured = temp;
+                return true;
+            });
+
+            color = captured;
             return ret;
         }
 
@@ -568,10 +732,7 @@ namespace PluginLoader
 
         public static void OnChestSetupShop(Chest chest, int type)
         {
-            foreach (var plugin in loadedPlugins.OfType<IPluginChestSetupShop>())
-            {
-                plugin.OnChestSetupShop(chest, type);
-            }
+            Dispatch<IPluginChestSetupShop>(plugin => plugin.OnChestSetupShop(chest, type));
         }
 
         #endregion
@@ -580,11 +741,7 @@ namespace PluginLoader
 
         public static bool OnNPCLoot(NPC npc)
         {
-            var ret = false;
-            foreach (var plugin in loadedPlugins.OfType<IPluginNPCLoot>())
-                ret = plugin.OnNPCLoot(npc) || ret;
-
-            return ret;
+            return DispatchAny<IPluginNPCLoot>(plugin => plugin.OnNPCLoot(npc));
         }
 
         #endregion

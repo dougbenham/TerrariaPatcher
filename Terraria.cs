@@ -52,9 +52,10 @@ namespace TerrariaPatcher
         /// </summary>
         public static void Patch(string original, string target, TerrariaDetails details)
         {
+            using (var resolver = new MyAssemblyResolver(Path.GetDirectoryName(original)))
             using (var asm = AssemblyDefinition.ReadAssembly(original, new ReaderParameters()
             {
-                AssemblyResolver = new MyAssemblyResolver(Path.GetDirectoryName(original))
+                AssemblyResolver = resolver
             }))
             {
                 _mainModule = asm.MainModule;
