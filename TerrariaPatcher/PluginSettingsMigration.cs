@@ -32,7 +32,13 @@ namespace TerrariaPatcher
             new[] { "FullBright", "FullBrightKey", "FullBright", "ToggleKey" },
             new[] { "FullBright", "FullBrightDefault", "FullBright", "Enabled" },
             new[] { "InfiniteFlight", "FlightKey", "InfiniteFlight", "ToggleKey" },
-            new[] { "Events", "Moon Lord", "Events", "MoonLord" }
+            new[] { "Events", "Moon Lord", "Events", "MoonLord" },
+
+            // Minions and Turrets now add to what your gear gives you rather than replacing it. There is no value
+            // that means the same under both, so the old number is carried over as the bonus: someone who had raised
+            // the cap keeps at least as many as before rather than silently dropping to the new default.
+            new[] { "Minions", "Max", "Minions", "Bonus" },
+            new[] { "Turrets", "Max", "Turrets", "Bonus" }
         };
 
         /// <summary>

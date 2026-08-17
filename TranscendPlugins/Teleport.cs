@@ -94,13 +94,15 @@ namespace TranscendPlugins
                 Main.NewText("  /teleport strangeplant");
             };
 
-            if (args.Length < 1 || args.Length > 1 || args[0] == "help")
+            var option = args.Length > 0 ? args[0].ToLower() : "";
+
+            if (args.Length < 1 || args.Length > 1 || option == "help")
             {
                 usage();
                 return true;
             }
 
-            switch (args[0])
+            switch (option)
             {
                 case "plantera":
                     BeginSearch(PlanteraSearch);

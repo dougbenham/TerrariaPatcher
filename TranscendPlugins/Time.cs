@@ -60,7 +60,7 @@ namespace TranscendPlugins
         {
             if (command != "time") return false;
 
-            if (args.Length != 1 || args[0] == "help")
+            if (args.Length != 1 || args[0].ToLower() == "help")
             {
                 Main.NewText("Usage:");
                 Main.NewText("   /time dawn");

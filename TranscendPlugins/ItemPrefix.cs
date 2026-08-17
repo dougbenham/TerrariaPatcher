@@ -133,7 +133,9 @@ namespace TranscendPlugins
         {
             if (command != "prefix") return false;
 
-            if (args.Length < 1 || args.Length > 1 || args[0] == "help")
+            var option = args.Length > 0 ? args[0].ToLower() : "";
+
+            if (args.Length < 1 || args.Length > 1 || option == "help")
             {
                 Main.NewText("Usage:");
                 Main.NewText("   /prefix name");
@@ -145,7 +147,7 @@ namespace TranscendPlugins
                 return true;
             }
 
-            if (args[0] == "keep")
+            if (option == "keep")
             {
                 keepStats = !keepStats;
                 Main.NewText("Using /prefix will now " + (keepStats ? "keep" : "reset") + " existing stats.");

@@ -3,15 +3,16 @@ using Terraria;
 
 namespace TranscendPlugins
 {
-    [PluginDescription("Raises the number of minions you can summon at once, regardless of your summoner gear.")]
+    [PluginDescription("Adds to the number of minions you can summon at once, on top of what your summoner gear already " +
+                       "gives you.")]
     public class Minions : PluginBase, IPluginPlayerUpdateArmorSets
     {
-        private static readonly Setting<int> Max = 100;
+        private static readonly Setting<int> Bonus = 2;
 
         public void OnPlayerUpdateArmorSets(Player player)
         {
             if (player.whoAmI == Main.myPlayer)
-                player.maxMinions = Max;
+                player.maxMinions += Bonus;
         }
     }
 }

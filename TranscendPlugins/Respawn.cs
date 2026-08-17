@@ -8,14 +8,19 @@ namespace Ruffi123456789Plugins
     {
         private static readonly Setting<int> Time = 0;
 
+        /// <summary>
+        /// Main.frameRate is 0 until the game has measured it, which would make the timer read as 0 seconds and the
+        /// cap never apply.
+        /// </summary>
+        private static int FrameRate
+        {
+            get { return Main.frameRate > 0 ? Main.frameRate : 60; }
+        }
+
         private static int RespawnTimerInSeconds
         {
-            get
-            {
-                if (Main.frameRate == 0) return 0;
-                return Player.respawnTimer / Main.frameRate;
-            }
-            set { Player.respawnTimer = value * Main.frameRate; }
+            get { return Player.respawnTimer / FrameRate; }
+            set { Player.respawnTimer = value * FrameRate; }
         }
 
         public void OnUpdate()
