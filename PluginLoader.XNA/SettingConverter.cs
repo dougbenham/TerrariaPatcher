@@ -78,18 +78,14 @@ namespace PluginLoader
             {
                 var items = Split(text).Select(item => Deserialize(item, element)).ToArray();
 
-                if (type.IsArray)
-                {
-                    var array = Array.CreateInstance(element, items.Length);
-                    items.CopyTo(array, 0);
-                    return array;
-                }
+                var array = Array.CreateInstance(element, items.Length);
+                items.CopyTo(array, 0);
 
-                var list = (IList) Activator.CreateInstance(type);
-                foreach (var item in items)
-                    list.Add(item);
+                if (type.IsArray) return array;
 
-                return list;
+                // List<T> and HashSet<T> both take the items as one IEnumerable<T>, which HashSet<T> needs since it
+                // is not an IList.
+                return Activator.CreateInstance(type, new object[] { array });
             }
 
             throw new NotSupportedException("Settings of type " + type.Name + " cannot be stored in Plugins.ini.");

@@ -15,7 +15,7 @@ namespace DoombubblesPlugins
         private static readonly Setting<int> StationRequiredCount = 1;
         private static readonly Setting<bool> CumulativeTotal = false;
 
-        private static readonly Setting<int[]> AllowedItemBuffs = new[]
+        private static readonly Setting<HashSet<int>> AllowedItemBuffs = new HashSet<int>
         {
             BuffID.ObsidianSkin, BuffID.Regeneration, BuffID.Swiftness, BuffID.Gills, BuffID.Ironskin,
             BuffID.ManaRegeneration, BuffID.MagicPower, BuffID.Featherfall, BuffID.Spelunker, BuffID.Invisibility,
@@ -45,9 +45,21 @@ namespace DoombubblesPlugins
             { ItemID.WarTable, BuffID.WarTable }
         };
 
-        private static IEnumerable<int> AllowedStationBuffs
+        /// <summary>
+        /// The buffs that only need <see cref="StationRequiredCount"/> of their item, kept as a set because it is
+        /// consulted for every buff every frame. Rebuilt whenever StationBuffs is edited in Plugins.ini.
+        /// </summary>
+        private static HashSet<int> allowedStationBuffs;
+
+        public PermaBuffs()
         {
-            get { return StationBuffs.Value.Values.Concat(new[] { BuffID.Kite }); }
+            StationBuffs.Changed += RebuildAllowedStationBuffs;
+            RebuildAllowedStationBuffs();
+        }
+
+        private static void RebuildAllowedStationBuffs()
+        {
+            allowedStationBuffs = new HashSet<int>(StationBuffs.Value.Values) { BuffID.Kite };
         }
 
         public void OnPlayerUpdate(Player player)
@@ -59,8 +71,7 @@ namespace DoombubblesPlugins
                 .Concat(player.bank2.item)
                 .Concat(player.bank3.item)
                 .Concat(player.bank4.item)
-                .Where(item => item.active && !item.IsAir)
-                .ToList();
+                .Where(item => item.active && !item.IsAir);
 
             var buffCounts = new Dictionary<int, int>();
 
@@ -94,11 +105,9 @@ namespace DoombubblesPlugins
                 }
             }
 
-            var stationBuffs = AllowedStationBuffs.ToList();
-
             foreach (var buffType in buffCounts.Keys)
             {
-                var required = stationBuffs.Contains(buffType) ? StationRequiredCount : ItemRequiredCount;
+                var required = allowedStationBuffs.Contains(buffType) ? StationRequiredCount : ItemRequiredCount;
 
                 if (buffCounts[buffType] < required) continue;
 

@@ -10,7 +10,7 @@ namespace DoombubblesPlugins
                        "Durendal and Dark Harvest buffs stack. Enemies still only carry one tag at a time.")]
     public class WhipBuffStacking : PluginBase, IPluginUpdate, IPluginPlayerPreUpdate
     {
-        private static readonly Setting<int[]> WorkingBuffs = new[]
+        private static readonly Setting<HashSet<int>> WorkingBuffs = new HashSet<int>
         {
             BuffID.SwordWhipPlayerBuff,
             BuffID.CoolWhipPlayerBuff,

@@ -1,4 +1,4 @@
-using System.Linq;
+using System.Collections.Generic;
 using PluginLoader;
 using Terraria;
 using Terraria.ID;
@@ -7,9 +7,9 @@ namespace DoombubblesPlugins
 {
     [PluginDescription("Minion projectiles that share immunity frames get their own instead, so Baby Slimes, Vampire Frogs, " +
                        "Imp Fireballs, Mini Spiders, Retanimini, Spazmamini and Tempests no longer take turns hitting.")]
-    public class MinionLocalIFrames : PluginBase, IPluginUpdate
+    public class MinionLocalIFrames : PluginBase, IPluginProjectileSetDefaults
     {
-        private static readonly Setting<int[]> AffectedProjectiles = new int[]
+        private static readonly Setting<HashSet<int>> AffectedProjectiles = new HashSet<int>
         {
             ProjectileID.ImpFireball,
             ProjectileID.VampireFrog,
@@ -22,29 +22,16 @@ namespace DoombubblesPlugins
             ProjectileID.Tempest
         };
 
-        private static void StaticToLocal(Projectile projectile)
+        public void OnProjectileSetDefaults(Projectile projectile)
         {
+            if (!AffectedProjectiles.Value.Contains(projectile.type)) return;
+
             if (!projectile.usesIDStaticNPCImmunity || projectile.usesLocalNPCImmunity) return;
 
             projectile.localNPCHitCooldown = projectile.idStaticNPCHitCooldown;
             projectile.idStaticNPCHitCooldown = -1;
             projectile.usesIDStaticNPCImmunity = false;
             projectile.usesLocalNPCImmunity = true;
-        }
-
-        public void OnUpdate()
-        {
-            if (Main.gameMenu) return;
-
-            foreach (var projectile in Main.projectile)
-            {
-                if (projectile == null || !projectile.active) continue;
-
-                if (AffectedProjectiles.Value.Contains(projectile.type))
-                {
-                    StaticToLocal(projectile);
-                }
-            }
         }
     }
 }

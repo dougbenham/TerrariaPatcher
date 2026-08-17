@@ -117,6 +117,15 @@ namespace PluginLoader
         bool OnPlayerQuickBuff(Player player);
     }
 
+    /// <summary>
+    /// Raised for every swing that lands on a tile, before the swing is resolved, so that the tile about to be broken
+    /// can still be read. Whether the swing finished it off is seen from the tile no longer being active afterwards.
+    /// </summary>
+    public interface IPluginPlayerPickTile : IPlugin
+    {
+        void OnPlayerPickTile(Player player, int x, int y, int pickPower);
+    }
+
     #endregion
 
     #region Item
@@ -142,6 +151,11 @@ namespace PluginLoader
     public interface IPluginProjectileAI : IPlugin
     {
         void OnProjectileAI001(Projectile projectile);
+    }
+
+    public interface IPluginProjectileSetDefaults : IPlugin
+    {
+        void OnProjectileSetDefaults(Projectile projectile);
     }
 
     #endregion

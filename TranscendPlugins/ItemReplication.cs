@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Collections.Generic;
 using Microsoft.Xna.Framework.Input;
 using PluginLoader;
 using Terraria;
@@ -74,30 +73,35 @@ namespace RyanPlugins
             }
         }
 
+        /// <summary>
+        /// The <c>ItemSlot.Context</c> values a slot may be replicated from.
+        /// </summary>
+        private static readonly HashSet<int> Contexts = new HashSet<int>
+        {
+            0,  // InventoryItem
+            1,  // InventoryCoin
+            2,  // InventoryAmmo
+            3,  // ChestItem
+            4,  // BankItem
+            6,  // TrashItem
+            8,  // EquipArmor
+            9,  // EquipArmorVanity
+            10, // EquipAccessory
+            11, // EquipAccessoryVanity
+            12, // EquipDye
+            16, // EquipGrapple
+            17, // EquipMount
+            18, // EquipMinecart
+            19, // EquipPet
+            20  // EquipLight
+        };
+
         public bool OnItemSlotRightClick(Item[] inv, int context, int slot)
         {
-            int[] contexts = new int[]{
-								 0, //InventoryItem
-								 1, //InventoryCoin
-								 2, //InventoryAmmo
-								 3, //ChestItem
-								 4, //BankItem
-								 6, //TrashItem
-								 8, //EquipArmor
-								 9, //EquipArmorVanity
-								 10, //EquipAccessory
-								 11, //EquipAccessoryVanity
-								 12, //EquipDye
-								 16, //EquipGrapple
-								 17, //EquipMount
-								 18, //EquipMinecart
-								 19, //EquipPet
-								 20 //EquipLight
-							 };
             var invItem = inv[slot];
             invItem.newAndShiny = false;
 
-            if (Main.stackSplit <= 1 && Main.mouseRight && Main.keyState.IsKeyDown(ReplicateKey) && contexts.Contains(context))
+            if (Main.stackSplit <= 1 && Main.mouseRight && Main.keyState.IsKeyDown(ReplicateKey) && Contexts.Contains(context))
             {
                 bool shiftDown =
                     Main.keyState.IsKeyDown(Keys.LeftShift) ||

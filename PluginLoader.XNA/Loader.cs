@@ -691,6 +691,11 @@ namespace PluginLoader
             return DispatchAny<IPluginPlayerQuickBuff>(plugin => plugin.OnPlayerQuickBuff(player));
         }
 
+        public static void OnPlayerPickTile(Player player, int x, int y, int pickPower)
+        {
+            Dispatch<IPluginPlayerPickTile>(plugin => plugin.OnPlayerPickTile(player, x, y, pickPower));
+        }
+
         #endregion
 
         #region Item
@@ -739,6 +744,11 @@ namespace PluginLoader
         public static void OnProjectileAI001(Projectile projectile)
         {
             Dispatch<IPluginProjectileAI>(plugin => plugin.OnProjectileAI001(projectile));
+        }
+
+        public static void OnProjectileSetDefaults(Projectile projectile)
+        {
+            Dispatch<IPluginProjectileSetDefaults>(plugin => plugin.OnProjectileSetDefaults(projectile));
         }
 
         #endregion

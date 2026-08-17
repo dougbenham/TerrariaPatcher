@@ -107,7 +107,7 @@ namespace DoombubblesPlugins
             }));
         }
 
-        private static readonly int[] RecallItems =
+        private static readonly HashSet<int> RecallItems = new HashSet<int>
         {
             ItemID.MagicMirror,
             ItemID.IceMirror,

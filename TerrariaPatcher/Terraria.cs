@@ -571,6 +571,8 @@ namespace TerrariaPatcher
             var onPlayerPickAmmo = _mainModule.Import(IL.GetMethodDefinition(loader, "OnPlayerPickAmmo"));
             var onItemSetDefaults = _mainModule.Import(IL.GetMethodDefinition(loader, "OnItemSetDefaults"));
             var onProjectileAI = _mainModule.Import(IL.GetMethodDefinition(loader, "OnProjectileAI001"));
+            var onProjectileSetDefaults = _mainModule.Import(IL.GetMethodDefinition(loader, "OnProjectileSetDefaults"));
+            var onPlayerPickTile = _mainModule.Import(IL.GetMethodDefinition(loader, "OnPlayerPickTile"));
             var onRightClick = _mainModule.Import(IL.GetMethodDefinition(loader, "OnItemSlotRightClick"));
             var onItemRollAPrefix = _mainModule.Import(IL.GetMethodDefinition(loader, "OnItemRollAPrefix"));
             var onSendChatMessageFromClient = _mainModule.Import(IL.GetMethodDefinition(loader, "OnSendChatMessageFromClient"));
@@ -615,6 +617,8 @@ namespace TerrariaPatcher
             var setDefaults = IL.GetMethodDefinition(item, "SetDefaults", 2);
             var rollAPrefix = IL.GetMethodDefinition(item, "RollAPrefix");
             var ai = IL.GetMethodDefinition(projectile, "AI_001");
+            var projectileSetDefaults = IL.GetMethodDefinition(projectile, "SetDefaults", 1);
+            var pickTile = IL.GetMethodDefinition(player, "PickTile");
             var rightClick = IL.GetMethodDefinition(itemSlot, "RightClick", 3);
             var doUpdateHandleChat = IL.GetMethodDefinition(main, "DoUpdate_HandleChat");
             var getColor = (from MethodDefinition m in lighting.Methods
@@ -936,6 +940,30 @@ namespace TerrariaPatcher
                     Instruction.Create(OpCodes.Ldarg_0),
                     Instruction.Create(OpCodes.Call, onProjectileAI),
                     Instruction.Create(OpCodes.Ret)
+                });
+            }
+
+            using (projectileSetDefaults.JumpFix())
+            {
+                // Projectile.SetDefaults post hook
+                IL.MethodAppend(projectileSetDefaults, projectileSetDefaults.Body.Instructions.Count - 1, 1, new[]
+                {
+                    Instruction.Create(OpCodes.Ldarg_0),
+                    Instruction.Create(OpCodes.Call, onProjectileSetDefaults),
+                    Instruction.Create(OpCodes.Ret)
+                });
+            }
+
+            using (pickTile.JumpFix())
+            {
+                // Player.PickTile pre hook
+                IL.MethodPrepend(pickTile, new[]
+                {
+                    Instruction.Create(OpCodes.Ldarg_0),
+                    Instruction.Create(OpCodes.Ldarg_1),
+                    Instruction.Create(OpCodes.Ldarg_2),
+                    Instruction.Create(OpCodes.Ldarg_3),
+                    Instruction.Create(OpCodes.Call, onPlayerPickTile)
                 });
             }
             

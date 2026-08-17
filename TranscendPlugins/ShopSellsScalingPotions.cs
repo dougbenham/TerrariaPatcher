@@ -1,4 +1,3 @@
-﻿using System;
 using PluginLoader;
 using Terraria;
 using Terraria.ID;
@@ -10,35 +9,38 @@ namespace EraselsPlugins
     {
         public void OnChestSetupShop(Chest chest, int type)
         {
-            if (type == 1)
+            if (type != 1) return;
+
+            var player = Main.player[Main.myPlayer];
+
+            if (player.statLifeMax >= 500)
+                Upgrade(chest, ItemID.LesserHealingPotion, ItemID.SuperHealingPotion);
+            else if (player.statLifeMax >= 300)
+                Upgrade(chest, ItemID.LesserHealingPotion, ItemID.GreaterHealingPotion);
+            else if (player.statLifeMax >= 200)
+                Upgrade(chest, ItemID.LesserHealingPotion, ItemID.HealingPotion);
+
+            if (player.statManaMax >= 400)
+                Upgrade(chest, ItemID.LesserManaPotion, ItemID.SuperManaPotion);
+            else if (player.statManaMax >= 200)
+                Upgrade(chest, ItemID.LesserManaPotion, ItemID.GreaterManaPotion);
+            else if (player.statManaMax >= 160)
+                Upgrade(chest, ItemID.LesserManaPotion, ItemID.ManaPotion);
+        }
+
+        /// <summary>
+        /// Replaces a potion the shop stocks wherever the game put it. The Merchant's slots shift with the world and
+        /// with hardmode, so which slot holds which potion cannot be assumed.
+        /// </summary>
+        private static void Upgrade(Chest chest, int stocked, int replacement)
+        {
+            for (var i = 0; i < chest.item.Length; i++)
             {
-                var player = Main.player[Main.myPlayer];
+                if (chest.item[i] == null || chest.item[i].type != stocked) continue;
 
-                if (player.statLifeMax >= 200 && player.statLifeMax <= 299)
-                {
-                    chest.item[7].SetDefaults(ItemID.HealingPotion);
-                }
-                else if (player.statLifeMax >= 300 && player.statLifeMax <= 499)
-                {
-                    chest.item[7].SetDefaults(ItemID.GreaterHealingPotion);
-                }
-                else if (player.statLifeMax >= 500)
-                {
-                    chest.item[7].SetDefaults(ItemID.SuperHealingPotion);
-                }
-
-                if (player.statManaMax >= 160 && player.statManaMax <= 200)
-                {
-                    chest.item[8].SetDefaults(ItemID.ManaPotion);
-                }
-                else if (player.statManaMax >= 201 && player.statManaMax <= 399)
-                {
-                    chest.item[8].SetDefaults(ItemID.GreaterManaPotion);
-                }
-                else if (player.statManaMax >= 400)
-                {
-                    chest.item[8].SetDefaults(ItemID.SuperManaPotion);
-                }
+                chest.item[i].SetDefaults(replacement);
+                chest.item[i].isAShopItem = true;
+                return;
             }
         }
     }

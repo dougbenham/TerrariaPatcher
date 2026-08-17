@@ -1,17 +1,22 @@
-using System.Collections.Generic;
-using System.Linq;
 using PluginLoader;
 using Terraria;
-using Terraria.Enums;
 using Terraria.ID;
 
 namespace DoombubblesPlugins
 {
-    [PluginDescription("The Dryad sells herb seeds. By default she only stocks the seeds whose herb is currently blooming; " +
-                       "turn BloomConditions off and she sells them all the time.")]
+    [PluginDescription("The Dryad sells the seeds for every herb, so you do not have to wait for one to be in bloom.")]
     public class DryadSeeds : PluginBase, IPluginChestSetupShop, IPluginUpdate
     {
-        private static readonly Setting<bool> BloomConditions = true;
+        private static readonly int[] seeds =
+        {
+            ItemID.DaybloomSeeds,
+            ItemID.MoonglowSeeds,
+            ItemID.BlinkrootSeeds,
+            ItemID.DeathweedSeeds,
+            ItemID.WaterleafSeeds,
+            ItemID.FireblossomSeeds,
+            ItemID.ShiverthornSeeds
+        };
 
         private static bool alreadyHappenedThisFrame;
 
@@ -25,21 +30,10 @@ namespace DoombubblesPlugins
             if (type != 3 || alreadyHappenedThisFrame) return;
             alreadyHappenedThisFrame = true;
 
-            var seedBlooming = new Dictionary<int, bool>
-            {
-                { ItemID.DaybloomSeeds, Main.dayTime },
-                { ItemID.MoonglowSeeds, !Main.dayTime },
-                { ItemID.BlinkrootSeeds, Main.moonPhase % 2 == 0 },
-                { ItemID.DeathweedSeeds, Main.bloodMoon || (!Main.dayTime && Main.moonPhase == (int) MoonPhase.Full) },
-                { ItemID.WaterleafSeeds, Main.raining },
-                { ItemID.FireblossomSeeds, !Main.raining && Main.dayTime && Main.time > 40500 },
-                { ItemID.ShiverthornSeeds, Main.moonPhase % 2 == 1 }
-            };
-
-            foreach (var kvp in seedBlooming.Where(kvp => !BloomConditions || kvp.Value))
+            foreach (var seed in seeds)
             {
                 var item = new Item();
-                item.SetDefaults(kvp.Key);
+                item.SetDefaults(seed);
                 chest.AddItemToShop(item);
             }
         }
