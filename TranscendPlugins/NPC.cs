@@ -11,11 +11,19 @@ namespace TranscendPlugins
 {
     [PluginDescription("Controls monster spawning and spawns them on demand. SpawnLimit is how many can be alive at once " +
                        "and SpawnRate is a percentage of the vanilla rate; hotkeys adjust both, and Toggle stops spawning " +
-                       "entirely and clears what is already out. /npc spawns any NPC by id or name.")]
+                       "entirely and clears what is already out. /npc spawns any NPC by id or name, and /npc search " +
+                       "finds an NPC's id.")]
     public class NPC : PluginBase, IPluginChatCommand
     {
         private static readonly Setting<int> SpawnLimit = 5;
         private static readonly Setting<int> SpawnRate = 100;
+
+        private static Shared.IdLookup npcs;
+
+        private static Shared.IdLookup Npcs
+        {
+            get { return npcs ?? (npcs = new Shared.IdLookup(typeof(NPCID))); }
+        }
 
         private static readonly HotkeySetting Toggle = new Hotkey { Key = Keys.N, Action = ToggleSpawning };
         private static readonly HotkeySetting Increase = new Hotkey { Key = Keys.OemPlus, Action = () => ModifySpawnRate(20) };
@@ -121,33 +129,48 @@ namespace TranscendPlugins
         {
             if (command != "npc") return false;
 
-            if (args.Length < 1 || args.Length > 2 || args[0] == "help")
+            var option = args.Length > 0 ? args[0].ToLower() : "";
+
+            if (args.Length < 1 || args.Length > 2 || option == "help")
             {
                 Main.NewText("Usage:");
                 Main.NewText("  /npc id [count]");
                 Main.NewText("  /npc name [count]");
                 Main.NewText("  /npc cnpc (Toggles NPC spawn at cursor position)");
+                Main.NewText("  /npc search text");
                 Main.NewText("  /npc help");
                 Main.NewText("Example:");
                 Main.NewText("  /npc 21");
                 Main.NewText("  /npc 21 20");
                 Main.NewText("  /npc Skeleton 20");
+                Main.NewText("  /npc search goblin");
                 return true;
             }
 
-            if (args[0] == "cnpc")
+            if (option == "cnpc")
             {
                 cnpc = !cnpc;
                 Main.NewText("NPC spawn at cursor " + (cnpc ? "enabled" : "disabled"));
                 return true;
             }
 
-            int npcId;
-            if (!int.TryParse(args[0], out npcId))
+            if (option == "search")
             {
-                var field = typeof(NPCID).GetFields().FirstOrDefault(info => info.Name.ToLower() == args[0].ToLower());
-                if (field != null)
-                    npcId = Convert.ToInt32(field.GetValue(null));
+                if (args.Length < 2)
+                {
+                    Main.NewText("Usage: /npc search text");
+                    return true;
+                }
+
+                Shared.IdLookup.Report(Npcs.Search(args[1]), "NPCs");
+                return true;
+            }
+
+            int npcId;
+            if (!int.TryParse(args[0], out npcId) && !Npcs.TryGetId(args[0], out npcId))
+            {
+                Main.NewText("Invalid NPCID.");
+                return true;
             }
             if (npcId == 0)
             {
