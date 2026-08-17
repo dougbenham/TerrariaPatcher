@@ -5,7 +5,8 @@ using Terraria;
 namespace TranscendPlugins
 {
     [PluginDescription("Sets the time of day from a hotkey or /time. The Night and Day hotkeys jump to midnight and noon, " +
-                       "or to dusk and dawn while holding Control.")]
+                       "or to dusk and dawn while holding Control. Single player only: the server owns the clock and there " +
+                       "is no packet to ask it for a change.")]
     public class Time : PluginBase, IPluginChatCommand
     {
         private static readonly HotkeySetting Night = new Hotkey

@@ -6,7 +6,10 @@ using Terraria.ID;
 namespace TranscendPlugins
 {
     [PluginDescription("Removes the delay on building tools: instant mining, block and wall placing, plus greatly extended " +
-                       "block reach and item pickup range. /usetime and /autoreuse also retune the item you are holding.")]
+                       "block reach and item pickup range. /usetime and /autoreuse also retune the item you are holding. " +
+                       "Works on a server, but a server started with secure=1 counts block placements and boots a client " +
+                       "that places more than about one a frame for a couple of seconds, so turn MaxTileSpeed and " +
+                       "MaxWallSpeed off on one of those.")]
     public class UseTime : PluginBase, IPluginItemSetDefaults, IPluginPlayerUpdateBuffs, IPluginPlayerUpdateArmorSets, IPluginChatCommand
     {
         private static readonly Setting<bool> MaxPickSpeed = true; // Pick / Hammer / Axe

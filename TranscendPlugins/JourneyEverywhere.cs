@@ -7,7 +7,9 @@ using Terraria;
 
 namespace TildemancerPlugins
 {
-    [PluginDescription("Unlocks the Journey mode research and power menu on any character, in any world.")]
+    [PluginDescription("Unlocks the Journey mode research and power menu on any character, in any world. On a server the " +
+                       "powers still go through it, so any the server has locked down with a journeypermission_ line in " +
+                       "serverconfig.txt will not take, and what you research is tracked on your own client.")]
     public class JourneyModeUnlocked : PluginBase, IPluginPlayerUpdateBuffs
     {
         private static readonly Setting<bool> Enabled = true;

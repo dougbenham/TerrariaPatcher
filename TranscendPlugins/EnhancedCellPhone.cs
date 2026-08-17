@@ -7,7 +7,8 @@ using Terraria.ID;
 namespace BlahPlugins
 {
     [PluginDescription("Adds destinations to the Cell Phone beyond home: either ocean, hell, or a random spot. " +
-                       "Click the icon by the phone to cycle through them.")]
+                       "Click the icon by the phone to cycle through them. On a server you arrive in the air and fall, " +
+                       "because the ground there is not sent until you are already at the destination.")]
     public class EnhancedCellPhone : PluginBase, IPluginPlayerPreUpdate, IPluginDrawInterface
     {
         enum Modes
@@ -39,69 +40,19 @@ namespace BlahPlugins
                     {
                         // left ocean
                         player.Teleport(new Vector2(200 * 16, (float)(Main.worldSurface / 2f) * 16f), 3);
-                        if (!Main.tile[(int)(player.position.X / 16f), (int)(player.position.Y / 16f) + 3].active())
-                        {
-                            while (!Main.tile[(int)(player.position.X / 16f), (int)(player.position.Y / 16f) + 4].active())
-                            {
-                                player.position.Y += 16f;
-                            }
-                        }
-                        else
-                        {
-                            while (Main.tile[(int)(player.position.X / 16f), (int)(player.position.Y / 16f) + 4].active())
-                            {
-                                player.position.Y -= 16f;
-                            }
-                        }
-                        player.fallStart = (int)(player.position.Y / 16f);
-                        if (Main.netMode == 1) NetMessage.SendTileSquare(player.whoAmI, 200, (int)Main.worldSurface / 2, 10);
+                        SettleOnGround(player);
                     }
                     else if (Mode.Value == Modes.RightOcean)
                     {
                         // right ocean
                         player.Teleport(new Vector2((Main.maxTilesX - 200) * 16, (float)(Main.worldSurface / 2f) * 16f), 3);
-                        if (!Main.tile[(int)(player.position.X / 16f), (int)(player.position.Y / 16f) + 3].active())
-                        {
-                            while (!Main.tile[(int)(player.position.X / 16f), (int)(player.position.Y / 16f) + 4].active())
-                            {
-                                player.position.Y += 16f;
-                            }
-                        }
-                        else
-                        {
-                            while (Main.tile[(int)(player.position.X / 16f), (int)(player.position.Y / 16f) + 4].active())
-                            {
-                                player.position.Y -= 16f;
-                            }
-                        }
-                        player.fallStart = (int)(player.position.Y / 16f);
-                        if (Main.netMode == 1) NetMessage.SendTileSquare(player.whoAmI, Main.maxTilesX - 200, (int)Main.worldSurface / 2, 10);
+                        SettleOnGround(player);
                     }
                     else if (Mode.Value == Modes.Hell)
                     {
                         // hell
                         player.Teleport(new Vector2((Main.maxTilesX / 2) * 16, (float)(Main.maxTilesY - 180) * 16f), 3);
-                        if (!Main.tile[(int)(player.position.X / 16f), (int)(player.position.Y / 16f) + 3].active())
-                        {
-                            while (!Main.tile[(int)(player.position.X / 16f), (int)(player.position.Y / 16f) + 4].active())
-                            {
-                                player.position.Y += 16f;
-                                if ((int)(player.position.Y / 16f) > Main.maxTilesY)
-                                {
-                                    player.position.Y = (float)(Main.maxTilesY * 16) - 130f;
-                                    break;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            while (Main.tile[(int)(player.position.X / 16f), (int)(player.position.Y / 16f) + 4].active())
-                            {
-                                player.position.Y -= 16f;
-                            }
-                        }
-                        player.fallStart = (int)(player.position.Y / 16f);
-                        if (Main.netMode == 1) NetMessage.SendTileSquare(player.whoAmI, Main.maxTilesX / 2, (int)Main.maxTilesY - 180, 10);
+                        SettleOnGround(player);
                     }
                     else if (Mode.Value == Modes.Random)
                     {
@@ -120,6 +71,41 @@ namespace BlahPlugins
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Puts the player on the ground under where they arrived. Nothing to do on a client: it holds no tiles for a
+        /// part of the world it has not been near, so there is no ground to find until the server sends the area, and
+        /// the player falls onto it then.
+        /// </summary>
+        private static void SettleOnGround(Player player)
+        {
+            if (Main.netMode == 0)
+            {
+                if (!GroundBelow(player, 3))
+                {
+                    while (!GroundBelow(player, 4) && player.position.Y / 16f < Main.maxTilesY - 10)
+                        player.position.Y += 16f;
+                }
+                else
+                {
+                    while (GroundBelow(player, 4) && player.position.Y > 0f)
+                        player.position.Y -= 16f;
+                }
+            }
+
+            player.fallStart = (int)(player.position.Y / 16f);
+        }
+
+        private static bool GroundBelow(Player player, int tilesBelow)
+        {
+            var x = (int)(player.position.X / 16f);
+            var y = (int)(player.position.Y / 16f) + tilesBelow;
+
+            if (!WorldGen.InWorld(x, y, 1)) return false;
+
+            var tile = Main.tile[x, y];
+            return tile != null && tile.active();
         }
 
         public void OnDrawInterface()

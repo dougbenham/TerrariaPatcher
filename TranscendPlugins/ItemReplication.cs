@@ -7,7 +7,8 @@ using Terraria.ID;
 
 namespace RyanPlugins
 {
-    [PluginDescription("Duplicates items: hold the replicate key and right click a slot to add one to the stack, or hold Shift as well to fill it.")]
+    [PluginDescription("Duplicates items: hold the replicate key and right click a slot to add one to the stack, or hold " +
+                       "Shift as well to fill it. Works in multiplayer; the changed slot is sent to the server.")]
     public class ItemReplication : PluginBase, IPluginItemSlotRightClick
     {
         private static readonly Setting<Keys> ReplicateKey = Keys.R;

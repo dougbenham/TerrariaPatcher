@@ -5,7 +5,8 @@ using Terraria;
 namespace TranscendPlugins
 {
     [PluginDescription("Forces the Christmas or Halloween season on regardless of the date, for the seasonal drops and " +
-                       "decorations. Switch with /season.")]
+                       "decorations. Switch with /season. On a server only the decorations follow, because the season " +
+                       "the server is in is what decides the drops and the seasonal enemies.")]
     public class Season : PluginBase, IPluginCheckSeason, IPluginChatCommand
     {
         private static readonly Setting<bool> Xmas = false;
@@ -43,6 +44,10 @@ namespace TranscendPlugins
                 usage();
                 return true;
             }
+
+            // Main.xMas and Main.halloween are read on both sides, but only the server's copy reaches loot and spawning.
+            if (Main.netMode != 0)
+                Main.NewText("The server decides the seasonal drops and enemies; this only changes what you see.");
 
             switch (option)
             {

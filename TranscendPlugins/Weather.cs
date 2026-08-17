@@ -4,7 +4,8 @@ using Terraria;
 
 namespace TranscendPlugins
 {
-    [PluginDescription("Starts and stops rain and slime rain on demand with a hotkey.")]
+    [PluginDescription("Starts and stops rain and slime rain on demand with a hotkey. In multiplayer only starting slime " +
+                       "rain works, as a request to the server; rain and stopping either are single player only.")]
     public class Weather : PluginBase
     {
         private static readonly HotkeySetting ToggleRain = new Hotkey { Key = Keys.OemSemicolon, Action = ToggleRaining };

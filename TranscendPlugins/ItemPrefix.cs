@@ -1,5 +1,4 @@
-﻿using System;
-using System.Reflection;
+﻿using System.Reflection;
 using PluginLoader;
 using Terraria;
 using Terraria.ID;
@@ -8,7 +7,8 @@ using Terraria.Utilities;
 namespace TranscendPlugins
 {
     [PluginDescription("Every item always rolls its best prefix: Legendary, Godly, Unreal, Mythical or Ruthless to suit " +
-                       "the weapon, and a prefix of your choosing on accessories. /prefix also sets the prefix of the item you hold.")]
+                       "the weapon, and a prefix of your choosing on accessories. /prefix also sets the prefix of the item " +
+                       "you hold. Works in multiplayer.")]
     public class ItemPrefix : PluginBase, IPluginChatCommand, IPluginItemRollAPrefix
     {
         private static readonly Setting<bool> EnableFixedPrefixes = true;

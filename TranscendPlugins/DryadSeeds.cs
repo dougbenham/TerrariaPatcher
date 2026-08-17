@@ -4,7 +4,8 @@ using Terraria.ID;
 
 namespace DoombubblesPlugins
 {
-    [PluginDescription("The Dryad sells the seeds for every herb, so you do not have to wait for one to be in bloom.")]
+    [PluginDescription("The Dryad sells the seeds for every herb, so you do not have to wait for one to be in bloom. " +
+                       "Works in multiplayer, where only your own shop is stocked with them.")]
     public class DryadSeeds : PluginBase, IPluginChestSetupShop, IPluginUpdate
     {
         private static readonly int[] seeds =

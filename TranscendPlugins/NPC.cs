@@ -12,7 +12,8 @@ namespace TranscendPlugins
     [PluginDescription("Controls monster spawning and spawns them on demand. SpawnLimit is how many can be alive at once " +
                        "and SpawnRate is a percentage of the vanilla rate; hotkeys adjust both, and Toggle stops spawning " +
                        "entirely and clears what is already out. /npc spawns any NPC by id or name, and /npc search " +
-                       "finds an NPC's id.")]
+                       "finds an NPC's id. Single player only, apart from /npc search: a server owns every NPC, so none " +
+                       "of the spawn settings, the hotkeys or /npc spawning reach it.")]
     public class NPC : PluginBase, IPluginChatCommand
     {
         private static readonly Setting<int> SpawnLimit = 5;
@@ -63,8 +64,23 @@ namespace TranscendPlugins
             defaultSpawnRate.SetValue(null, SpawnRate.Value == 0 ? int.MaxValue : 60000 / SpawnRate.Value);
         }
 
+        /// <summary>
+        /// Everything about an NPC belongs to the server: NPC.SpawnNPC only runs where netMode is not 1, NPC.NewNPC only
+        /// marks a spawn for syncing where netMode is 2, and an NPC killed on a client is sent straight back by the next
+        /// update. There is no packet a client can send to ask for any of it.
+        /// </summary>
+        private static bool ServerOwnsNpcs()
+        {
+            if (Main.netMode == 0) return false;
+
+            Main.NewText("The server controls monster spawning.");
+            return true;
+        }
+
         private static void ToggleSpawning()
         {
+            if (ServerOwnsNpcs()) return;
+
             if (SpawnLimit.Value > 0)
             {
                 previousSpawnLimit = SpawnLimit.Value;
@@ -84,12 +100,16 @@ namespace TranscendPlugins
 
         private static void ModifySpawnRate(int rate)
         {
+            if (ServerOwnsNpcs()) return;
+
             SpawnRate.Value = Clamp(SpawnRate.Value + rate, 0, 1000);
             Announce();
         }
 
         private static void ModifySpawnLimit(int limit)
         {
+            if (ServerOwnsNpcs()) return;
+
             SpawnLimit.Value = Clamp(SpawnLimit.Value + limit, 0, 150);
 
             if (SpawnLimit.Value == 0)
@@ -165,6 +185,8 @@ namespace TranscendPlugins
                 Shared.IdLookup.Report(Npcs.Search(args[1]), "NPCs");
                 return true;
             }
+
+            if (ServerOwnsNpcs()) return true;
 
             int npcId;
             if (!int.TryParse(args[0], out npcId) && !Npcs.TryGetId(args[0], out npcId))

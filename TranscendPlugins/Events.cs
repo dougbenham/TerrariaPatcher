@@ -1,4 +1,3 @@
-using System.Reflection;
 using PluginLoader;
 using Terraria;
 using Terraria.GameContent.Achievements;
@@ -9,7 +8,9 @@ using Keys = Microsoft.Xna.Framework.Input.Keys;
 namespace TranscendPlugins
 {
     [PluginDescription("Starts and stops world events from the number pad: meteors, blood moons, eclipses, the goblin, " +
-                       "frost, pirate and martian invasions, the pumpkin and frost moons, the lunar apocalypse and the Moon Lord.")]
+                       "frost, pirate and martian invasions, the pumpkin and frost moons, the lunar apocalypse and the Moon Lord. " +
+                       "Works in multiplayer, where starting an event is a request the server may refuse and only the server " +
+                       "can stop an event. The meteor and starting the lunar apocalypse are single player only.")]
     public class Events : PluginBase
     {
         private static readonly HotkeySetting Meteor = new Hotkey
@@ -17,8 +18,16 @@ namespace TranscendPlugins
             Key = Keys.NumPad0,
             Action = () =>
             {
-                SpawnMeteor = false;
-                dropMeteor.Invoke(null, new object[] { false });
+                // WorldGen.dropMeteor writes tiles, which on a client only exist until the server sends the area back,
+                // and message 61 has no id for asking the server to drop one.
+                if (Main.netMode != 0)
+                {
+                    Main.NewText("Dropping a meteor is only handled on the server.", 50, 255, 130);
+                    return;
+                }
+
+                WorldGen.spawnMeteor = false;
+                WorldGen.dropMeteor();
             }
         };
         
@@ -33,22 +42,8 @@ namespace TranscendPlugins
 		private static readonly HotkeySetting LunarApocalypse = new Hotkey { Key = Keys.NumPad9, Action = ToggleLunarApocalypse };
 		private static readonly HotkeySetting MoonLord = new Hotkey { Key = Keys.Add, Action = ToggleMoonLord };
 
-        private static readonly FieldInfo spawnMeteor;
-        private static readonly MethodInfo dropMeteor;
 
-        static Events()
-        {
-            var worldGen = Assembly.GetEntryAssembly().GetType("Terraria.WorldGen");
-            spawnMeteor = worldGen.GetField("spawnMeteor");
-            dropMeteor = worldGen.GetMethod("dropMeteor");
-        }
-
-        private static bool SpawnMeteor
-        {
-            get { return (bool) spawnMeteor.GetValue(null); }
-            set { spawnMeteor.SetValue(null, value); }
-        }
-
+        
         /// <summary>
         /// The world event ids a client can ask the server to start through message 61. The server applies these
         /// itself and broadcasts the result, which is the only way a client can change world state in multiplayer.

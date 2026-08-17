@@ -5,7 +5,8 @@ using Terraria;
 
 namespace TranscendPlugins
 {
-    [PluginDescription("Lets you craft any recipe without the ingredients or the crafting station. Toggle it with /creativecrafting.")]
+    [PluginDescription("Lets you craft any recipe without the ingredients or the crafting station. " +
+                       "Off by default; toggle it with /creativecrafting. Works in multiplayer.")]
     public class CreativeCrafting : PluginBase, IPluginUpdate, IPluginChatCommand
     {
         private struct RecipeBackup
@@ -47,33 +48,23 @@ namespace TranscendPlugins
 
         public bool OnChatCommand(string command, string[] args)
         {
-            if (command != "craftmode") return false;
+            if (command != "creativecrafting") return false;
 
             bool newEnabled;
-            if (args.Length == 0 || args[0].Equals("toggle", StringComparison.OrdinalIgnoreCase))
+            if (args.Length == 0)
             {
                 newEnabled = !enabled;
             }
-            else if (args[0].Equals("on", StringComparison.OrdinalIgnoreCase))
-            {
-                newEnabled = true;
-            }
-            else if (args[0].Equals("off", StringComparison.OrdinalIgnoreCase))
-            {
-                newEnabled = false;
-            }
             else if (args[0].Equals("status", StringComparison.OrdinalIgnoreCase))
             {
-                LocalMessage(enabled ? "Craft without materials is enabled." : "Craft without materials is disabled.");
+	            Main.NewText(enabled ? "Craft without materials is enabled." : "Craft without materials is disabled.");
                 return true;
             }
             else
             {
-                LocalMessage("Usage:");
-                LocalMessage("  /craftmode on");
-                LocalMessage("  /craftmode off");
-                LocalMessage("  /craftmode status");
-                LocalMessage("  /craftmode toggle");
+	            Main.NewText("Usage:");
+	            Main.NewText("  /creativecrafting - toggles on/off");
+	            Main.NewText("  /creativecrafting status");
                 return true;
             }
 
@@ -99,12 +90,6 @@ namespace TranscendPlugins
             player.adjLava = true;
         }
 
-        private static void LocalMessage(string message)
-        {
-            if (Main.netMode != 2)
-                Main.NewText(message);
-        }
-
         private void SetEnabled(bool newEnabled)
         {
             if (newEnabled == enabled)
@@ -122,12 +107,12 @@ namespace TranscendPlugins
             if (enabled)
             {
                 ApplyRecipeOverrides();
-                LocalMessage("Craft without materials enabled (recipes only).");
+                Main.NewText("Craft without materials enabled (recipes only).");
             }
             else
             {
                 RestoreRecipeOverrides();
-                LocalMessage("Craft without materials disabled.");
+                Main.NewText("Craft without materials disabled.");
             }
         }
 

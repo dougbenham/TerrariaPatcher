@@ -8,7 +8,8 @@ using Terraria.ID;
 namespace TranscendPlugins
 {
     [PluginDescription("Mining one block of an ore or gem vein mines the rest of it, up to MaxBlocks. " +
-                       "On by default; toggle it with /veinminer.")]
+                       "On by default; toggle it with /veinminer. Works in multiplayer, where the vein is mined more " +
+                       "slowly so the server never sees it as tile removal spam.")]
     public class VeinMiner : PluginBase, IPluginUpdate, IPluginPlayerPickTile, IPluginChatCommand
     {
         private static readonly Setting<bool> Enabled = true;
@@ -229,7 +230,7 @@ namespace TranscendPlugins
             if (option == "help")
             {
                 Main.NewText("Usage:");
-                Main.NewText("  /veinminer - turns vein mining on or off");
+                Main.NewText("  /veinminer - toggles on/off");
                 Main.NewText("  /veinminer status");
                 return true;
             }
