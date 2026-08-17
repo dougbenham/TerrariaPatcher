@@ -381,11 +381,19 @@ namespace TerrariaPatcher
         {
             var player = IL.GetTypeDefinition(_mainModule, "Player");
             var skipManaUse = IL.GetMethodDefinition(player, "ItemCheck_PayMana_ShouldSkipManaUse");
-            
+            var checkMana = IL.GetMethodDefinition(player, "CheckMana", 3);
+
             skipManaUse.Body.ExceptionHandlers.Clear();
             skipManaUse.Body.Instructions.Clear();
             skipManaUse.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_I4_1));
             skipManaUse.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
+
+            // Some behaviors (Forbidden Storm, Nimbus Rod, Medusa Head, Life Drain, the Forbidden armor set bonus) bypass the
+            // ItemCheck_PayMana path and call CheckMana directly.
+            checkMana.Body.ExceptionHandlers.Clear();
+            checkMana.Body.Instructions.Clear();
+            checkMana.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_I4_1));
+            checkMana.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
         }
 
         private static void RemoveDiscordBuff()
