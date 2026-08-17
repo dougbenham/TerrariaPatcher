@@ -82,6 +82,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.vampiricKnivesHealingRate)).BeginInit();
             this.groupBox6.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.spectreHealingRate)).BeginInit();
+            this.groupBox7.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBox1
@@ -133,7 +134,6 @@
             0});
             this.spawnRateVoodoo.ValueChanged += new System.EventHandler(this.config_Changed);
             // 
-            // 
             // timeEnabled
             // 
             this.timeEnabled.AutoSize = true;
@@ -152,7 +152,7 @@
             this.steamFixEnabled.AutoSize = true;
             this.steamFixEnabled.Checked = true;
             this.steamFixEnabled.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.steamFixEnabled.Location = new System.Drawing.Point(6, 317);
+            this.steamFixEnabled.Location = new System.Drawing.Point(6, 293);
             this.steamFixEnabled.Name = "steamFixEnabled";
             this.steamFixEnabled.Size = new System.Drawing.Size(72, 17);
             this.steamFixEnabled.TabIndex = 4;
@@ -188,7 +188,7 @@
             this.functionalSocialSlots.AutoSize = true;
             this.functionalSocialSlots.Checked = true;
             this.functionalSocialSlots.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.functionalSocialSlots.Location = new System.Drawing.Point(6, 271);
+            this.functionalSocialSlots.Location = new System.Drawing.Point(6, 247);
             this.functionalSocialSlots.Name = "functionalSocialSlots";
             this.functionalSocialSlots.Size = new System.Drawing.Size(133, 17);
             this.functionalSocialSlots.TabIndex = 33;
@@ -201,7 +201,7 @@
             this.plugins.AutoSize = true;
             this.plugins.Checked = true;
             this.plugins.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.plugins.Location = new System.Drawing.Point(6, 340);
+            this.plugins.Location = new System.Drawing.Point(6, 316);
             this.plugins.Name = "plugins";
             this.plugins.Size = new System.Drawing.Size(215, 17);
             this.plugins.TabIndex = 32;
@@ -214,7 +214,7 @@
             this.maxCraftingRange.AutoSize = true;
             this.maxCraftingRange.Checked = true;
             this.maxCraftingRange.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.maxCraftingRange.Location = new System.Drawing.Point(6, 294);
+            this.maxCraftingRange.Location = new System.Drawing.Point(6, 270);
             this.maxCraftingRange.Name = "maxCraftingRange";
             this.maxCraftingRange.Size = new System.Drawing.Size(120, 17);
             this.maxCraftingRange.TabIndex = 30;
@@ -225,7 +225,7 @@
             // infiniteCloudJumps
             // 
             this.infiniteCloudJumps.AutoSize = true;
-            this.infiniteCloudJumps.Location = new System.Drawing.Point(6, 248);
+            this.infiniteCloudJumps.Location = new System.Drawing.Point(6, 224);
             this.infiniteCloudJumps.Name = "infiniteCloudJumps";
             this.infiniteCloudJumps.Size = new System.Drawing.Size(120, 17);
             this.infiniteCloudJumps.TabIndex = 24;
@@ -287,7 +287,7 @@
             this.permanentWings.AutoSize = true;
             this.permanentWings.Checked = true;
             this.permanentWings.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.permanentWings.Location = new System.Drawing.Point(6, 225);
+            this.permanentWings.Location = new System.Drawing.Point(6, 201);
             this.permanentWings.Name = "permanentWings";
             this.permanentWings.Size = new System.Drawing.Size(238, 17);
             this.permanentWings.TabIndex = 12;
@@ -464,9 +464,9 @@
             this.save.Text = "Patch && Save";
             this.save.UseVisualStyleBackColor = true;
             this.save.Click += new System.EventHandler(this.save_Click);
-            //
+            // 
             // syncPlugins
-            //
+            // 
             this.syncPlugins.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.syncPlugins.Location = new System.Drawing.Point(836, 405);
             this.syncPlugins.Name = "syncPlugins";
@@ -475,7 +475,7 @@
             this.syncPlugins.Text = "Sync Plugins Only";
             this.syncPlugins.UseVisualStyleBackColor = true;
             this.syncPlugins.Click += new System.EventHandler(this.syncPlugins_Click);
-            //
+            // 
             // saveFileDialog
             // 
             this.saveFileDialog.Filter = "Executable files (*.exe)|*.exe";
@@ -567,27 +567,6 @@
             this.groupBox6.TabStop = false;
             this.groupBox6.Text = "Healing:";
             // 
-            // groupBox7
-            // 
-            this.groupBox7.Controls.Add(this.treasureBagsDropAll);
-            this.groupBox7.Location = new System.Drawing.Point(640, 172);
-            this.groupBox7.Name = "groupBox7";
-            this.groupBox7.Size = new System.Drawing.Size(308, 52);
-            this.groupBox7.TabIndex = 29;
-            this.groupBox7.TabStop = false;
-            this.groupBox7.Text = "Boss Bags:";
-            // 
-            // treasureBagsDropAll
-            // 
-            this.treasureBagsDropAll.AutoSize = true;
-            this.treasureBagsDropAll.Location = new System.Drawing.Point(6, 22);
-            this.treasureBagsDropAll.Name = "treasureBagsDropAll";
-            this.treasureBagsDropAll.Size = new System.Drawing.Size(229, 17);
-            this.treasureBagsDropAll.TabIndex = 0;
-            this.treasureBagsDropAll.Text = "Treasure Bags always drop full loot table";
-            this.treasureBagsDropAll.UseVisualStyleBackColor = true;
-            this.treasureBagsDropAll.CheckedChanged += new System.EventHandler(this.config_Changed);
-            // 
             // spectreHealingRate
             // 
             this.spectreHealingRate.DecimalPlaces = 1;
@@ -618,6 +597,27 @@
             this.linkLabel.TabStop = true;
             this.linkLabel.Text = "https://forums.terraria.org/index.php?threads/24615/";
             this.linkLabel.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel_LinkClicked);
+            // 
+            // groupBox7
+            // 
+            this.groupBox7.Controls.Add(this.treasureBagsDropAll);
+            this.groupBox7.Location = new System.Drawing.Point(640, 172);
+            this.groupBox7.Name = "groupBox7";
+            this.groupBox7.Size = new System.Drawing.Size(308, 52);
+            this.groupBox7.TabIndex = 29;
+            this.groupBox7.TabStop = false;
+            this.groupBox7.Text = "Boss Bags:";
+            // 
+            // treasureBagsDropAll
+            // 
+            this.treasureBagsDropAll.AutoSize = true;
+            this.treasureBagsDropAll.Location = new System.Drawing.Point(6, 22);
+            this.treasureBagsDropAll.Name = "treasureBagsDropAll";
+            this.treasureBagsDropAll.Size = new System.Drawing.Size(216, 17);
+            this.treasureBagsDropAll.TabIndex = 0;
+            this.treasureBagsDropAll.Text = "Treasure Bags always drop full loot table";
+            this.treasureBagsDropAll.UseVisualStyleBackColor = true;
+            this.treasureBagsDropAll.CheckedChanged += new System.EventHandler(this.config_Changed);
             // 
             // Main
             // 

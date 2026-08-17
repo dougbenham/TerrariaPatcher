@@ -26,7 +26,6 @@ namespace TerrariaPatcher
         public bool MaxCraftingRange = false;
         public float VampiricHealing = 7.5f;
         public float SpectreHealing = 20f;
-        public int Thorns = 33;
         public int SpawnRateVoodoo = 100;
         public bool BossBagsDropAllLoot = false;
         public List<int> PermanentBuffs = new List<int>();
@@ -102,7 +101,6 @@ namespace TerrariaPatcher
                     ModSpawnRateVoodooDemon(details.SpawnRateVoodoo / 100f);
                 if (details.BossBagsDropAllLoot)
                     TreasureBagsDropAll();
-                //ModThornsBuff(details.Thorns / 100f);
 
                 asm.Write(target + ".tmp");
             }
@@ -188,47 +186,6 @@ namespace TerrariaPatcher
 			            update.Body.Instructions[i - 1].OpCode = OpCodes.Ldc_I4_1;
 		            }
 	            }
-            }
-        }
-        
-        private static void ModThornsBuff(float rate)
-        {
-            var player = IL.GetTypeDefinition(_mainModule, "Player");
-            var updatePlayer = IL.GetMethodDefinition(player, "Update");
-
-            var thornsScaling = new MethodDefinition("ThornsScaling", MethodAttributes.Private, _mainModule.Import(typeof(int)));
-            thornsScaling.Parameters.Add(new ParameterDefinition(_mainModule.Import(typeof(int))));
-            var thornsScalingIL = thornsScaling.Body.GetILProcessor();
-            thornsScalingIL.Emit(OpCodes.Ldarg_1);
-            thornsScalingIL.Emit(OpCodes.Conv_R4);
-            thornsScalingIL.Emit(OpCodes.Ldc_R4, rate);
-            thornsScalingIL.Emit(OpCodes.Mul);
-            thornsScalingIL.Emit(OpCodes.Conv_I4);
-            thornsScalingIL.Emit(OpCodes.Ret);
-            player.Methods.Add(thornsScaling);
-
-            using (updatePlayer.JumpFix())
-            {
-                int spot = IL.ScanForOpcodePattern(updatePlayer,
-                    (i, instruction) =>
-                    {
-                        var i0 = updatePlayer.Body.Instructions[i].Operand as FieldReference;
-                        return i0 != null && i0.Name == "thorns";
-                    },
-                    OpCodes.Ldfld);
-
-                int spot2 = IL.ScanForOpcodePattern(updatePlayer,
-                    (i, instruction) => true,
-                    spot,
-                    OpCodes.Ldc_I4_3,
-                    OpCodes.Div);
-
-                var il = updatePlayer.Body.GetILProcessor();
-                var in0 = updatePlayer.Body.Instructions[spot2];
-                var in1 = updatePlayer.Body.Instructions[spot2 + 1];
-                il.Remove(in0);
-                il.InsertBefore(in1, il.Create(OpCodes.Call, _mainModule.Import(thornsScaling)));
-                il.Remove(in1);
             }
         }
 
