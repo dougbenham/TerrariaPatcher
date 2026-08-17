@@ -21,10 +21,18 @@ namespace TranscendPlugins
 
         private static void TeleportToCursor()
         {
-            var vector = new Vector2(Main.mouseX + Main.screenPosition.X, Main.mouseY + Main.screenPosition.Y);
-            Player.Teleport(vector, 1, 0);
+            TeleportTo(new Vector2(Main.mouseX + Main.screenPosition.X, Main.mouseY + Main.screenPosition.Y));
+        }
+
+        /// <summary>
+        /// Moves the player through <see cref="Terraria.Player.Teleport"/> and tells the server about it with message
+        /// 65, which the server applies and relays to the other clients.
+        /// </summary>
+        private static void TeleportTo(Vector2 position)
+        {
+            Player.Teleport(position, 1, 0);
             Player.velocity = Vector2.Zero;
-            NetMessage.SendData(65, -1, -1, null, 0, Player.whoAmI, vector.X, vector.Y, 1, 0, 0);
+            NetMessage.SendData(65, -1, -1, null, 0, Player.whoAmI, position.X, position.Y, 1, 0, 0);
         }
 
         public void OnInitialize()
@@ -71,10 +79,7 @@ namespace TranscendPlugins
                 {
                     vector2.Y = (float)(num2 - player.height);
                 }
-                player.position = vector2;
-                player.velocity = Vector2.Zero;
-                player.fallStart = (int)(player.position.Y / 16f);
-                NetMessage.SendData(13, -1, -1, null, Main.myPlayer, 0f, 0f, 0f, 0, 0, 0);
+                TeleportTo(vector2);
             }
         }
 
@@ -131,11 +136,7 @@ namespace TranscendPlugins
                 {
                     if (!IsSearchMatch(Main.Map[searchX, j].Type)) continue;
 
-                    Player player = Main.player[Main.myPlayer];
-                    player.position = new Vector2(searchX * 16, j * 16);
-                    player.velocity = Vector2.Zero;
-                    player.fallStart = (int)(player.position.Y / 16f);
-                    NetMessage.SendData(13, -1, -1, null, Main.myPlayer, 0f, 0f, 0f, 0, 0, 0);
+                    TeleportTo(new Vector2(searchX * 16, j * 16));
                     searchMode = NoSearch;
                     return;
                 }

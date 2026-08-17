@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Input;
 using PluginLoader;
 using Terraria;
 using Terraria.Audio;
+using Terraria.ID;
 
 namespace RyanPlugins
 {
@@ -19,6 +20,58 @@ namespace RyanPlugins
 	        if (a.type != b.type) return false;
 	        if (a.prefix != b.prefix) return false;
 	        return true;
+        }
+
+        /// <summary>
+        /// Tells the server about a slot this plugin changed. Without this the replicated item only exists on this
+        /// client, and the server overwrites it the next time it syncs the slot.
+        /// </summary>
+        private static void SyncSlot(int context, int slot)
+        {
+            if (Main.netMode != 1) return;
+
+            if (context == 3)
+            {
+                NetMessage.SendData(32, -1, -1, null, Main.player[Main.myPlayer].chest, slot);
+                return;
+            }
+
+            var slotId = ToPlayerItemSlotId(context, slot);
+            if (slotId < 0) return;
+
+            NetMessage.SendData(5, -1, -1, null, Main.myPlayer, slotId);
+        }
+
+        /// <summary>
+        /// Converts an <c>ItemSlot.Context</c> and its index into the flat slot id that message 5 addresses.
+        /// Returns -1 for contexts that message 5 does not cover, such as the piggy bank.
+        /// </summary>
+        private static int ToPlayerItemSlotId(int context, int slot)
+        {
+            switch (context)
+            {
+                case 0: // InventoryItem
+                case 1: // InventoryCoin
+                case 2: // InventoryAmmo
+                    return PlayerItemSlotID.Inventory0 + slot;
+                case 6: // TrashItem
+                    return PlayerItemSlotID.TrashItem;
+                case 8:  // EquipArmor
+                case 9:  // EquipArmorVanity
+                case 10: // EquipAccessory
+                case 11: // EquipAccessoryVanity
+                    return PlayerItemSlotID.Armor0 + slot;
+                case 12: // EquipDye
+                    return PlayerItemSlotID.Dye0 + slot;
+                case 16: // EquipGrapple
+                case 17: // EquipMount
+                case 18: // EquipMinecart
+                case 19: // EquipPet
+                case 20: // EquipLight
+                    return PlayerItemSlotID.Misc0 + slot;
+                default:
+                    return -1;
+            }
         }
 
         public bool OnItemSlotRightClick(Item[] inv, int context, int slot)
@@ -61,10 +114,7 @@ namespace RyanPlugins
 
                         Main.stackSplit = Main.stackSplit == 0 ? 15 : Main.stackDelay;
 
-                        if (context == 3 && Main.netMode == 1)
-                        {
-                            NetMessage.SendData(32, -1, -1, null, Main.player[Main.myPlayer].chest, (float)slot, 0f, 0f, 0, 0, 0);
-                        }
+                        SyncSlot(context, slot);
                     }
                     return true;
                 }
@@ -99,10 +149,7 @@ namespace RyanPlugins
                         Main.stackSplit = Main.stackDelay;
                     }
 
-                    if (context == 3 && Main.netMode == 1)
-                    {
-                        NetMessage.SendData(32, -1, -1, null, Main.player[Main.myPlayer].chest, (float)slot, 0f, 0f, 0, 0, 0);
-                    }
+                    SyncSlot(context, slot);
                 }
                 return true;
             }

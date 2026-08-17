@@ -49,12 +49,12 @@ namespace ZeromaruPlugins
         public bool OnPlayerHurt(Player player, PlayerDeathReason damageSource, int damage, int hitDirection, bool pvp, bool quiet, bool crit, int cooldownCounter, bool dodgeable, out double result)
         {
             result = 0.0;
-            return Mode.Value == Modes.God;
+            return player.whoAmI == Main.myPlayer && Mode.Value == Modes.God;
         }
 
         public bool OnPlayerKillMe(Player player, PlayerDeathReason damageSource, double dmg, int hitDirection, bool pvp)
         {
-            return Mode.Value == Modes.God || Mode.Value == Modes.DemiGod;
+            return player.whoAmI == Main.myPlayer && (Mode.Value == Modes.God || Mode.Value == Modes.DemiGod);
         }
     }
 }

@@ -24,6 +24,13 @@ namespace TranscendPlugins
 
         private static void ChangeTime(string time)
         {
+            // The server owns the clock and there is no packet to ask it for a change.
+            if (Main.netMode != 0)
+            {
+                Main.NewText("The server controls the time.");
+                return;
+            }
+
             switch (time.ToLower())
             {
                 case "dusk":
