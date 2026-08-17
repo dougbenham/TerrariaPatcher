@@ -449,7 +449,7 @@ namespace PluginLoader
             if (Main.showSplash)
                 return;
 
-            if (Main.menuMode != 10)
+            if (Main.gameMenu)
                 return;
 
             if (!Main.blockInput && !Main.drawingPlayerChat && !Main.editSign && !Main.editChest)
