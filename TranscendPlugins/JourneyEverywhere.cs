@@ -7,35 +7,23 @@ using Terraria;
 
 namespace TildemancerPlugins
 {
-    public class JourneyModeUnlocked : MarshalByRefObject, IPluginPlayerUpdateBuffs
+    [PluginDescription("Unlocks the Journey mode research and power menu on any character, in any world.")]
+    public class JourneyModeUnlocked : PluginBase, IPluginPlayerUpdateBuffs
     {
+        private static readonly Setting<bool> Enabled = true;
+        private static readonly Setting<bool> ShowChatMessage = true;
+
         private static readonly byte[] Aob = new byte[] { 0x74, 0x10, 0x8B, 0xCE, 0x33, 0xD2, 0xE8 };
 
-        private bool _enabled;
-        private bool _showChatMessage;
         private bool _attempted;
         private bool _patched;
 
         private IntPtr _patchAddress = IntPtr.Zero;
         private byte _originalOpcode;
 
-        public JourneyModeUnlocked()
-        {
-            bool enabled;
-            if (!bool.TryParse(IniAPI.ReadIni("JourneyModeUnlocked", "Enabled", "True", writeIt: true), out enabled))
-                enabled = true;
-
-            bool showMsg;
-            if (!bool.TryParse(IniAPI.ReadIni("JourneyModeUnlocked", "ShowChatMessage", "True", writeIt: true), out showMsg))
-                showMsg = true;
-
-            _enabled = enabled;
-            _showChatMessage = showMsg;
-        }
-
         public void OnPlayerUpdateBuffs(Player player)
         {
-            if (!_enabled)
+            if (!Enabled)
                 return;
 
             if (_attempted || player == null || player.whoAmI != Main.myPlayer)
@@ -46,18 +34,18 @@ namespace TildemancerPlugins
             try
             {
                 _patched = TryApplyPatch();
-                if (_patched && _showChatMessage)
+                if (_patched && ShowChatMessage)
                 {
                     Main.NewText("Journey Mode UI loaded successfully. Have fun!");
                 }
-                else if (!_patched && _showChatMessage)
+                else if (!_patched && ShowChatMessage)
                 {
                     Main.NewText("Journey Mode UI failed to load; Patch not applied (signature not found).");
                 }
             }
             catch (Exception ex)
             {
-                if (_showChatMessage)
+                if (ShowChatMessage)
                     Main.NewText("Journey Mode UI failed to load; Exception while patching: " + ex.GetType().Name);
             }
         }

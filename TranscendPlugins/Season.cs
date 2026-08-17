@@ -1,30 +1,25 @@
-﻿using System;
+using System;
 using PluginLoader;
 using Terraria;
 
 namespace TranscendPlugins
 {
-    public class Season : MarshalByRefObject, IPluginCheckSeason, IPluginChatCommand
+    [PluginDescription("Forces the Christmas or Halloween season on regardless of the date, for the seasonal drops and " +
+                       "decorations. Switch with /season.")]
+    public class Season : PluginBase, IPluginCheckSeason, IPluginChatCommand
     {
-        private bool xmas, halloween;
-
-        public Season()
-        {
-            if (!bool.TryParse(IniAPI.ReadIni("Season", "Xmas", "false", writeIt: true), out xmas))
-                xmas = false;
-            if (!bool.TryParse(IniAPI.ReadIni("Season", "Halloween", "false", writeIt: true), out halloween))
-                halloween = false;
-        }
+        private static readonly Setting<bool> Xmas = false;
+        private static readonly Setting<bool> Halloween = false;
 
         public bool OnCheckXmas()
         {
-            Main.xMas = xmas;
+            Main.xMas = Xmas;
             return true;
         }
 
         public bool OnCheckHalloween()
         {
-            Main.halloween = halloween;
+            Main.halloween = Halloween;
             return true;
         }
 
@@ -41,7 +36,7 @@ namespace TranscendPlugins
                 Main.NewText("  /season help");
             };
 
-            if (args.Length < 1 || args.Length > 1 || args[0] == "help")
+            if (args.Length != 1 || args[0] == "help")
             {
                 usage();
                 return true;
@@ -50,19 +45,19 @@ namespace TranscendPlugins
             switch (args[0])
             {
                 case "none":
-                    IniAPI.WriteIni("Season", "Xmas", (xmas = false).ToString());
-                    IniAPI.WriteIni("Season", "Halloween", (halloween = false).ToString());
+                    Xmas.Value = false;
+                    Halloween.Value = false;
                     Main.NewText("Christmas & Halloween disabled!");
                     return true;
                 case "xmas":
-                    IniAPI.WriteIni("Season", "Xmas", (xmas = !xmas).ToString());
-                    IniAPI.WriteIni("Season", "Halloween", (halloween = false).ToString());
-                    Main.NewText("Christmas " + (xmas ? "enabled" : "disabled") + "!");
+                    Xmas.Value = !Xmas;
+                    Halloween.Value = false;
+                    Main.NewText("Christmas " + (Xmas ? "enabled" : "disabled") + "!");
                     return true;
                 case "halloween":
-                    IniAPI.WriteIni("Season", "Xmas", (xmas = false).ToString());
-                    IniAPI.WriteIni("Season", "Halloween", (halloween = !halloween).ToString());
-                    Main.NewText("Halloween " + (halloween ? "enabled" : "disabled") + "!");
+                    Xmas.Value = false;
+                    Halloween.Value = !Halloween;
+                    Main.NewText("Halloween " + (Halloween ? "enabled" : "disabled") + "!");
                     return true;
                 default:
                     usage();

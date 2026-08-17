@@ -1,22 +1,17 @@
-﻿using System;
 using PluginLoader;
 using Terraria;
 
 namespace TranscendPlugins
 {
-    public class Turrets : MarshalByRefObject, IPluginPlayerUpdateArmorSets
+    [PluginDescription("Raises the number of sentry turrets you can have placed at once.")]
+    public class Turrets : PluginBase, IPluginPlayerUpdateArmorSets
     {
-        private int turrets;
+        private static readonly Setting<int> Max = 100;
 
-        public Turrets()
-        {
-            if (!int.TryParse(IniAPI.ReadIni("Turrets", "Max", "100", writeIt: true), out turrets))
-                turrets = 100;
-        }
         public void OnPlayerUpdateArmorSets(Player player)
         {
             if (player.whoAmI == Main.myPlayer)
-                player.maxTurrets = turrets;
+                player.maxTurrets = Max;
         }
     }
 }

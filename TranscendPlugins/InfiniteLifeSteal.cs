@@ -4,7 +4,8 @@ using Terraria;
 
 namespace TranscendPlugins
 {
-    public class InfiniteLifeSteal : MarshalByRefObject, IPluginPlayerUpdate
+    [PluginDescription("Removes the cap on life steal, so Vampire Knives and Spectre armour keep healing you without limit.")]
+    public class InfiniteLifeSteal : PluginBase, IPluginPlayerUpdate
     {
         public void OnPlayerUpdate(Player player)
         {

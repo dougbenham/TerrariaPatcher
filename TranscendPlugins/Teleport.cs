@@ -7,28 +7,24 @@ using Terraria.ID;
 
 namespace TranscendPlugins
 {
-    public class Teleport : MarshalByRefObject, IPluginInitialize, IPluginUpdate, IPluginChatCommand
+    [PluginDescription("Teleports you to your cursor with a hotkey, or to anywhere you right click on the fullscreen map. " +
+                       "/teleport also finds the nearest Plantera bulb or Strange Plant on the explored map.")]
+    public class Teleport : PluginBase, IPluginInitialize, IPluginUpdate, IPluginChatCommand
     {
         private const int NoSearch = 0, PlanteraSearch = 1, StrangePlantSearch = 2;
         private const int CellsPerFrame = 200000;
 
+        private static readonly HotkeySetting TeleportKey = new Hotkey { Key = Keys.F, Action = TeleportToCursor };
+
         private int planteraBulbTileLookup, plant1Lookup, plant2Lookup, plant3Lookup, plant4Lookup;
-        private Keys teleportKey;
         private int searchMode, searchX;
 
-        public Teleport()
+        private static void TeleportToCursor()
         {
-            if (!Keys.TryParse(IniAPI.ReadIni("Teleport", "TeleportKey", "F", writeIt: true), out teleportKey))
-                teleportKey = Keys.F;
-
-            Loader.RegisterHotkey(() =>
-            {
-                var player = Main.player[Main.myPlayer];
-                var vector = new Vector2(Main.mouseX + Main.screenPosition.X, Main.mouseY + Main.screenPosition.Y);
-                player.Teleport(vector, 1, 0);
-                player.velocity = Vector2.Zero;
-                NetMessage.SendData(65, -1, -1, null, 0, player.whoAmI, vector.X, vector.Y, 1, 0, 0);
-            }, teleportKey);
+            var vector = new Vector2(Main.mouseX + Main.screenPosition.X, Main.mouseY + Main.screenPosition.Y);
+            Player.Teleport(vector, 1, 0);
+            Player.velocity = Vector2.Zero;
+            NetMessage.SendData(65, -1, -1, null, 0, Player.whoAmI, vector.X, vector.Y, 1, 0, 0);
         }
 
         public void OnInitialize()

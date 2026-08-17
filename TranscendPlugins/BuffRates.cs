@@ -1,4 +1,3 @@
-﻿using System;
 using PluginLoader;
 using Terraria;
 using Terraria.ID;
@@ -6,7 +5,9 @@ using TranscendPlugins.Shared.Extensions;
 
 namespace TranscendPlugins
 {
-    public class BuffRates : MarshalByRefObject, IPluginInitialize, IPluginPlayerUpdateBuffs, IPluginPlayerPickAmmo
+    [PluginDescription("Rewrites how strong the combat buff potions are. Each setting is the buff's bonus as a fraction, " +
+                       "so 0.1 is the vanilla 10% for Wrath. Buff and item tooltips are updated to match.")]
+    public class BuffRates : PluginBase, IPluginInitialize, IPluginPlayerUpdateBuffs, IPluginPlayerPickAmmo
     {
         private static class Indices
         {
@@ -17,37 +18,35 @@ namespace TranscendPlugins
             public const int Rage = 115;
             public const int Wrath = 117;
         }
-        private float wrath, rage, magic, archery, endurance, iceBarrier;
 
-        public BuffRates()
-        {
-            if (!float.TryParse(IniAPI.ReadIni("Buffs", "Wrath", (0.1f).ToString(), writeIt: true), out wrath))
-                wrath = 0.1f;
-            if (!float.TryParse(IniAPI.ReadIni("Buffs", "Rage", (0.1f).ToString(), writeIt: true), out rage))
-                rage = 0.1f;
-            if (!float.TryParse(IniAPI.ReadIni("Buffs", "Endurance", (0.1f).ToString(), writeIt: true), out endurance))
-                endurance = 0.1f;
-            if (!float.TryParse(IniAPI.ReadIni("Buffs", "IceBarrier", (0.25f).ToString(), writeIt: true), out iceBarrier))
-                iceBarrier = 0.25f;
-            if (!float.TryParse(IniAPI.ReadIni("Buffs", "Archery", (0.2f).ToString(), writeIt: true), out archery))
-                archery = 0.2f;
-            if (!float.TryParse(IniAPI.ReadIni("Buffs", "Magic", (0.2f).ToString(), writeIt: true), out magic))
-                magic = 0.2f;
-        }
+        private static readonly Setting<float> Wrath = 0.1f;
+        private static readonly Setting<float> Rage = 0.1f;
+        private static readonly Setting<float> Endurance = 0.1f;
+        private static readonly Setting<float> IceBarrier = 0.25f;
+        private static readonly Setting<float> Archery = 0.2f;
+        private static readonly Setting<float> Magic = 0.2f;
 
         public void OnInitialize()
         {
-            Lang._buffDescriptionCache[Indices.Magic].SetValue((magic * 100) + "% increased magic damage");
-            Lang._buffDescriptionCache[Indices.Archery].SetValue((archery * 100) + "% increased arrow damage and speed");
-            Lang._buffDescriptionCache[Indices.Endurance].SetValue((endurance * 100) + "% reduced damage");
-            Lang._buffDescriptionCache[Indices.IceBarrier].SetValue("Damage taken is reduced by " + (iceBarrier * 100) + "%");
-            Lang._buffDescriptionCache[Indices.Rage].SetValue((rage * 100) + "% increased critical chance");
-            Lang._buffDescriptionCache[Indices.Wrath].SetValue((wrath * 100) + "% increased damage");
-            Lang._itemTooltipCache[ItemID.MagicPowerPotion].SetValue((magic * 100) + "% increased magic damage");
-            Lang._itemTooltipCache[ItemID.ArcheryPotion].SetValue((archery * 100) + "% increased arrow speed and damage");
-            Lang._itemTooltipCache[ItemID.EndurancePotion].SetValue("Reduces damage taken by " + (endurance * 100) + "%");
-            Lang._itemTooltipCache[ItemID.RagePotion].SetValue("Increases critical chance by " + (rage * 100) + "%");
-            Lang._itemTooltipCache[ItemID.WrathPotion].SetValue("Increases damage by " + (wrath * 100) + "%");
+            DescribeBuffs();
+
+            foreach (var setting in Settings)
+                setting.Changed += DescribeBuffs;
+        }
+
+        private static void DescribeBuffs()
+        {
+            Lang._buffDescriptionCache[Indices.Magic].SetValue((Magic * 100) + "% increased magic damage");
+            Lang._buffDescriptionCache[Indices.Archery].SetValue((Archery * 100) + "% increased arrow damage and speed");
+            Lang._buffDescriptionCache[Indices.Endurance].SetValue((Endurance * 100) + "% reduced damage");
+            Lang._buffDescriptionCache[Indices.IceBarrier].SetValue("Damage taken is reduced by " + (IceBarrier * 100) + "%");
+            Lang._buffDescriptionCache[Indices.Rage].SetValue((Rage * 100) + "% increased critical chance");
+            Lang._buffDescriptionCache[Indices.Wrath].SetValue((Wrath * 100) + "% increased damage");
+            Lang._itemTooltipCache[ItemID.MagicPowerPotion].SetValue((Magic * 100) + "% increased magic damage");
+            Lang._itemTooltipCache[ItemID.ArcheryPotion].SetValue((Archery * 100) + "% increased arrow speed and damage");
+            Lang._itemTooltipCache[ItemID.EndurancePotion].SetValue("Reduces damage taken by " + (Endurance * 100) + "%");
+            Lang._itemTooltipCache[ItemID.RagePotion].SetValue("Increases critical chance by " + (Rage * 100) + "%");
+            Lang._itemTooltipCache[ItemID.WrathPotion].SetValue("Increases damage by " + (Wrath * 100) + "%");
         }
 
         public void OnPlayerUpdateBuffs(Player player)
@@ -59,25 +58,25 @@ namespace TranscendPlugins
                     switch (player.buffType[k])
                     {
                         case Indices.Magic:
-                            player.magicDamage += magic - 0.2f;
+                            player.magicDamage += Magic - 0.2f;
                             break;
                         case Indices.IceBarrier:
                             if (player.statLife <= player.statLifeMax2 * 0.5)
                             {
-                                this.endurance += iceBarrier - 0.25f;
+                                player.endurance += IceBarrier - 0.25f;
                             }
                             break;
                         case Indices.Endurance:
-                            player.endurance += endurance - 0.1f;
+                            player.endurance += Endurance - 0.1f;
                             break;
                         case Indices.Rage:
-                            var r = (int) (rage * 100) - 10;
+                            var r = (int) (Rage * 100) - 10;
                             player.meleeCrit += r;
                             player.rangedCrit += r;
                             player.magicCrit += r;
                             break;
                         case Indices.Wrath:
-                            var w = wrath - 0.1f;
+                            var w = Wrath - 0.1f;
                             player.meleeDamage += w;
                             player.rangedDamage += w;
                             player.magicDamage += w;
@@ -92,10 +91,10 @@ namespace TranscendPlugins
         {
             if (item.useAmmo == 1 && player.archery)
             {
-                speed *= (1f + archery) / 1.2f;
+                speed *= (1f + Archery) / 1.2f;
                 if (speed > 20f)
                     speed = 20f;
-                damage = (int) (damage * (1f + archery) / 1.2f);
+                damage = (int) (damage * (1f + Archery) / 1.2f);
             }
         }
     }

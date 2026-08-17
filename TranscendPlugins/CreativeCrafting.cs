@@ -5,7 +5,8 @@ using Terraria;
 
 namespace TranscendPlugins
 {
-    public class CreativeCrafting : MarshalByRefObject, IPluginUpdate, IPluginChatCommand
+    [PluginDescription("Lets you craft any recipe without the ingredients or the crafting station. Toggle it with /creativecrafting.")]
+    public class CreativeCrafting : PluginBase, IPluginUpdate, IPluginChatCommand
     {
         private struct RecipeBackup
         {

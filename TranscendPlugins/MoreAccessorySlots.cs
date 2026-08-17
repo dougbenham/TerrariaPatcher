@@ -1,34 +1,24 @@
-﻿using System;
 using PluginLoader;
 using Terraria;
 
 namespace Ruffi123456789Plugins
 {
-    public class MoreAccessorySlots : MarshalByRefObject, IPluginPlayerUpdateBuffs
+    [PluginDescription("Gives you extra accessory slots. Count is capped at 2 because more than that crashes Terraria. " +
+                       "Force grants the slots even without a Demon Heart.")]
+    public class MoreAccessorySlots : PluginBase, IPluginPlayerUpdateBuffs
     {
-        private bool force;
-        private int slots;
-
-        public MoreAccessorySlots()
-        {
-            if (!bool.TryParse(IniAPI.ReadIni("MoreAccessorySlots", "Force", "False", writeIt: true), out force))
-                force = false;
-            if (!int.TryParse(IniAPI.ReadIni("MoreAccessorySlots", "Count", "2", writeIt: true), out slots))
-                slots = 2;
-
-            if (slots > 2) slots = 2; // above 2 crashes Terraria
-            if (slots < 0) slots = 0;
-        }
+        private static readonly Setting<bool> Force = false;
+        private static readonly Setting<int> Count = 2;
 
         public void OnPlayerUpdateBuffs(Player player)
         {
             if (player.whoAmI != Main.myPlayer) return;
 
-            if (force)
+            if (Force)
                 player.extraAccessory = true;
 
             if (player.extraAccessory)
-                player.extraAccessorySlots = slots;
+                player.extraAccessorySlots = Count < 0 ? 0 : (Count > 2 ? 2 : Count.Value);
         }
     }
 }

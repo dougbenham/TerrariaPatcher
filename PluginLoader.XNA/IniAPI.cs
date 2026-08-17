@@ -10,6 +10,8 @@ namespace PluginLoader
     {
         private static readonly string iniPath = Environment.CurrentDirectory + "\\Plugins.ini";
 
+        public static string IniPath => iniPath;
+
         [DllImport("kernel32", EntryPoint = "WritePrivateProfileString")]
         public static extern long WriteIni(string section, string key, string val, string path);
         [DllImport("kernel32.dll")]

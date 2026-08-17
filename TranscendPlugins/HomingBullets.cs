@@ -6,7 +6,8 @@ using Terraria.ID;
 
 namespace TranscendPlugins
 {
-    public class HomingBullets : MarshalByRefObject, IPluginProjectileAI
+    [PluginDescription("Bullets, arrows and most other projectiles you fire steer themselves towards nearby enemies.")]
+    public class HomingBullets : PluginBase, IPluginProjectileAI
     {
         public void OnProjectileAI001(Projectile pProjectile)
         {

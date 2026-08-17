@@ -6,7 +6,8 @@ using Terraria.IO;
 
 namespace TranscendPlugins
 {
-    public class SavePosition : MarshalByRefObject, IPluginPlayerLoad, IPluginPlayerSave, IPluginPlayerSpawn
+    [PluginDescription("Remembers where you were when you left a world and puts you back there instead of at your spawn point.")]
+    public class SavePosition : PluginBase, IPluginPlayerLoad, IPluginPlayerSave, IPluginPlayerSpawn
     {
         private bool justLoadedIn = false;
 

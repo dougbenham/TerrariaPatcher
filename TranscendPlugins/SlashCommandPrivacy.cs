@@ -4,7 +4,8 @@ using PluginLoader;
 
 namespace TranscendPlugins
 {
-    public class SlashCommandPrivacy : MarshalByRefObject, IPluginChatCommand
+    [PluginDescription("Stops unrecognised /commands being sent to the server as public chat, so a mistyped plugin command never leaks to other players.")]
+    public class SlashCommandPrivacy : PluginBase, IPluginChatCommand
     {
         private static readonly HashSet<string> AllowedCommands = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {

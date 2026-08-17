@@ -1,25 +1,20 @@
-﻿using System;
 using Microsoft.Xna.Framework.Input;
 using PluginLoader;
 using Terraria;
 
 namespace MrBlueSLPlugins
 {
-    public class Flashlight : MarshalByRefObject, IPluginPlayerUpdate
+    [PluginDescription("Shines a light at your cursor while enabled, letting you see further than your held light source reaches.")]
+    public class Flashlight : PluginBase, IPluginPlayerUpdate
     {
-        private bool flashlight = false;
-        private Keys flashlightKey;
+        private static readonly HotkeySetting ToggleKey = new Hotkey { Key = Keys.U, Action = Toggle };
 
-        public Flashlight()
+        private static bool flashlight;
+
+        private static void Toggle()
         {
-            if (!Keys.TryParse(IniAPI.ReadIni("Flashlight", "ToggleKey", "U", writeIt: true), out flashlightKey))
-                flashlightKey = Keys.U;
-
-            Loader.RegisterHotkey(() =>
-            {
-                flashlight = !flashlight;
-                Main.NewText("Flashlight " + (flashlight ? "Enabled" : "Disabled"), 150, 150, 150);
-            }, flashlightKey);
+            flashlight = !flashlight;
+            Main.NewText("Flashlight " + (flashlight ? "Enabled" : "Disabled"), 150, 150, 150);
         }
 
         public void OnPlayerUpdate(Player player)

@@ -1,32 +1,27 @@
-﻿using System;
 using PluginLoader;
 using Terraria;
 
 namespace Ruffi123456789Plugins
 {
-    public class Respawn : MarshalByRefObject, IPluginUpdate
+    [PluginDescription("Caps how long you stay dead. Time is the respawn delay in seconds, 0 for an instant respawn.")]
+    public class Respawn : PluginBase, IPluginUpdate
     {
-        private int maxTime;
+        private static readonly Setting<int> Time = 0;
 
-        private int RespawnTimerInSeconds
+        private static int RespawnTimerInSeconds
         {
             get
             {
                 if (Main.frameRate == 0) return 0;
-                return Main.player[Main.myPlayer].respawnTimer / Main.frameRate;
+                return Player.respawnTimer / Main.frameRate;
             }
-            set { Main.player[Main.myPlayer].respawnTimer = value * Main.frameRate; }
-        }
-
-        public Respawn()
-        {
-            if (!int.TryParse(IniAPI.ReadIni("Respawn", "Time", "0", writeIt: true), out maxTime)) maxTime = 0;
+            set { Player.respawnTimer = value * Main.frameRate; }
         }
 
         public void OnUpdate()
         {
-            if (RespawnTimerInSeconds > maxTime)
-                RespawnTimerInSeconds = maxTime;
+            if (RespawnTimerInSeconds > Time)
+                RespawnTimerInSeconds = Time;
         }
     }
 }

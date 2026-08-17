@@ -5,36 +5,37 @@ using Terraria.ID;
 
 namespace TranscendPlugins
 {
-    public class UseTime : MarshalByRefObject, IPluginItemSetDefaults, IPluginPlayerUpdateBuffs, IPluginPlayerUpdateArmorSets, IPluginChatCommand
+    [PluginDescription("Removes the delay on building tools: instant mining, block and wall placing, plus greatly extended " +
+                       "block reach and item pickup range. /usetime and /autoreuse also retune the item you are holding.")]
+    public class UseTime : PluginBase, IPluginItemSetDefaults, IPluginPlayerUpdateBuffs, IPluginPlayerUpdateArmorSets, IPluginChatCommand
     {
-        private string confPath = Environment.CurrentDirectory + "\\ItemConfig.ini";
-        private int initialTileRangeX, initialTileRangeY, initialDefaultItemGrabRange;
-        private bool maxTileSpeed, maxWallSpeed, maxPickSpeed, maxReachRange, maxItemPickupRange;
-        private bool resetUseTime = false;
-        
+        private static readonly Setting<bool> MaxPickSpeed = true; // Pick / Hammer / Axe
+        private static readonly Setting<bool> MaxTileSpeed = true; // Placing blocks / wire
+        private static readonly Setting<bool> MaxWallSpeed = true; // Placing wall
+        private static readonly Setting<bool> MaxReachRange = true; // Block reach
+        private static readonly Setting<bool> MaxItemPickupRange = true; // Item pickup range
+
+        private readonly string confPath = Environment.CurrentDirectory + "\\ItemConfig.ini";
+        private readonly int initialTileRangeX, initialTileRangeY, initialDefaultItemGrabRange;
+        private bool resetUseTime;
+
         public UseTime()
         {
             initialTileRangeX = Player.tileRangeX;
             initialTileRangeY = Player.tileRangeY;
             initialDefaultItemGrabRange = Player.defaultItemGrabRange;
-
-            maxPickSpeed = bool.Parse(IniAPI.ReadIni("UseTime", "MaxPickSpeed", "true", writeIt: true)); // Pick / Hammer / Axe
-            maxTileSpeed = bool.Parse(IniAPI.ReadIni("UseTime", "MaxTileSpeed", "true", writeIt: true)); // Placing blocks / wire
-            maxWallSpeed = bool.Parse(IniAPI.ReadIni("UseTime", "MaxWallSpeed", "true", writeIt: true)); // Placing wall
-            maxReachRange = bool.Parse(IniAPI.ReadIni("UseTime", "MaxReachRange", "true", writeIt: true)); // Block reach
-            maxItemPickupRange = bool.Parse(IniAPI.ReadIni("UseTime", "MaxItemPickupRange", "true", writeIt: true)); // Item pickup range
         }
 
         public void OnItemSetDefaults(Item item)
         {
             if (resetUseTime) return;
 
-            if (maxPickSpeed && (item.axe > 0 ||
+            if (MaxPickSpeed && (item.axe > 0 ||
                                  item.pick > 0 ||
                                  item.hammer > 0))
                 item.useTime = 1;
 
-            if (maxTileSpeed &&
+            if (MaxTileSpeed &&
                 (item.createTile >= 0 ||
                  item.type == ItemID.Wrench ||
                  item.type == ItemID.BlueWrench ||
@@ -43,7 +44,7 @@ namespace TranscendPlugins
                  item.type == ItemID.Actuator))
                 item.useTime = 1;
 
-            if (maxWallSpeed && item.createWall > 0)
+            if (MaxWallSpeed && item.createWall > 0)
                 item.useTime = 1;
         }
 
@@ -51,7 +52,7 @@ namespace TranscendPlugins
         {
             if (player.whoAmI == Main.myPlayer)
             {
-                if (maxReachRange)
+                if (MaxReachRange)
                 {
                     Player.tileRangeX = 100;
                     Player.tileRangeY = 100;
@@ -62,7 +63,7 @@ namespace TranscendPlugins
                     Player.tileRangeY = initialTileRangeY;
                 }
 
-                Player.defaultItemGrabRange = maxItemPickupRange ? 700 : initialDefaultItemGrabRange;
+                Player.defaultItemGrabRange = MaxItemPickupRange ? 700 : initialDefaultItemGrabRange;
             }
         }
 
@@ -154,9 +155,9 @@ namespace TranscendPlugins
                     IniAPI.WriteIni("item" + item.type, "autoReuse", item.autoReuse.ToString(), confPath);
                     break;
                 case "range":
-                    IniAPI.WriteIni("UseTime", "MaxReachRange", (maxReachRange = !maxReachRange).ToString());
-                    IniAPI.WriteIni("UseTime", "MaxItemPickupRange", (maxItemPickupRange = maxReachRange /* this is not a typo */).ToString());
-                    Main.NewText("Block reach and item pickup range is " + (maxReachRange ? "enhanced" : "back to normal") + ".");
+                    MaxReachRange.Value = !MaxReachRange;
+                    MaxItemPickupRange.Value = MaxReachRange;
+                    Main.NewText("Block reach and item pickup range is " + (MaxReachRange ? "enhanced" : "back to normal") + ".");
                     break;
             }
             return true;

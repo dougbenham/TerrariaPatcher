@@ -1114,8 +1114,7 @@ namespace TerrariaPatcher
                 if (instructions[i].OpCode != OpCodes.Ldarg_1 || instructions[i + 1].OpCode != OpCodes.Ldc_I4)
                     continue;
 
-                int bagId;
-                if (!int.TryParse(instructions[i + 1].Operand.ToString(), out bagId))
+                if (!int.TryParse(instructions[i + 1].Operand.ToString(), out var bagId))
                     continue;
 
                 var branch = instructions[i + 2];
@@ -1183,8 +1182,7 @@ namespace TerrariaPatcher
                                IsAnyConstant(instructions[k + 2]) &&
                                instructions[k + 3].OpCode == OpCodes.Stelem_I4)
                         {
-                            int val;
-                            if (TryGetConstantInt(instructions[k + 2], out val))
+	                        if (TryGetConstantInt(instructions[k + 2], out var val))
                                 added.Add(val);
                             k += 4; // dup, idx, val, stelem
                         }
@@ -1203,8 +1201,7 @@ namespace TerrariaPatcher
                     if (instructions[j].OpCode == OpCodes.Stelem_I4 &&
                         IsAnyConstant(instructions[j - 1]))
                     {
-                        int val;
-                        if (TryGetConstantInt(instructions[j - 1], out val))
+	                    if (TryGetConstantInt(instructions[j - 1], out var val))
                         {
                             if (!arrayAdds.ContainsKey(bagId)) arrayAdds[bagId] = new List<int>();
                             if (!arrayAdds[bagId].Contains(val)) arrayAdds[bagId].Add(val);
@@ -1295,8 +1292,7 @@ namespace TerrariaPatcher
             {
                 if (instructions[i].OpCode != OpCodes.Ldarg_1 || instructions[i + 1].OpCode != OpCodes.Ldc_I4)
                     continue;
-                int bagId;
-                if (!int.TryParse(instructions[i + 1].Operand.ToString(), out bagId)) continue;
+                if (!int.TryParse(instructions[i + 1].Operand.ToString(), out var bagId)) continue;
                 if (!loot.ContainsKey(bagId)) continue;
 
                 var branch = instructions[i + 2] as Instruction;
@@ -1463,8 +1459,7 @@ namespace TerrariaPatcher
             if (index < 0 || index >= instrs.Count) return result;
 
             var instr = instrs[index];
-            int constant;
-            if (TryGetConstantInt(instr, out constant))
+            if (TryGetConstantInt(instr, out var constant))
             {
                 result.Add(constant);
                 return result;
@@ -1490,16 +1485,14 @@ namespace TerrariaPatcher
                         // Next(int max) or Next(int min, int max)
                         if (mr.Parameters.Count == 1)
                         {
-                            int max;
-                            if (TryGetConstantInt(instrs[i - 2], out max))
+	                        if (TryGetConstantInt(instrs[i - 2], out var max))
                             {
                                 for (int v = 0; v < max; v++) result.Add(v);
                             }
                         }
                         else if (mr.Parameters.Count == 2)
                         {
-                            int min, max;
-                            if (TryGetConstantInt(instrs[i - 3], out min) && TryGetConstantInt(instrs[i - 2], out max))
+	                        if (TryGetConstantInt(instrs[i - 3], out var min) && TryGetConstantInt(instrs[i - 2], out var max))
                             {
                                 for (int v = min; v < max; v++) result.Add(v);
                             }
@@ -1586,9 +1579,8 @@ namespace TerrariaPatcher
             for (int i = 0; i < instrs.Count - 1; i++)
             {
                 if (!IsStoreToLocal(instrs[i], localIndex)) continue;
-                int c;
                 // direct constant
-                if (TryGetConstantInt(instrs[i - 1], out c))
+                if (TryGetConstantInt(instrs[i - 1], out var c))
                 {
                     if (!result.Contains(c)) result.Add(c);
                 }

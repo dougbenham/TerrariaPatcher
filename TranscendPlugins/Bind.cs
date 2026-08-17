@@ -5,7 +5,8 @@ using Terraria;
 
 namespace MrBlueSLPlugins
 {
-    public class Bind : MarshalByRefObject, IPluginChatCommand
+    [PluginDescription("Binds any chat command to a key with /bind, so /bind Control,T /time dusk makes Ctrl+T change the time. Binds are kept in Plugins.ini.")]
+    public class Bind : PluginBase, IPluginChatCommand
     {
         public bool OnChatCommand(string command, string[] args)
         {

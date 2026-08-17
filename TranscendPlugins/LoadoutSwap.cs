@@ -6,7 +6,8 @@ using Terraria;
 
 namespace GTRPlugins
 {
-    public class LoadoutSwap : IPluginDrawInventory
+    [PluginDescription("Adds a Swap Loadout button to your inventory that trades your equipped armour and accessories with your vanity slots.")]
+    public class LoadoutSwap : PluginBase, IPluginDrawInventory
     {
         private Button btnLoadoutSwap;
 

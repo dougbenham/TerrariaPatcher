@@ -456,38 +456,8 @@ namespace TerrariaPatcher
                 {
                     Terraria.Patch(original, saveFileDialog.FileName, details);
 
-                    if (details.Plugins)
-                    {
-                        var targetFolder = Path.GetDirectoryName(saveFileDialog.FileName);
-                        foreach (var source in new[] {"PluginLoader.XNA.dll"})
-                        {
-	                        var sourceFileInfo = new FileInfo(source);
-                            var target = $"{targetFolder}\\{source}";
-
-                            if (!sourceFileInfo.Exists)
-                            {
-                                MessageBox.Show(source + " is missing.", Program.AssemblyName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                                continue;
-                            }
-
-                            var targetFileInfo = new FileInfo(target);
-                            while (Utils.IsFileLocked(targetFileInfo))
-                            {
-                                var result = MessageBox.Show(target + " is in use. Please close Terraria then hit OK.", Program.AssemblyName, MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
-                                if (result == DialogResult.Cancel)
-                                    return;
-                            }
-
-                            File.Copy(source, target, true);
-                        }
-
-                        if (!Directory.Exists(@".\Plugins"))
-                            MessageBox.Show("Plugins folder is missing from TerrariaPatcher folder. Please re-download.", Program.AssemblyName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                        else if (!Directory.Exists(@".\Plugins\Shared"))
-                            MessageBox.Show(@"Plugins\Shared folder is missing from TerrariaPatcher folder. Please re-download.", Program.AssemblyName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                        else
-                            new CopyPlugins(targetFolder).ShowDialog();
-                    }
+                    if (details.Plugins && !DeployPlugins(Path.GetDirectoryName(saveFileDialog.FileName)))
+                        return;
                 }
                 catch (Exception ex)
                 {
@@ -496,6 +466,63 @@ namespace TerrariaPatcher
 
                 MessageBox.Show("Done.", Program.AssemblyName);
             }
+        }
+
+        /// <summary>
+        /// Copies the plugin loader into the game folder and opens the plugin list. Returns false if the user
+        /// cancelled out of it.
+        /// </summary>
+        private bool DeployPlugins(string targetFolder)
+        {
+            foreach (var source in new[] { "PluginLoader.XNA.dll" })
+            {
+                var sourceFileInfo = new FileInfo(source);
+                var target = $"{targetFolder}\\{source}";
+
+                if (!sourceFileInfo.Exists)
+                {
+                    MessageBox.Show(source + " is missing.", Program.AssemblyName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    continue;
+                }
+
+                var targetFileInfo = new FileInfo(target);
+                while (Utils.IsFileLocked(targetFileInfo))
+                {
+                    var result = MessageBox.Show(target + " is in use. Please close Terraria then hit OK.", Program.AssemblyName, MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
+                    if (result == DialogResult.Cancel)
+                        return false;
+                }
+
+                File.Copy(source, target, true);
+            }
+
+            if (!Directory.Exists(@".\Plugins"))
+                MessageBox.Show("Plugins folder is missing from TerrariaPatcher folder. Please re-download.", Program.AssemblyName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            else if (!Directory.Exists(@".\Plugins\Shared"))
+                MessageBox.Show(@"Plugins\Shared folder is missing from TerrariaPatcher folder. Please re-download.", Program.AssemblyName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            else
+                new CopyPlugins(targetFolder).ShowDialog();
+
+            return true;
+        }
+
+        /// <summary>
+        /// Updates the plugins of an already patched Terraria without patching it again.
+        /// </summary>
+        private void syncPlugins_Click(object sender, EventArgs e)
+        {
+            if (!File.Exists(terrariaPath.Text))
+            {
+                MessageBox.Show("Terraria path needs to point at a valid executable.", Program.AssemblyName + " :: Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            CheckInstallationFolder();
+
+            if (!DeployPlugins(Path.GetDirectoryName(terrariaPath.Text)))
+                return;
+
+            MessageBox.Show("Done.", Program.AssemblyName);
         }
 
         private void wings_CheckedChanged(object sender, EventArgs e)

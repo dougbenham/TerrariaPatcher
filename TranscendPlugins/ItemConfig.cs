@@ -32,7 +32,9 @@ namespace YellowAfterlifePlugins
     /// float? scale; // size (1.0 is normal)
     /// string toolTip;
     /// string toolTip2;
-    public class ItemConfig : IPluginItemSetDefaults
+    [PluginDescription("Rewrites the stats of any item from ItemConfig.ini: name, damage, knockback, crit, defense, " +
+                       "use time, stack size, size and tooltip. See the top of ItemConfig.cs for the full list of fields.")]
+    public class ItemConfig : PluginBase, IPluginItemSetDefaults
     {
         #region Read INI
 

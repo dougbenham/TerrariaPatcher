@@ -22,10 +22,12 @@ namespace PluginLoader
         private static List<Hotkey> hotkeys = new List<Hotkey>();
         private static Keys[] keysdown;
         private static bool control, shift, alt;
-        private static bool fresh = true;
 
         private static List<IPlugin> loadedPlugins = new List<IPlugin>();
         private static bool loaded;
+
+        private static FileSystemWatcher settingsWatcher;
+        private static volatile bool settingsChangedOnDisk;
 
         private static readonly Dictionary<Type, Array> dispatchCache = new Dictionary<Type, Array>();
 
@@ -45,6 +47,21 @@ namespace PluginLoader
             { }
         }
 
+        /// <summary>
+        /// Writes a message to the log and, when a world is loaded, to the chat.
+        /// </summary>
+        internal static void Report(string message)
+        {
+            Log(message);
+
+            try
+            {
+                Main.NewText(message, Color.Red.R, Color.Red.G, Color.Red.B);
+            }
+            catch
+            { }
+        }
+
         private static void ReportLoadError(string message)
         {
             Log(message);
@@ -58,6 +75,9 @@ namespace PluginLoader
 
             loadedPlugins.Remove(plugin);
             dispatchCache.Clear();
+
+            if (plugin is PluginBase pluginBase)
+                hotkeys.RemoveAll(hotkey => pluginBase.Hotkeys().Any(owned => ReferenceEquals(owned, hotkey)));
 
             Log("Plugin '" + name + "' threw and has been disabled for this session." + Environment.NewLine + ex);
 
@@ -164,6 +184,7 @@ namespace PluginLoader
                 Compile(references.ToArray(), sharedFolder, GetPluginUnits(pluginsFolder, sharedFolder));
 
                 LoadHotkeyBinds();
+                WatchSettings();
             }
             catch (Exception ex)
             {
@@ -319,6 +340,56 @@ namespace PluginLoader
 
         #endregion
 
+        #region Settings
+
+        public static IEnumerable<PluginBase> GetPlugins()
+        {
+            return PluginsOf<PluginBase>();
+        }
+
+        public static PluginBase GetPlugin(string name)
+        {
+            return PluginsOf<PluginBase>().FirstOrDefault(plugin => string.Equals(plugin.Name, name, StringComparison.OrdinalIgnoreCase));
+        }
+
+        public static IEnumerable<Setting> GetSettings()
+        {
+            return PluginsOf<PluginBase>().SelectMany(plugin => plugin.Settings);
+        }
+
+        /// <summary>
+        /// Picks up edits made to Plugins.ini while the game is running. The file is only re-read on the game
+        /// thread, and settings whose value did not actually change are left alone, so the writes the game makes
+        /// itself are ignored without having to mute the watcher.
+        /// </summary>
+        private static void WatchSettings()
+        {
+            try
+            {
+                settingsWatcher = new FileSystemWatcher(Path.GetDirectoryName(IniAPI.IniPath), Path.GetFileName(IniAPI.IniPath));
+                settingsWatcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.Size;
+                settingsWatcher.Changed += (sender, args) => settingsChangedOnDisk = true;
+                settingsWatcher.Created += (sender, args) => settingsChangedOnDisk = true;
+                settingsWatcher.EnableRaisingEvents = true;
+            }
+            catch (Exception ex)
+            {
+                Log("Could not watch " + IniAPI.IniPath + " for changes." + Environment.NewLine + ex);
+            }
+        }
+
+        private static void ReloadSettings()
+        {
+            settingsChangedOnDisk = false;
+
+            var changed = GetSettings().Where(setting => setting.Load()).Select(setting => setting.FullName).ToArray();
+            if (changed.Length == 0) return;
+
+            Main.NewText("Reloaded from Plugins.ini: " + string.Join(", ", changed), Color.Purple.R, Color.Purple.G, Color.Purple.B);
+        }
+
+        #endregion
+
         #region Hotkeys
 
         public static void RegisterHotkey(string command, Keys key, bool control = false, bool shift = false, bool alt = false, bool ignoreModifierKeys = false)
@@ -452,35 +523,35 @@ namespace PluginLoader
             if (Main.gameMenu)
                 return;
 
+            if (settingsChangedOnDisk)
+                ReloadSettings();
+
             if (!Main.blockInput && !Main.drawingPlayerChat && !Main.editSign && !Main.editChest)
             {
                 keysdown = Main.keyState.GetPressedKeys();
                 control = keysdown.Contains(Keys.LeftControl) || keysdown.Contains(Keys.RightControl);
                 shift = keysdown.Contains(Keys.LeftShift) || keysdown.Contains(Keys.RightShift);
                 alt = keysdown.Contains(Keys.LeftAlt) || keysdown.Contains(Keys.RightAlt);
-                var anyPresses = false;
 
                 foreach (var hotkey in hotkeys.ToArray())
                 {
-                    if (keysdown.Contains(hotkey.Key) &&
-                        (hotkey.IgnoreModifierKeys || (control == hotkey.Control && shift == hotkey.Shift && alt == hotkey.Alt)))
+                    var down = hotkey.Key != Keys.None && keysdown.Contains(hotkey.Key) &&
+                               (hotkey.IgnoreModifierKeys || (control == hotkey.Control && shift == hotkey.Shift && alt == hotkey.Alt));
+
+                    if (down && !hotkey.Held && hotkey.Action != null)
                     {
-                        anyPresses = true;
-                        if (fresh)
+                        try
                         {
-                            try
-                            {
-                                hotkey.Action();
-                            }
-                            catch (Exception ex)
-                            {
-                                Log("Hotkey '" + hotkey + "' threw." + Environment.NewLine + ex);
-                            }
+                            hotkey.Action();
+                        }
+                        catch (Exception ex)
+                        {
+                            Log("Hotkey '" + hotkey + "' threw." + Environment.NewLine + ex);
                         }
                     }
-                }
 
-                fresh = !anyPresses;
+                    hotkey.Held = down;
+                }
             }
 
             Dispatch<IPluginPreUpdate>(plugin => plugin.OnPreUpdate());
@@ -688,7 +759,16 @@ namespace PluginLoader
                 switch (cmd)
                 {
                     case "plugins":
-                        Main.NewText(string.Join(", ", loadedPlugins.Select(plugin => plugin.GetType().Name)), Color.Purple.R, Color.Purple.G, Color.Purple.B);
+                        OnPluginsCommand(args);
+                        chatRet = true;
+                        break;
+                    case "setting":
+                    case "settings":
+                        OnSettingCommand(args);
+                        chatRet = true;
+                        break;
+                    case "hotkeys":
+                        OnHotkeysCommand();
                         chatRet = true;
                         break;
                     default:
@@ -698,6 +778,113 @@ namespace PluginLoader
             }
 
             return chatRet;
+        }
+
+        /// <summary>
+        /// Terraria splits a chat message into lines on a bare line feed.
+        /// </summary>
+        private const string ChatNewLine = "\n";
+
+        private static void Say(string message)
+        {
+            Main.NewText(message, Color.Purple.R, Color.Purple.G, Color.Purple.B);
+        }
+
+        private static void OnPluginsCommand(string[] args)
+        {
+            if (args.Length == 0)
+            {
+                Say(string.Join(", ", loadedPlugins.Select(loaded => loaded.GetType().Name).OrderBy(pluginName => pluginName).ToArray()));
+                Say("/plugins [PluginName] describes a plugin.");
+                return;
+            }
+
+            var match = loadedPlugins.FirstOrDefault(loaded => string.Equals(loaded.GetType().Name, args[0], StringComparison.OrdinalIgnoreCase));
+            if (match == null)
+            {
+                Say("There is no plugin named " + args[0] + ".");
+                return;
+            }
+
+            var name = match.GetType().Name;
+            var description = PluginBase.GetDescription(match.GetType());
+
+            Say(name + (description == null ? " has no description." : ": " + description));
+
+            var plugin = match as PluginBase;
+            if (plugin != null && plugin.Settings.Count > 0)
+                Say("Settings: " + string.Join(", ", plugin.Settings.Select(setting => setting.Name).ToArray()));
+        }
+
+        private static void OnSettingCommand(string[] args)
+        {
+            if (args.Length == 0)
+            {
+                Say(string.Join(ChatNewLine,
+                    "Usage:",
+                    "  /setting [PluginName] - lists a plugin's settings",
+                    "  /setting [PluginName] [SettingName] - shows a setting's value",
+                    "  /setting [PluginName] [SettingName] [Value] - changes a setting",
+                    "Plugins with settings: " + string.Join(", ", GetPlugins().Where(candidate => candidate.Settings.Count > 0).Select(candidate => candidate.Name).OrderBy(pluginName => pluginName).ToArray())));
+                return;
+            }
+
+            var plugin = GetPlugin(args[0]);
+            if (plugin == null)
+            {
+                Say("There is no plugin named " + args[0] + ", or it has no settings.");
+                return;
+            }
+
+            if (plugin.Settings.Count == 0)
+            {
+                Say(plugin.Name + " has no settings.");
+                return;
+            }
+
+            if (args.Length == 1)
+            {
+                Say(plugin.Name + " settings:" + ChatNewLine +
+                    string.Join(ChatNewLine, plugin.Settings.Select(setting => "  " + setting.Name + " = " + setting).ToArray()));
+                return;
+            }
+
+            var match = plugin.GetSetting(args[1]);
+            if (match == null)
+            {
+                Say(plugin.Name + " has no setting named " + args[1] + ".");
+                return;
+            }
+
+            if (args.Length > 2)
+            {
+                try
+                {
+                    match.SetFrom(string.Join(" ", args.Skip(2).ToArray()));
+                }
+                catch (Exception ex)
+                {
+                    Say("Could not set " + match.FullName + ": " + ex.Message);
+                    return;
+                }
+            }
+
+            Say(match.FullName + " = " + match);
+        }
+
+        private static void OnHotkeysCommand()
+        {
+            if (hotkeys.Count == 0)
+            {
+                Say("No hotkeys are registered.");
+                return;
+            }
+
+            Say(string.Join(ChatNewLine, hotkeys
+                .Where(hotkey => hotkey.Key != Keys.None)
+                .OrderBy(hotkey => hotkey.ToString())
+                .Select(hotkey => "  " + hotkey)
+                .ToArray()));
         }
 
         #endregion

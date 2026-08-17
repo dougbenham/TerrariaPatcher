@@ -1,4 +1,3 @@
-﻿using System;
 using System.Reflection;
 using PluginLoader;
 using Terraria;
@@ -8,136 +7,125 @@ using Keys = Microsoft.Xna.Framework.Input.Keys;
 
 namespace TranscendPlugins
 {
-    public class Events : MarshalByRefObject, IPlugin
+    [PluginDescription("Starts and stops world events from the number pad: meteors, blood moons, eclipses, the goblin, " +
+                       "frost, pirate and martian invasions, the pumpkin and frost moons, the lunar apocalypse and the Moon Lord.")]
+    public class Events : PluginBase
     {
-        private Keys bloodMoon, goblin, meteor, frost, pirates, martians, pumpkinMoon, frostMoon, lunarApocalypse, eclipse, moonLord;
-        private MethodInfo triggerLunarApocalypse;
-        private FieldInfo spawnMeteor;
-        private MethodInfo dropMeteor;
-        private bool SpawnMeteor
+        private static readonly HotkeySetting Meteor = new Hotkey
         {
-            get { return (bool)spawnMeteor.GetValue(null); }
-            set { spawnMeteor.SetValue(null, value); }
-        }
-        
-        public Events()
+            Key = Keys.NumPad0,
+            Action = () =>
+            {
+                SpawnMeteor = false;
+                dropMeteor.Invoke(null, null);
+            }
+        };
+
+        private static readonly HotkeySetting BloodMoon = new Hotkey
         {
-            var worldGen = Assembly.GetEntryAssembly().GetType("Terraria.WorldGen");
-            triggerLunarApocalypse = worldGen.GetMethod("TriggerLunarApocalypse");
-            spawnMeteor = worldGen.GetField("spawnMeteor");
-            dropMeteor = worldGen.GetMethod("dropMeteor");
-
-            if (!Keys.TryParse(IniAPI.ReadIni("Events", "Meteor", "NumPad0", writeIt: true), out meteor))
-                meteor = Keys.NumPad0;
-            if (!Keys.TryParse(IniAPI.ReadIni("Events", "BloodMoon", "NumPad1", writeIt: true), out bloodMoon))
-                bloodMoon = Keys.NumPad1;
-            if (!Keys.TryParse(IniAPI.ReadIni("Events", "GoblinArmy", "NumPad2", writeIt: true), out goblin))
-                goblin = Keys.NumPad2;
-            if (!Keys.TryParse(IniAPI.ReadIni("Events", "FrostLegion", "NumPad3", writeIt: true), out frost))
-                frost = Keys.NumPad3;
-            if (!Keys.TryParse(IniAPI.ReadIni("Events", "PirateInvasion", "NumPad4", writeIt: true), out pirates))
-                pirates = Keys.NumPad4;
-            if (!Keys.TryParse(IniAPI.ReadIni("Events", "SolarEclipse", "NumPad5", writeIt: true), out eclipse))
-                eclipse = Keys.NumPad5;
-            if (!Keys.TryParse(IniAPI.ReadIni("Events", "PumpkinMoon", "NumPad6", writeIt: true), out pumpkinMoon))
-                pumpkinMoon = Keys.NumPad6;
-            if (!Keys.TryParse(IniAPI.ReadIni("Events", "FrostMoon", "NumPad7", writeIt: true), out frostMoon))
-                frostMoon = Keys.NumPad7;
-            if (!Keys.TryParse(IniAPI.ReadIni("Events", "MartianMadness", "NumPad8", writeIt: true), out martians))
-                martians = Keys.NumPad8;
-            if (!Keys.TryParse(IniAPI.ReadIni("Events", "LunarApocalypse", "NumPad9", writeIt: true), out lunarApocalypse))
-                lunarApocalypse = Keys.NumPad9;
-            if (!Keys.TryParse(IniAPI.ReadIni("Events", "Moon Lord", "Add", writeIt: true), out moonLord))
-                moonLord = Keys.Add;
-
-            Loader.RegisterHotkey(() =>
-            {
-                if (Main.invasionType > 0)
-                    Main.invasionSize = 0;
-                else
-                    Main.StartInvasion(1);
-            }, goblin);
-            Loader.RegisterHotkey(() =>
-            {
-                if (Main.invasionType > 0)
-                    Main.invasionSize = 0;
-                else
-                    Main.StartInvasion(2);
-            }, frost);
-            Loader.RegisterHotkey(() =>
-            {
-                if (Main.invasionType > 0)
-                    Main.invasionSize = 0;
-                else
-                    Main.StartInvasion(3);
-            }, pirates);
-            Loader.RegisterHotkey(() =>
-            {
-                if (Main.invasionType > 0)
-                    Main.invasionSize = 0;
-                else
-                    Main.StartInvasion(4);
-            }, martians);
-            Loader.RegisterHotkey(() =>
-            {
-                if (Main.pumpkinMoon)
-                    Main.stopMoonEvent();
-                else
-                    Main.startPumpkinMoon();
-            }, pumpkinMoon);
-            Loader.RegisterHotkey(() =>
-            {
-                if (Main.snowMoon)
-                    Main.stopMoonEvent();
-                else
-                    Main.startSnowMoon();
-            }, frostMoon);
-            Loader.RegisterHotkey(() =>
-            {
-                if (Terraria.NPC.LunarApocalypseIsUp || Terraria.NPC.AnyNPCs(398))
-                    StopLunarEvent();
-                else
-                    TriggerLunarApocalypse();
-            }, lunarApocalypse);
-            Loader.RegisterHotkey(() =>
-            {
-                if (Terraria.NPC.LunarApocalypseIsUp || Terraria.NPC.AnyNPCs(398))
-                    StopLunarEvent();
-                else
-                    SpawnMoonLord();
-            }, moonLord);
-            Loader.RegisterHotkey(() =>
+            Key = Keys.NumPad1,
+            Action = () =>
             {
                 if (Main.bloodMoon)
                     Main.bloodMoon = false;
                 else
                     TriggerBloodMoon();
-            }, bloodMoon);
-            Loader.RegisterHotkey(() =>
+            }
+        };
+
+        private static readonly HotkeySetting GoblinArmy = new Hotkey { Key = Keys.NumPad2, Action = () => ToggleInvasion(1) };
+        private static readonly HotkeySetting FrostLegion = new Hotkey { Key = Keys.NumPad3, Action = () => ToggleInvasion(2) };
+        private static readonly HotkeySetting PirateInvasion = new Hotkey { Key = Keys.NumPad4, Action = () => ToggleInvasion(3) };
+
+        private static readonly HotkeySetting SolarEclipse = new Hotkey
+        {
+            Key = Keys.NumPad5,
+            Action = () =>
             {
                 if (Main.eclipse)
                     Main.eclipse = false;
                 else
                     TriggerEclipse();
-            }, eclipse);
-            Loader.RegisterHotkey(() =>
+            }
+        };
+
+        private static readonly HotkeySetting PumpkinMoon = new Hotkey
+        {
+            Key = Keys.NumPad6,
+            Action = () =>
             {
-                SpawnMeteor = false;
-                DropMeteor();
-            }, meteor);
-        }
-        
-        private void DropMeteor()
+                if (Main.pumpkinMoon)
+                    Main.stopMoonEvent();
+                else
+                    Main.startPumpkinMoon();
+            }
+        };
+
+        private static readonly HotkeySetting FrostMoon = new Hotkey
         {
-            dropMeteor.Invoke(null, null);
+            Key = Keys.NumPad7,
+            Action = () =>
+            {
+                if (Main.snowMoon)
+                    Main.stopMoonEvent();
+                else
+                    Main.startSnowMoon();
+            }
+        };
+
+        private static readonly HotkeySetting MartianMadness = new Hotkey { Key = Keys.NumPad8, Action = () => ToggleInvasion(4) };
+
+        private static readonly HotkeySetting LunarApocalypse = new Hotkey
+        {
+            Key = Keys.NumPad9,
+            Action = () =>
+            {
+                if (Terraria.NPC.LunarApocalypseIsUp || Terraria.NPC.AnyNPCs(398))
+                    StopLunarEvent();
+                else
+                    triggerLunarApocalypse.Invoke(null, null);
+            }
+        };
+
+        private static readonly HotkeySetting MoonLord = new Hotkey
+        {
+            Key = Keys.Add,
+            Action = () =>
+            {
+                if (Terraria.NPC.LunarApocalypseIsUp || Terraria.NPC.AnyNPCs(398))
+                    StopLunarEvent();
+                else
+                    SpawnMoonLord();
+            }
+        };
+
+        private static readonly MethodInfo triggerLunarApocalypse;
+        private static readonly FieldInfo spawnMeteor;
+        private static readonly MethodInfo dropMeteor;
+
+        static Events()
+        {
+            var worldGen = Assembly.GetEntryAssembly().GetType("Terraria.WorldGen");
+            triggerLunarApocalypse = worldGen.GetMethod("TriggerLunarApocalypse");
+            spawnMeteor = worldGen.GetField("spawnMeteor");
+            dropMeteor = worldGen.GetMethod("dropMeteor");
         }
 
-        private void TriggerLunarApocalypse()
+        private static bool SpawnMeteor
         {
-            triggerLunarApocalypse.Invoke(null, null);
+            get { return (bool) spawnMeteor.GetValue(null); }
+            set { spawnMeteor.SetValue(null, value); }
         }
 
-        private void TriggerEclipse()
+        private static void ToggleInvasion(int type)
+        {
+            if (Main.invasionType > 0)
+                Main.invasionSize = 0;
+            else
+                Main.StartInvasion(type);
+        }
+
+        private static void TriggerEclipse()
         {
             if (Main.netMode == 0)
             {
@@ -150,7 +138,7 @@ namespace TranscendPlugins
             }
         }
 
-        private void TriggerBloodMoon()
+        private static void TriggerBloodMoon()
         {
             Main.bloodMoon = true;
             AchievementsHelper.NotifyProgressionEvent(4);
@@ -164,7 +152,7 @@ namespace TranscendPlugins
             }
         }
 
-        private void SpawnMoonLord()
+        private static void SpawnMoonLord()
         {
             if (Main.netMode == 0)
             {
@@ -176,7 +164,7 @@ namespace TranscendPlugins
             }
         }
 
-        private void StopLunarEvent()
+        private static void StopLunarEvent()
         {
             Main.NewText("Stopped lunar event!", 50, 255, 130);
             Terraria.NPC.LunarApocalypseIsUp = false;

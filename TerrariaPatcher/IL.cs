@@ -287,9 +287,7 @@ namespace TerrariaPatcher
         /// <returns></returns>
         public static TypeReference GetTypeReference(ModuleDefinition moduleDefinition, string fullName, bool verbose = true)
         {
-            TypeReference reference;
-
-            if (!moduleDefinition.TryGetTypeReference(fullName, out reference) && verbose)
+	        if (!moduleDefinition.TryGetTypeReference(fullName, out var reference) && verbose)
                 Program.ShowErrorMessage(string.Format("Failed to locate {0} type!", fullName));
 
             return reference;

@@ -6,10 +6,11 @@ using Terraria.ID;
 
 namespace BlahPlugins
 {
-    public class EnhancedCellPhone : MarshalByRefObject, IPluginPlayerPreUpdate, IPluginDrawInterface
+    [PluginDescription("Adds destinations to the Cell Phone beyond home: either ocean, hell, or a random spot. " +
+                       "Click the icon by the phone to cycle through them.")]
+    public class EnhancedCellPhone : PluginBase, IPluginPlayerPreUpdate, IPluginDrawInterface
     {
-        private Mode mode = Mode.Home;
-        enum Mode
+        enum Modes
         {
             Home = 0,
             LeftOcean = 1,
@@ -18,10 +19,7 @@ namespace BlahPlugins
             Random = 4
         }
 
-        public EnhancedCellPhone()
-        {
-            if (!Mode.TryParse(IniAPI.ReadIni("EnhancedCellPhone", "Mode", "Home", writeIt: true), out mode)) mode = Mode.Home;
-        }
+        private static readonly Setting<Modes> Mode = Modes.Home;
 
         public void OnPlayerPreUpdate(Player player)
         {
@@ -33,11 +31,11 @@ namespace BlahPlugins
 
                 if (Main.mouseLeft && Main.mouseLeftRelease)
                 {
-                    if (mode == Mode.Home) return;
+                    if (Mode.Value == Modes.Home) return;
 
                     player.mouseInterface = true;
                     Main.mouseLeftRelease = false;
-                    if (mode == Mode.LeftOcean)
+                    if (Mode.Value == Modes.LeftOcean)
                     {
                         // left ocean
                         player.Teleport(new Vector2(200 * 16, (float)(Main.worldSurface / 2f) * 16f), 3);
@@ -58,7 +56,7 @@ namespace BlahPlugins
                         player.fallStart = (int)(player.position.Y / 16f);
                         if (Main.netMode == 1) NetMessage.SendTileSquare(player.whoAmI, 200, (int)Main.worldSurface / 2, 10);
                     }
-                    else if (mode == Mode.RightOcean)
+                    else if (Mode.Value == Modes.RightOcean)
                     {
                         // right ocean
                         player.Teleport(new Vector2((Main.maxTilesX - 200) * 16, (float)(Main.worldSurface / 2f) * 16f), 3);
@@ -79,7 +77,7 @@ namespace BlahPlugins
                         player.fallStart = (int)(player.position.Y / 16f);
                         if (Main.netMode == 1) NetMessage.SendTileSquare(player.whoAmI, Main.maxTilesX - 200, (int)Main.worldSurface / 2, 10);
                     }
-                    else if (mode == Mode.Hell)
+                    else if (Mode.Value == Modes.Hell)
                     {
                         // hell
                         player.Teleport(new Vector2((Main.maxTilesX / 2) * 16, (float)(Main.maxTilesY - 180) * 16f), 3);
@@ -105,7 +103,7 @@ namespace BlahPlugins
                         player.fallStart = (int)(player.position.Y / 16f);
                         if (Main.netMode == 1) NetMessage.SendTileSquare(player.whoAmI, Main.maxTilesX / 2, (int)Main.maxTilesY - 180, 10);
                     }
-                    else if (mode == Mode.Random)
+                    else if (Mode.Value == Modes.Random)
                     {
                         if (Main.netMode == 0)
                         {
@@ -136,10 +134,8 @@ namespace BlahPlugins
                     player.mouseInterface = true;
                     Main.mouseRightRelease = false;
 
-                    if (mode == Mode.Random) mode = Mode.Home;
-                    else mode++;
-                    IniAPI.WriteIni("EnhancedCellPhone", "Mode", mode.ToString());
-                    Main.NewText("Enhanced CellPhone: " + mode, 255, 235, 150);
+                    Mode.Value = Mode.Value == Modes.Random ? Modes.Home : Mode.Value + 1;
+                    Main.NewText("Enhanced CellPhone: " + Mode.Value, 255, 235, 150);
                 }
             }
         }

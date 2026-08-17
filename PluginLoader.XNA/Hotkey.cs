@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.Xna.Framework.Input;
 
 namespace PluginLoader
@@ -20,7 +20,7 @@ namespace PluginLoader
                     return true;
                 return _ignoreModifierKeys;
             }
-            set { _ignoreModifierKeys = value; }
+            set => _ignoreModifierKeys = value;
         }
 
         public Keys Key { get; set; }
@@ -32,9 +32,28 @@ namespace PluginLoader
         /// </summary>
         public string Tag { get; set; }
 
+        /// <summary>
+        /// If non-null, the Plugin.Setting this hotkey is bound to.
+        /// </summary>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// True while the hotkey is held down, so that holding one hotkey does not suppress the others.
+        /// </summary>
+        internal bool Held { get; set; }
+
+        /// <summary>
+        /// The key combination on its own, in the form written to Plugins.ini.
+        /// </summary>
+        public string ToBinding()
+        {
+            return (Control ? "Control," : "") + (Shift ? "Shift," : "") + (Alt ? "Alt," : "") + Key;
+        }
+
         public override string ToString()
         {
-            return (Control ? "Control," : "") + (Shift ? "Shift," : "") + (Alt ? "Alt," : "") + Key + " " + Tag;
+            var label = Tag ?? Name;
+            return label == null ? ToBinding() : ToBinding() + " " + label;
         }
 
         public bool Equals(Hotkey other)

@@ -7,29 +7,33 @@ using Terraria.Utilities;
 
 namespace TranscendPlugins
 {
-    public class ItemPrefix : MarshalByRefObject, IPluginChatCommand, IPluginItemRollAPrefix
+    [PluginDescription("Every item always rolls its best prefix: Legendary, Godly, Unreal, Mythical or Ruthless to suit " +
+                       "the weapon, and a prefix of your choosing on accessories. /prefix also sets the prefix of the item you hold.")]
+    public class ItemPrefix : PluginBase, IPluginChatCommand, IPluginItemRollAPrefix
     {
-        private bool keepStats = false;
-        private bool enableFixedPrefixes;
-        private int fixedAccessoryPrefix;
-        
-        public ItemPrefix()
+        private static readonly Setting<bool> EnableFixedPrefixes = true;
+        private static readonly Setting<string> FixedAccessoryPrefix = "Warding";
+
+        private bool keepStats;
+
+        /// <summary>
+        /// The accessory prefix setting resolved to an id. It accepts either a number or a PrefixID name.
+        /// </summary>
+        private static int AccessoryPrefix()
         {
-	        if (!bool.TryParse(IniAPI.ReadIni("ItemPrefix", "EnableFixedPrefixes", "True", writeIt: true), out enableFixedPrefixes))
-		        enableFixedPrefixes = true;
-	        var temp = IniAPI.ReadIni("ItemPrefix", "FixedAccessoryPrefix", "Warding", writeIt: true);
-	        if (!int.TryParse(temp, out fixedAccessoryPrefix))
-	        {
-		        var field = typeof(PrefixID).GetField(temp, BindingFlags.Static | BindingFlags.Public);
-				var fieldValue = field == null ? null : field.GetValue(null) as int?;
-		        if (!fieldValue.HasValue)
-		        {
-			        MessageBox.Show(string.Format("[ItemPrefix] FixedAccessoryPrefix of '{0}' is invalid. Use a number or a valid prefix name.", temp), string.Empty, MessageBoxButtons.OK, MessageBoxIcon.Error);
-			        fixedAccessoryPrefix = PrefixID.Warding;
-		        }
-				else
-					fixedAccessoryPrefix = fieldValue.Value;
-	        }
+            var text = FixedAccessoryPrefix.Value;
+
+            int prefixId;
+            if (int.TryParse(text, out prefixId))
+                return prefixId;
+
+            var field = typeof(PrefixID).GetField(text, BindingFlags.Static | BindingFlags.Public);
+            var fieldValue = field == null ? null : field.GetValue(null) as int?;
+
+            if (fieldValue.HasValue) return fieldValue.Value;
+
+            Main.NewText(string.Format("[ItemPrefix] FixedAccessoryPrefix of '{0}' is invalid. Use a number or a valid prefix name.", text));
+            return PrefixID.Warding;
         }
 		
         private bool Correct(Item item, ref int rolledPrefix)
@@ -63,7 +67,7 @@ namespace TranscendPlugins
         public bool OnItemRollAPrefix(Item item, UnifiedRandom random, ref int rolledPrefix, out bool result)
         {
 			result = false;
-			if (!enableFixedPrefixes)
+			if (!EnableFixedPrefixes)
 				return false;
 
 	        if (Terraria.GameContent.Prefixes.PrefixLegacy.ItemSets.SwordsHammersAxesPicks[item.type])
@@ -117,7 +121,7 @@ namespace TranscendPlugins
 	        }
 	        if (item.IsAPrefixableAccessory())
 	        {
-		        rolledPrefix = fixedAccessoryPrefix;
+		        rolledPrefix = AccessoryPrefix();
 		        result = true;
 		        return true;
 	        }

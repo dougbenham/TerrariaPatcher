@@ -7,7 +7,8 @@ using Terraria.ID;
 
 namespace Ruffi123456789Plugins
 {
-    public class ItemSpawner : MarshalByRefObject, IPluginUpdate, IPluginChatCommand
+    [PluginDescription("Spawns any item with /item by id or name, with an optional count. Holding Control and typing an item id on the number pad spawns it too.")]
+    public class ItemSpawner : PluginBase, IPluginUpdate, IPluginChatCommand
     {
         private string toSpawn = "";
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using PluginLoader;
@@ -7,36 +7,51 @@ using Terraria.ID;
 
 namespace TranscendPlugins
 {
-    public class BuffImmunity : MarshalByRefObject, IPluginPlayerUpdateBuffs
+    [PluginDescription("Makes you permanently immune to the listed debuffs, and strips them if you already have them. " +
+                       "Buffs may be listed by BuffID name or by number.")]
+    public class BuffImmunity : PluginBase, IPluginPlayerUpdateBuffs
     {
-        private List<int> buffs;
- 
+        private static readonly Setting<string[]> Buffs = new[]
+        {
+            "PotionSickness", "ManaSickness", "Blackout", "Darkness", "Webbed"
+        };
+
+        private static List<int> immune = new List<int>();
+
         public BuffImmunity()
         {
-            buffs = new List<int>();
-            IniAPI.ReadIni("BuffImmunity", "Buffs", "PotionSickness, ManaSickness, Blackout, Darkness, Webbed", writeIt: true).Split(new [] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList().ForEach(buff =>
-            {
-                buff = buff.Trim().ToLower();
+            Resolve();
+            Buffs.Changed += Resolve;
+        }
 
+        private static void Resolve()
+        {
+            var resolved = new List<int>();
+
+            foreach (var buff in Buffs.Value.Select(buff => buff.Trim()).Where(buff => buff.Length > 0))
+            {
                 int buffId;
                 if (!int.TryParse(buff, out buffId))
                 {
-                    var field = typeof(BuffID).GetFields().FirstOrDefault(info => info.Name.ToLower() == buff);
+                    var field = typeof(BuffID).GetFields().FirstOrDefault(info => string.Equals(info.Name, buff, StringComparison.OrdinalIgnoreCase));
                     if (field == null)
                     {
                         Main.NewText("Invalid BuffID (" + buff + ").");
-                        return;
+                        continue;
                     }
+
                     buffId = Convert.ToInt32(field.GetValue(null));
                 }
 
-                buffs.Add(buffId);
-            });
+                resolved.Add(buffId);
+            }
+
+            immune = resolved;
         }
 
         public void OnPlayerUpdateBuffs(Player player)
         {
-            foreach (var type in buffs)
+            foreach (var type in immune)
             {
                 for (int j = 0; j < 22; j++)
                 {

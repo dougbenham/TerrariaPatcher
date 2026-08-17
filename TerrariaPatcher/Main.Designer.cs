@@ -60,6 +60,7 @@
             this.buffsOut = new System.Windows.Forms.ListBox();
             this.moveIn = new System.Windows.Forms.Button();
             this.save = new System.Windows.Forms.Button();
+            this.syncPlugins = new System.Windows.Forms.Button();
             this.saveFileDialog = new System.Windows.Forms.SaveFileDialog();
             this.terrariaPath = new System.Windows.Forms.TextBox();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
@@ -456,14 +457,25 @@
             // save
             // 
             this.save.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.save.Location = new System.Drawing.Point(865, 405);
+            this.save.Location = new System.Drawing.Point(747, 405);
             this.save.Name = "save";
             this.save.Size = new System.Drawing.Size(83, 23);
             this.save.TabIndex = 0;
             this.save.Text = "Patch && Save";
             this.save.UseVisualStyleBackColor = true;
             this.save.Click += new System.EventHandler(this.save_Click);
-            // 
+            //
+            // syncPlugins
+            //
+            this.syncPlugins.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.syncPlugins.Location = new System.Drawing.Point(836, 405);
+            this.syncPlugins.Name = "syncPlugins";
+            this.syncPlugins.Size = new System.Drawing.Size(112, 23);
+            this.syncPlugins.TabIndex = 29;
+            this.syncPlugins.Text = "Sync Plugins Only";
+            this.syncPlugins.UseVisualStyleBackColor = true;
+            this.syncPlugins.Click += new System.EventHandler(this.syncPlugins_Click);
+            //
             // saveFileDialog
             // 
             this.saveFileDialog.Filter = "Executable files (*.exe)|*.exe";
@@ -615,6 +627,7 @@
             this.Controls.Add(this.groupBox7);
             this.Controls.Add(this.linkLabel);
             this.Controls.Add(this.save);
+            this.Controls.Add(this.syncPlugins);
             this.Controls.Add(this.groupBox6);
             this.Controls.Add(this.groupBox4);
             this.Controls.Add(this.groupBox3);
@@ -659,6 +672,7 @@
         private System.Windows.Forms.Label buffsInCount;
         private System.Windows.Forms.Label buffsOutCount;
         private System.Windows.Forms.Button save;
+        private System.Windows.Forms.Button syncPlugins;
         private System.Windows.Forms.SaveFileDialog saveFileDialog;
         private System.Windows.Forms.TextBox terrariaPath;
         private System.Windows.Forms.GroupBox groupBox4;

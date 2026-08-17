@@ -1,4 +1,3 @@
-﻿using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using PluginLoader;
@@ -6,31 +5,24 @@ using Terraria;
 
 namespace TranscendPlugins
 {
-    public class FullBright : MarshalByRefObject, IPluginLightingGetColor
+    [PluginDescription("Lights the entire world evenly, so caves and night are as visible as daytime. Toggled in game with a hotkey.")]
+    public class FullBright : PluginBase, IPluginLightingGetColor
     {
-        private bool fullbright = false;
-        private Keys fullbrightKey;
+        private static readonly Setting<bool> Enabled = false;
+        private static readonly HotkeySetting ToggleKey = new Hotkey { Key = Keys.Y, Action = Toggle };
 
-        public FullBright()
+        private static void Toggle()
         {
-            if (!Keys.TryParse(IniAPI.ReadIni("FullBright", "FullBrightKey", "Y", writeIt: true), out fullbrightKey))
-                fullbrightKey = Keys.Y;
-            if (!bool.TryParse(IniAPI.ReadIni("FullBright", "FullBrightDefault", "false", writeIt: true), out fullbright))
-                fullbright = false;
+            Enabled.Value = !Enabled;
 
-            Color green = Color.Green;
-            Loader.RegisterHotkey(() =>
-            {
-                fullbright = !fullbright;
-                IniAPI.WriteIni("FullBright", "FullBrightDefault", fullbright.ToString());
-                Main.NewText("Full Bright " + (fullbright ? "Enabled" : "Disabled"), green.R, green.G, green.B);
-            }, fullbrightKey);
+            var green = Color.Green;
+            Main.NewText("Full Bright " + (Enabled ? "Enabled" : "Disabled"), green.R, green.G, green.B);
         }
 
         public bool OnLightingGetColor(int x, int y, out Color color)
         {
             color = Color.White;
-            return fullbright;
+            return Enabled;
         }
     }
 }

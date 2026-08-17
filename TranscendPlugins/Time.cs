@@ -1,25 +1,28 @@
-﻿using System;
 using Microsoft.Xna.Framework.Input;
 using PluginLoader;
 using Terraria;
 
 namespace TranscendPlugins
 {
-    public class Time : MarshalByRefObject, IPluginChatCommand
+    [PluginDescription("Sets the time of day from a hotkey or /time. The Night and Day hotkeys jump to midnight and noon, " +
+                       "or to dusk and dawn while holding Control.")]
+    public class Time : PluginBase, IPluginChatCommand
     {
-        private Keys nightKey, dayKey;
-        public Time()
+        private static readonly HotkeySetting Night = new Hotkey
         {
-            if (!Keys.TryParse(IniAPI.ReadIni("Time", "Night", "OemComma", writeIt: true), out nightKey))
-                nightKey = Keys.OemComma;
-            if (!Keys.TryParse(IniAPI.ReadIni("Time", "Day", "OemPeriod", writeIt: true), out dayKey))
-                dayKey = Keys.OemPeriod;
+            Key = Keys.OemComma,
+            IgnoreModifierKeys = true,
+            Action = () => ChangeTime(Loader.IsControlModifierKeyDown() ? "dusk" : "midnight")
+        };
 
-            Loader.RegisterHotkey(() => ChangeTime(Loader.IsControlModifierKeyDown() ? "dusk" : "midnight"), nightKey, ignoreModifierKeys: true);
-            Loader.RegisterHotkey(() => ChangeTime(Loader.IsControlModifierKeyDown() ? "dawn" : "noon"), dayKey, ignoreModifierKeys: true);
-        }
+        private static readonly HotkeySetting Day = new Hotkey
+        {
+            Key = Keys.OemPeriod,
+            IgnoreModifierKeys = true,
+            Action = () => ChangeTime(Loader.IsControlModifierKeyDown() ? "dawn" : "noon")
+        };
 
-        private void ChangeTime(string time)
+        private static void ChangeTime(string time)
         {
             switch (time.ToLower())
             {
@@ -49,8 +52,8 @@ namespace TranscendPlugins
         public bool OnChatCommand(string command, string[] args)
         {
             if (command != "time") return false;
-            
-            if (args.Length < 1 || args.Length > 1 || args[0] == "help")
+
+            if (args.Length != 1 || args[0] == "help")
             {
                 Main.NewText("Usage:");
                 Main.NewText("   /time dawn");

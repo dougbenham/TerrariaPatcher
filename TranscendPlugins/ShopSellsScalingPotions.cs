@@ -5,7 +5,8 @@ using Terraria.ID;
 
 namespace EraselsPlugins
 {
-    public class ShopSellsScalingPotions : MarshalByRefObject, IPluginChestSetupShop
+    [PluginDescription("The Merchant stocks the best healing and mana potions your character can use, upgrading his stock as your maximum life and mana grow.")]
+    public class ShopSellsScalingPotions : PluginBase, IPluginChestSetupShop
     {
         public void OnChestSetupShop(Chest chest, int type)
         {

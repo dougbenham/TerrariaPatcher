@@ -7,15 +7,10 @@ using Terraria.Audio;
 
 namespace RyanPlugins
 {
-    public class ItemReplication : MarshalByRefObject, IPluginItemSlotRightClick
+    [PluginDescription("Duplicates items: hold the replicate key and right click a slot to add one to the stack, or hold Shift as well to fill it.")]
+    public class ItemReplication : PluginBase, IPluginItemSlotRightClick
     {
-		private Keys replicateKey;
-
-        public ItemReplication()
-		{
-            if (!Keys.TryParse(IniAPI.ReadIni("ItemReplication", "ReplicateKey", "R", writeIt: true), out replicateKey))
-				replicateKey = Keys.R;
-        }
+        private static readonly Setting<Keys> ReplicateKey = Keys.R;
 
         private static bool SameItemIgnoringStack(Item a, Item b)
         {
@@ -49,7 +44,7 @@ namespace RyanPlugins
             var invItem = inv[slot];
             invItem.newAndShiny = false;
 
-            if (Main.stackSplit <= 1 && Main.mouseRight && Main.keyState.IsKeyDown(replicateKey) && contexts.Contains(context))
+            if (Main.stackSplit <= 1 && Main.mouseRight && Main.keyState.IsKeyDown(ReplicateKey) && contexts.Contains(context))
             {
                 bool shiftDown =
                     Main.keyState.IsKeyDown(Keys.LeftShift) ||

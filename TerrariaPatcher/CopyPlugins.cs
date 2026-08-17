@@ -15,6 +15,10 @@ namespace TerrariaPatcher
         private readonly string targetFolder;
         private string targetSharedFolder => Path.Combine(targetFolder, "Shared");
 
+        private readonly Dictionary<string, string> descriptions;
+        private readonly ToolTip descriptionTip = new ToolTip { AutoPopDelay = 30000, InitialDelay = 400, ReshowDelay = 100 };
+        private int tipIndex = -1;
+
         public CopyPlugins(string targetFolder)
         {
             this.sourceFolder = @".\Plugins";
@@ -23,6 +27,8 @@ namespace TerrariaPatcher
             InitializeComponent();
 
             clearExisting.Checked = Main.ReadBool("ActivePlugins", "ClearExisting", true, writeIt: true);
+
+            descriptions = PluginDescriptions.ReadAll(sourceFolder, sourceSharedFolder);
 
             foreach (var folder in Directory.EnumerateDirectories(sourceFolder).Where(s => s != sourceSharedFolder))
             {
@@ -36,6 +42,43 @@ namespace TerrariaPatcher
                 checkedListBox.Items.Add(name);
                 checkedListBox.SetItemChecked(checkedListBox.Items.Count - 1, Main.ReadBool("ActivePlugins", name, true, writeIt: true));
             }
+
+            checkedListBox.MouseMove += checkedListBox_MouseMove;
+
+            if (checkedListBox.Items.Count > 0)
+                checkedListBox.SelectedIndex = 0;
+        }
+
+        private string DescriptionOf(string pluginName)
+        {
+	        return descriptions.TryGetValue(pluginName, out var description) && !string.IsNullOrEmpty(description)
+                ? description
+                : null;
+        }
+
+        private void checkedListBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            var pluginName = checkedListBox.SelectedItem as string;
+
+            descriptionBox.Text = pluginName == null
+                ? ""
+                : DescriptionOf(pluginName) ?? "No description.";
+        }
+
+        private void checkedListBox_MouseMove(object sender, MouseEventArgs e)
+        {
+            var index = checkedListBox.IndexFromPoint(e.Location);
+            if (index == tipIndex) return;
+
+            tipIndex = index;
+
+            var pluginName = index >= 0 ? checkedListBox.Items[index] as string : null;
+            var description = pluginName == null ? null : DescriptionOf(pluginName);
+
+            if (description == null)
+                descriptionTip.Hide(checkedListBox);
+            else
+                descriptionTip.SetToolTip(checkedListBox, description);
         }
 
         private void copyButton_Click(object sender, EventArgs e)
@@ -84,7 +127,33 @@ namespace TerrariaPatcher
                     File.Copy(sourcePath, destinationPath, true);
             }
 
+            MigrateSettings();
+
             this.Close();
+        }
+
+        /// <summary>
+        /// Renames settings in the game's Plugins.ini that the plugins no longer read under their old names.
+        /// </summary>
+        private void MigrateSettings()
+        {
+            var iniPath = Path.Combine(Path.GetDirectoryName(targetFolder) ?? string.Empty, "Plugins.ini");
+
+            try
+            {
+                var moved = PluginSettingsMigration.Migrate(iniPath);
+                if (moved == 0) return;
+
+                MessageBox.Show(
+                    "Moved " + moved + " existing setting" + (moved == 1 ? "" : "s") + " in " + iniPath +
+                    " to the names the plugins use now.", Program.AssemblyName, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Could not update " + iniPath + ", so any settings under the old names will be ignored." +
+                                Environment.NewLine + Environment.NewLine + ex.Message,
+                    Program.AssemblyName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
         }
 
         private static void CopyFolder(string source, string destination)
@@ -103,7 +172,8 @@ namespace TerrariaPatcher
 
         private void CopyPlugins_Shown(object sender, EventArgs e)
         {
-            copyButton.Focus();
+            // Focus the list so the arrow keys read through the descriptions straight away.
+            checkedListBox.Focus();
         }
 
         private void clearExisting_CheckedChanged(object sender, EventArgs e)
