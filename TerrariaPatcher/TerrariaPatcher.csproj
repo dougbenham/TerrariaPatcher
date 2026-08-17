@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
@@ -11,37 +11,40 @@
 		<ApplicationIcon>Terraria.ico</ApplicationIcon>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
 		<Configurations>Debug;Release;Release (Public)</Configurations>
+		<Platforms>x86</Platforms>
 	</PropertyGroup>
 
+	<PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+		<OutputPath>bin\Debug\</OutputPath>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+		<OutputPath>bin\Release\</OutputPath>
+	</PropertyGroup>
 	<PropertyGroup Condition=" '$(Configuration)' == 'Release (Public)' ">
+		<OutputPath>bin\Release (Public)\</OutputPath>
 		<DefineConstants>$(DefineConstants);PUBLIC</DefineConstants>
 		<Optimize>true</Optimize>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Compile Include="CopyPlugins.cs">
+		<Compile Update="CopyPlugins.cs">
 			<SubType>Form</SubType>
 		</Compile>
-		<Compile Include="CopyPlugins.Designer.cs">
+		<Compile Update="CopyPlugins.Designer.cs">
 			<DependentUpon>CopyPlugins.cs</DependentUpon>
 		</Compile>
-		<Compile Include="IL.cs" />
-		<Compile Include="Main.cs">
+		<Compile Update="Main.cs">
 			<SubType>Form</SubType>
 		</Compile>
-		<Compile Include="Main.Designer.cs">
+		<Compile Update="Main.Designer.cs">
 			<DependentUpon>Main.cs</DependentUpon>
 		</Compile>
-		<Compile Include="MyAssemblyResolver.cs" />
-		<Compile Include="Program.cs" />
-		<Compile Include="Terraria.cs" />
-		<Compile Include="Properties\AssemblyInfo.cs" />
-		<Compile Include="Properties\Resources.Designer.cs">
+		<Compile Update="Properties\Resources.Designer.cs">
 			<AutoGen>True</AutoGen>
 			<DependentUpon>Resources.resx</DependentUpon>
 			<DesignTime>True</DesignTime>
 		</Compile>
-		<Compile Include="Properties\Settings.Designer.cs">
+		<Compile Update="Properties\Settings.Designer.cs">
 			<AutoGen>True</AutoGen>
 			<DependentUpon>Settings.settings</DependentUpon>
 			<DesignTimeSharedInput>True</DesignTimeSharedInput>
@@ -49,13 +52,13 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<EmbeddedResource Include="CopyPlugins.resx">
+		<EmbeddedResource Update="CopyPlugins.resx">
 			<DependentUpon>CopyPlugins.cs</DependentUpon>
 		</EmbeddedResource>
-		<EmbeddedResource Include="Main.resx">
+		<EmbeddedResource Update="Main.resx">
 			<DependentUpon>Main.cs</DependentUpon>
 		</EmbeddedResource>
-		<EmbeddedResource Include="Properties\Resources.resx">
+		<EmbeddedResource Update="Properties\Resources.resx">
 			<Generator>ResXFileCodeGenerator</Generator>
 			<LastGenOutput>Resources.Designer.cs</LastGenOutput>
 			<SubType>Designer</SubType>
@@ -74,22 +77,18 @@
 
 	<ItemGroup>
 		<PackageReference Include="Mono.Cecil" Version="0.11.6" />
+		<Reference Include="System.IO.Compression" />
+		<Reference Include="System.IO.Compression.FileSystem" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\PluginLoader.XNA\PluginLoader.XNA.csproj" />
+		<ProjectReference Include="..\PluginLoader.XNA\PluginLoader.XNA.csproj">
+			<Aliases>PluginLoaderXNA</Aliases>
+		</ProjectReference>
 	</ItemGroup>
 
-	<PropertyGroup>
-		<PostBuildEvent>
-			IF "$(Configuration)" == "Debug" EXIT
-			if "$(Configuration)" == "Release" SET zip=$(ProjectDir)TerrariaPatcher.zip
-			if "$(Configuration)" == "Release (Public)" SET zip=$(ProjectDir)TerrariaPatcher.public.zip
-			IF EXIST "%25zip%25" DEL "%25zip%25"
-			"C:\Program Files\WinRAR\WINRAR.exe" a -ep1 "%25zip%25" "$(TargetDir)TerrariaPatcher.exe" "$(TargetDir)PluginLoader.XNA.dll" "$(TargetDir)Mono.Cecil.dll" "$(TargetDir)Mono.Cecil.Rocks.dll" "$(TargetDir)TerrariaPatcher.exe.config" "$(ProjectDir)changelog.txt"
-			"C:\Program Files\WinRAR\WINRAR.exe" a -ep1 -apPlugins "%25zip%25" "$(ProjectDir)\TranscendPlugins\*.cs"
-			"C:\Program Files\WinRAR\WINRAR.exe" a -ep1 -r -apPlugins\Shared "%25zip%25" "$(ProjectDir)\TranscendPlugins\Shared\*.cs"
-		</PostBuildEvent>
-	</PropertyGroup>
+	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
+	  <Exec Command="IF &quot;$(Configuration)&quot; == &quot;Debug&quot; EXIT&#xD;&#xA;IF &quot;$(Configuration)&quot; == &quot;Release&quot; SET zip=$(ProjectDir)..\TerrariaPatcher.zip&#xD;&#xA;IF &quot;$(Configuration)&quot; == &quot;Release (Public)&quot; SET zip=$(ProjectDir)..\TerrariaPatcher.public.zip&#xD;&#xA;IF EXIST &quot;%25zip%25&quot; DEL &quot;%25zip%25&quot;&#xD;&#xA;&quot;C:\Program Files\WinRAR\WINRAR.exe&quot; a -ep1 &quot;%25zip%25&quot; &quot;$(TargetDir)TerrariaPatcher.exe&quot; &quot;$(TargetDir)PluginLoader.XNA.dll&quot; &quot;$(TargetDir)Mono.Cecil.dll&quot; &quot;$(TargetDir)Mono.Cecil.Rocks.dll&quot; &quot;$(TargetDir)TerrariaPatcher.exe.config&quot; &quot;$(ProjectDir)changelog.txt&quot;&#xD;&#xA;&quot;C:\Program Files\WinRAR\WINRAR.exe&quot; a -ep1 -apPlugins &quot;%25zip%25&quot; &quot;$(ProjectDir)\..\TranscendPlugins\*.cs&quot;&#xD;&#xA;&quot;C:\Program Files\WinRAR\WINRAR.exe&quot; a -ep1 -r -apPlugins\Shared &quot;%25zip%25&quot; &quot;$(ProjectDir)\..\TranscendPlugins\Shared\*.cs&quot;" />
+	</Target>
 
 </Project>
