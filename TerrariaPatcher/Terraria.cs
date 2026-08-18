@@ -516,6 +516,7 @@ namespace TerrariaPatcher
             var onDrawSplash = _mainModule.Import(IL.GetMethodDefinition(loader, "OnDrawSplash"));
             var onDrawInterface = _mainModule.Import(IL.GetMethodDefinition(loader, "OnDrawInterface"));
             var onDrawInventory = _mainModule.Import(IL.GetMethodDefinition(loader, "OnDrawInventory"));
+            var onDrawUI = _mainModule.Import(IL.GetMethodDefinition(loader, "OnDrawUI"));
             var onPreUpdate = _mainModule.Import(IL.GetMethodDefinition(loader, "OnPreUpdate"));
             var onUpdate = _mainModule.Import(IL.GetMethodDefinition(loader, "OnUpdate"));
             var onUpdateTime = _mainModule.Import(IL.GetMethodDefinition(loader, "OnUpdateTime"));
@@ -563,6 +564,7 @@ namespace TerrariaPatcher
             var drawSplash = IL.GetMethodDefinition(main, "DrawSplash");
             var drawInterface = IL.GetMethodDefinition(main, "DrawInterface");
             var drawInventory = IL.GetMethodDefinition(main, "DrawInventory");
+            var drawPendingMouseText = IL.GetMethodDefinition(main, "DrawPendingMouseText");
             var update = IL.GetMethodDefinition(main, "DoUpdate");
             var updateEnterToggleChat = IL.GetMethodDefinition(main, "DoUpdate_Enter_ToggleChat");
             var updateTime = IL.GetMethodDefinition(main, "UpdateTime");
@@ -632,6 +634,17 @@ namespace TerrariaPatcher
                 {
                     Instruction.Create(OpCodes.Call, onDrawInterface),
                     Instruction.Create(OpCodes.Ret)
+                });
+            }
+
+            using (drawPendingMouseText.JumpFix())
+            {
+                // Main.DrawPendingMouseText pre hook, which is where a plugin gets to draw a window of its own.
+                // Main.DrawInterface calls it with a sprite batch already open in interface coordinates, and draws
+                // the mouse text and the cursor straight afterwards, so a window drawn here sits under both.
+                IL.MethodPrepend(drawPendingMouseText, new[]
+                {
+                    Instruction.Create(OpCodes.Call, onDrawUI)
                 });
             }
 

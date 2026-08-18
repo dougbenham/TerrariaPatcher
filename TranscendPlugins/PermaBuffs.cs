@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using PluginLoader;
 using Terraria;
@@ -11,10 +11,16 @@ namespace DoombubblesPlugins
                        "only need 1. Well Fed buffs never override a better one, so a greater food still upgrades you.")]
     public class PermaBuffs : PluginBase, IPluginPlayerUpdate
     {
+        [SettingRange(1, 999)]
+        [SettingDescription("How many potions you must carry for the buff to stay on.")]
         private static readonly Setting<int> ItemRequiredCount = 30;
+        [SettingRange(1, 999)]
+        [SettingDescription("How many of a buff station's item you must carry.")]
         private static readonly Setting<int> StationRequiredCount = 1;
         private static readonly Setting<bool> CumulativeTotal = false;
 
+        [SettingIds(typeof(BuffID))]
+        [SettingDescription("The buffs a big enough stack of the potion keeps permanently active.")]
         private static readonly Setting<HashSet<int>> AllowedItemBuffs = new HashSet<int>
         {
             BuffID.ObsidianSkin, BuffID.Regeneration, BuffID.Swiftness, BuffID.Gills, BuffID.Ironskin,

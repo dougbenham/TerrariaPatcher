@@ -38,6 +38,18 @@ namespace PluginLoader
         public string Name { get; set; }
 
         /// <summary>
+        /// If non-null, the plugin whose setting this hotkey is bound to. A hotkey belonging to a plugin that is
+        /// switched off does nothing, unless the plugin responds while disabled so that the hotkey can switch it
+        /// back on.
+        /// </summary>
+        public PluginBase Owner { get; internal set; }
+
+        internal bool IsActive
+        {
+            get { return Owner == null || Owner.Enabled || Owner.RespondsWhileDisabled; }
+        }
+
+        /// <summary>
         /// True while the hotkey is held down, so that holding one hotkey does not suppress the others.
         /// </summary>
         internal bool Held { get; set; }

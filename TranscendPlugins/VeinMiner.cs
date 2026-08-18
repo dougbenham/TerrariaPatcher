@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using PluginLoader;
 using Terraria;
@@ -8,23 +8,28 @@ using Terraria.ID;
 namespace TranscendPlugins
 {
     [PluginDescription("Mining one block of an ore or gem vein mines the rest of it, up to MaxBlocks. " +
-                       "On by default; toggle it with /veinminer. Works in multiplayer, where the vein is mined more " +
-                       "slowly so the server never sees it as tile removal spam.")]
-    public class VeinMiner : PluginBase, IPluginUpdate, IPluginPlayerPickTile, IPluginChatCommand
+                       "Works in multiplayer, where the vein is mined more slowly so the server never sees " +
+                       "it as tile removal spam.")]
+    public class VeinMiner : PluginBase, IPluginUpdate, IPluginPlayerPickTile
     {
-        private static readonly Setting<bool> Enabled = true;
+        [SettingRange(1, 10000)]
+        [SettingDescription("The most blocks one swing will mine out of a single vein.")]
         private static readonly Setting<int> MaxBlocks = 300;
 
         /// <summary>
         /// Limits a vein to the distance you could mine it by hand.
         /// </summary>
+        [SettingDescription("Keeps a vein within the reach you could mine it by hand.")]
         private static readonly Setting<bool> RangeLimit = false;
 
         /// <summary>
         /// Charges mana per block, so a vein costs something. A better pickaxe costs less per block.
         /// </summary>
+        [SettingDescription("Charges mana per block, less with a better pickaxe.")]
         private static readonly Setting<bool> RequireMana = false;
 
+        [SettingIds(typeof(TileID))]
+        [SettingDescription("The tiles a swing mines the whole vein of.")]
         private static readonly Setting<HashSet<int>> Tiles = new HashSet<int>
         {
             TileID.Copper, TileID.Tin, TileID.Iron, TileID.Lead, TileID.Silver, TileID.Tungsten,
@@ -73,7 +78,7 @@ namespace TranscendPlugins
         /// </summary>
         public void OnPlayerPickTile(Player player, int x, int y, int pickPower)
         {
-            if (!Enabled || player.whoAmI != Main.myPlayer) return;
+            if (player.whoAmI != Main.myPlayer) return;
             if (queue.Count > 0 || swungAtType >= 0) return;
             if (!WorldGen.InWorld(x, y, 1)) return;
 
@@ -89,7 +94,7 @@ namespace TranscendPlugins
         {
             var player = Player;
 
-            if (!Enabled || Main.gameMenu || player == null || !player.active || player.dead)
+            if (Main.gameMenu || player == null || !player.active || player.dead)
             {
                 Stop();
                 return;
@@ -219,30 +224,6 @@ namespace TranscendPlugins
             veinPickPower = 0;
             mined = 0;
             owedMana = 0f;
-        }
-
-        public bool OnChatCommand(string command, string[] args)
-        {
-            if (command != "veinminer") return false;
-
-            var option = args.Length > 0 ? args[0].ToLower() : "";
-
-            if (option == "help")
-            {
-                Main.NewText("Usage:");
-                Main.NewText("  /veinminer - toggles on/off");
-                Main.NewText("  /veinminer status");
-                return true;
-            }
-
-            if (option != "status")
-            {
-                Enabled.Value = !Enabled;
-                Stop();
-            }
-
-            Main.NewText("Vein miner is " + (Enabled ? "on, up to " + MaxBlocks.Value + " blocks a vein." : "off."));
-            return true;
         }
     }
 }

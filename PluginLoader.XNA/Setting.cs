@@ -28,6 +28,35 @@ namespace PluginLoader
 
         public abstract Type ValueType { get; }
 
+        /// <summary>
+        /// The value the plugin declared, as it would be written to Plugins.ini, captured before the file is read.
+        /// </summary>
+        public string Default { get; private set; }
+
+        /// <summary>
+        /// What the in-game settings menu shows for this setting. Filled in from the field's attributes.
+        /// </summary>
+        public string Label { get; internal set; }
+        public string Description { get; internal set; }
+        public double? Minimum { get; internal set; }
+        public double? Maximum { get; internal set; }
+
+        /// <summary>
+        /// For a collection setting, the content id class its values come from, such as <c>TileID</c>. Null when the
+        /// setting is not a collection of ids.
+        /// </summary>
+        public Type IdClass { get; internal set; }
+
+        public bool IsDefault => Serialize() == Default;
+
+        /// <summary>
+        /// Puts the value back to the one the plugin declared.
+        /// </summary>
+        public void Reset()
+        {
+            SetFrom(Default);
+        }
+
         public abstract string Serialize();
         public abstract void Deserialize(string text);
 
@@ -43,6 +72,10 @@ namespace PluginLoader
 
         internal virtual void Register()
         {
+            // Captured before the file is read, so that it is the value the plugin declared rather than the
+            // value the player has saved.
+            Default = Serialize();
+
             Load();
         }
 

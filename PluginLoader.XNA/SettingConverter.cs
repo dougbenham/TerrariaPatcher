@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
@@ -113,14 +113,17 @@ namespace PluginLoader
                 .Where(item => item.Length > 0);
         }
 
-        private static bool IsNumeric(Type type)
+        /// <summary>
+        /// The shape of a setting's type, so that an editor can pick a control to match it.
+        /// </summary>
+        public static bool IsNumeric(Type type)
         {
             return type == typeof(byte) || type == typeof(sbyte) || type == typeof(short) || type == typeof(ushort) ||
                    type == typeof(int) || type == typeof(uint) || type == typeof(long) || type == typeof(ulong) ||
                    type == typeof(float) || type == typeof(double) || type == typeof(decimal);
         }
 
-        private static bool TryGetDictionaryTypes(Type type, out Type key, out Type element)
+        public static bool TryGetDictionaryTypes(Type type, out Type key, out Type element)
         {
             key = null;
             element = null;
@@ -133,7 +136,7 @@ namespace PluginLoader
             return true;
         }
 
-        private static bool TryGetElementType(Type type, out Type element)
+        public static bool TryGetElementType(Type type, out Type element)
         {
             element = null;
 

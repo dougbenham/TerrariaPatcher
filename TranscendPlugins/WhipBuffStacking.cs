@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using PluginLoader;
 using Terraria;
@@ -10,6 +10,7 @@ namespace DoombubblesPlugins
                        "Durendal and Dark Harvest buffs stack. Enemies still only carry one tag at a time.")]
     public class WhipBuffStacking : PluginBase, IPluginUpdate, IPluginPlayerPreUpdate
     {
+        [SettingIds(typeof(BuffID))]
         private static readonly Setting<HashSet<int>> WorkingBuffs = new HashSet<int>
         {
             BuffID.SwordWhipPlayerBuff,

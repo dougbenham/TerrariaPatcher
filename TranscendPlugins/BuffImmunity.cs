@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using PluginLoader;
@@ -11,6 +11,8 @@ namespace TranscendPlugins
                        "Buffs may be listed by BuffID name or by number.")]
     public class BuffImmunity : PluginBase, IPluginPlayerUpdateBuffs
     {
+        [SettingIds(typeof(BuffID))]
+        [SettingDescription("The debuffs you are permanently immune to.")]
         private static readonly Setting<string[]> Buffs = new[]
         {
             "PotionSickness", "ManaSickness", "Blackout", "Darkness", "Webbed"

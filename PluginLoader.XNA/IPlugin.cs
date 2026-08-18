@@ -34,6 +34,17 @@ namespace PluginLoader
     {
         void OnDrawInventory();
     }
+
+    /// <summary>
+    /// Raised while the interface is being drawn, with a sprite batch already open in interface coordinates, and
+    /// before the mouse text and the cursor are drawn over the top. This is the hook to draw a window of your own
+    /// from: <see cref="IPluginDrawInterface"/> is raised after the batch has closed and after the cursor is down,
+    /// so anything drawn there covers it.
+    /// </summary>
+    public interface IPluginDrawUI : IPlugin
+    {
+        void OnDrawUI();
+    }
     public interface IPluginPreUpdate : IPlugin
     {
         void OnPreUpdate();

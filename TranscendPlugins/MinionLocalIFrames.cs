@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using PluginLoader;
 using Terraria;
 using Terraria.ID;
@@ -9,6 +9,7 @@ namespace DoombubblesPlugins
                        "Imp Fireballs, Mini Spiders, Retanimini, Spazmamini and Tempests no longer take turns hitting.")]
     public class MinionLocalIFrames : PluginBase, IPluginProjectileSetDefaults
     {
+        [SettingIds(typeof(ProjectileID))]
         private static readonly Setting<HashSet<int>> AffectedProjectiles = new HashSet<int>
         {
             ProjectileID.ImpFireball,

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -10,24 +10,18 @@ namespace TildemancerPlugins
     [PluginDescription("Unlocks the Journey mode research and power menu on any character, in any world. On a server the " +
                        "powers still go through it, so any the server has locked down with a journeypermission_ line in " +
                        "serverconfig.txt will not take, and what you research is tracked on your own client.")]
-    public class JourneyModeUnlocked : PluginBase, IPluginPlayerUpdateBuffs
+    public class JourneyModeUnlocked : PluginBase, IPluginInitialize, IPluginPlayerUpdateBuffs
     {
-        private static readonly Setting<bool> Enabled = true;
+        [SettingDescription("Says in chat whether the Journey mode menu was unlocked.")]
         private static readonly Setting<bool> ShowChatMessage = true;
 
         private static readonly byte[] Aob = new byte[] { 0x74, 0x10, 0x8B, 0xCE, 0x33, 0xD2, 0xE8 };
 
         private bool _attempted;
         private bool _patched;
-
-        private IntPtr _patchAddress = IntPtr.Zero;
-        private byte _originalOpcode;
-
+		
         public void OnPlayerUpdateBuffs(Player player)
         {
-            if (!Enabled)
-                return;
-
             if (_attempted || player == null || player.whoAmI != Main.myPlayer)
                 return;
 
@@ -82,9 +76,6 @@ namespace TildemancerPlugins
                 if (check[i] != Aob[i])
                     return false;
             }
-
-            _patchAddress = found;
-            _originalOpcode = check[0];
 
             return WriteByte(found, 0x76);
         }
@@ -203,5 +194,10 @@ namespace TildemancerPlugins
 
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern bool FlushInstructionCache(IntPtr hProcess, IntPtr lpBaseAddress, UIntPtr dwSize);
+
+        /// Only added so that disabling the plugin tells the user that restart is needed
+        public void OnInitialize()
+        {
+        }
     }
 }

@@ -1,3 +1,7 @@
+﻿v1.3.0.11:	Added SettingsMenu plugin: an in game window on F1, or /menu, for every plugin's settings and hotkeys.
+		Plugins can now be switched on and off, in that window or with /plugins enable|disable.
+		Settings can be put back to their defaults, one at a time or a whole plugin at once.
+		Settings holding a list of tiles or buffs are now ticked off a searchable list.
 v1.3.0.10:	Fixed SavePosition plugin.
 v1.3.0.9:	Fixed JourneyEverywhere plugin.
 v1.3.0.8:	Added CreativeCrafting, SlashCommandPrivacy plugins (credit to @louanfontenele).

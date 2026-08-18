@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
@@ -29,6 +29,10 @@ namespace PluginLoader
         private static FileSystemWatcher settingsWatcher;
         private static volatile bool settingsChangedOnDisk;
 
+        /// <summary>
+        /// Every loaded plugin implementing an interface, and the switched on ones a hook is actually delivered to.
+        /// </summary>
+        private static readonly Dictionary<Type, Array> pluginCache = new Dictionary<Type, Array>();
         private static readonly Dictionary<Type, Array> dispatchCache = new Dictionary<Type, Array>();
 
         private static string LogPath => Path.Combine(".", "PluginLoader.log");
@@ -74,6 +78,7 @@ namespace PluginLoader
             var name = plugin.GetType().Name;
 
             loadedPlugins.Remove(plugin);
+            pluginCache.Clear();
             dispatchCache.Clear();
 
             if (plugin is PluginBase pluginBase)
@@ -93,20 +98,53 @@ namespace PluginLoader
 
         #region Dispatch
 
+        /// <summary>
+        /// Every loaded plugin implementing <typeparamref name="T"/>, switched off ones included, for listing them
+        /// and their settings.
+        /// </summary>
         private static T[] PluginsOf<T>() where T : class, IPlugin
         {
-	        if (!dispatchCache.TryGetValue(typeof(T), out var cached))
+	        if (!pluginCache.TryGetValue(typeof(T), out var cached))
             {
                 cached = loadedPlugins.OfType<T>().ToArray();
+                pluginCache[typeof(T)] = cached;
+            }
+
+            return (T[]) cached;
+        }
+
+        /// <summary>
+        /// The plugins a hook is delivered to. Switched off plugins are left out of the cached array rather than
+        /// checked on every call, so switching one off costs nothing while the game is running.
+        /// </summary>
+        private static T[] EnabledPluginsOf<T>() where T : class, IPlugin
+        {
+            if (!dispatchCache.TryGetValue(typeof(T), out var cached))
+            {
+                cached = loadedPlugins.Where(IsEnabled).OfType<T>().ToArray();
                 dispatchCache[typeof(T)] = cached;
             }
 
             return (T[]) cached;
         }
 
+        private static bool IsEnabled(IPlugin plugin)
+        {
+            var pluginBase = plugin as PluginBase;
+            return pluginBase == null || pluginBase.Enabled;
+        }
+
+        /// <summary>
+        /// Rebuilds the hook lists after a plugin has been switched on or off.
+        /// </summary>
+        internal static void PluginEnabledChanged()
+        {
+            dispatchCache.Clear();
+        }
+
         private static void Dispatch<T>(Action<T> action) where T : class, IPlugin
         {
-            foreach (var plugin in PluginsOf<T>())
+            foreach (var plugin in EnabledPluginsOf<T>())
             {
                 try
                 {
@@ -121,9 +159,32 @@ namespace PluginLoader
 
         private static bool DispatchAny<T>(Func<T, bool> func) where T : class, IPlugin
         {
+            return DispatchAny(EnabledPluginsOf<T>(), func);
+        }
+
+        /// <summary>
+        /// Offers a chat command to the plugins, including any switched off plugin whose own command is how it is
+        /// switched back on. Not worth caching: it runs once for a command the player has typed.
+        /// </summary>
+        private static bool DispatchChatCommand(string command, string[] args)
+        {
+            var plugins = loadedPlugins
+                .OfType<IPluginChatCommand>()
+                .Where(plugin =>
+                {
+                    var pluginBase = plugin as PluginBase;
+                    return pluginBase == null || pluginBase.Enabled || pluginBase.RespondsWhileDisabled;
+                })
+                .ToArray();
+
+            return DispatchAny(plugins, plugin => plugin.OnChatCommand(command, args));
+        }
+
+        private static bool DispatchAny<T>(IEnumerable<T> plugins, Func<T, bool> func) where T : class, IPlugin
+        {
             var ret = false;
 
-            foreach (var plugin in PluginsOf<T>())
+            foreach (var plugin in plugins)
             {
                 try
                 {
@@ -292,6 +353,7 @@ namespace PluginLoader
                 }
             }
 
+            pluginCache.Clear();
             dispatchCache.Clear();
         }
 
@@ -406,7 +468,7 @@ namespace PluginLoader
                 var cmd = split[0].ToLower();
                 var args = split.Length > 1 ? split[1].Split(' ') : new string[0];
 
-                DispatchAny<IPluginChatCommand>(plugin => plugin.OnChatCommand(cmd, args));
+                DispatchChatCommand(cmd, args);
             };
             RegisterHotkey(key);
         }
@@ -515,6 +577,11 @@ namespace PluginLoader
             Dispatch<IPluginDrawInterface>(plugin => plugin.OnDrawInterface());
         }
 
+        public static void OnDrawUI()
+        {
+            Dispatch<IPluginDrawUI>(plugin => plugin.OnDrawUI());
+        }
+
         public static void OnPreUpdate()
         {
             if (Main.showSplash)
@@ -535,7 +602,7 @@ namespace PluginLoader
 
                 foreach (var hotkey in hotkeys.ToArray())
                 {
-                    var down = hotkey.Key != Keys.None && keysdown.Contains(hotkey.Key) &&
+                    var down = hotkey.Key != Keys.None && hotkey.IsActive && keysdown.Contains(hotkey.Key) &&
                                (hotkey.IgnoreModifierKeys || (control == hotkey.Control && shift == hotkey.Shift && alt == hotkey.Alt));
 
                     if (down && !hotkey.Held && hotkey.Action != null)
@@ -782,7 +849,7 @@ namespace PluginLoader
                         chatRet = true;
                         break;
                     default:
-                        chatRet = DispatchAny<IPluginChatCommand>(plugin => plugin.OnChatCommand(cmd, args));
+                        chatRet = DispatchChatCommand(cmd, args);
                         break;
                 }
             }
@@ -804,8 +871,16 @@ namespace PluginLoader
         {
             if (args.Length == 0)
             {
-                Say(string.Join(", ", loadedPlugins.Select(loaded => loaded.GetType().Name).OrderBy(pluginName => pluginName).ToArray()));
+                Say(string.Join(", ", loadedPlugins.Select(NameOf).OrderBy(pluginName => pluginName).ToArray()));
                 Say("/plugins [PluginName] describes a plugin.");
+                Say("/plugins enable|disable [PluginName] switches one on or off.");
+                return;
+            }
+
+            var option = args[0].ToLower();
+            if (option == "enable" || option == "disable")
+            {
+                OnPluginEnableCommand(option == "enable", args.Skip(1).ToArray());
                 return;
             }
 
@@ -822,8 +897,52 @@ namespace PluginLoader
             Say(name + (description == null ? " has no description." : ": " + description));
 
             var plugin = match as PluginBase;
-            if (plugin != null && plugin.Settings.Count > 0)
-                Say("Settings: " + string.Join(", ", plugin.Settings.Select(setting => setting.Name).ToArray()));
+            if (plugin == null) return;
+
+            Say(name + " is " + (plugin.Enabled ? "switched on." : "switched off."));
+
+            var configurable = plugin.ConfigurableSettings.ToArray();
+            if (configurable.Length > 0)
+                Say("Settings: " + string.Join(", ", configurable.Select(setting => setting.Name).ToArray()));
+        }
+
+        /// <summary>
+        /// A plugin's name, which is what its section in Plugins.ini is called.
+        /// </summary>
+        private static string NameOf(IPlugin plugin)
+        {
+            return plugin.GetType().Name;
+        }
+
+        private static void OnPluginEnableCommand(bool enable, string[] args)
+        {
+            if (args.Length == 0)
+            {
+                Say("Usage: /plugins " + (enable ? "enable" : "disable") + " [PluginName]");
+                Say((enable ? "Switched off" : "Switched on") + ": " + string.Join(", ", GetPlugins()
+                    .Where(candidate => candidate.Enabled != enable)
+                    .Select(candidate => candidate.Name)
+                    .OrderBy(pluginName => pluginName)
+                    .ToArray()));
+                return;
+            }
+
+            var plugin = GetPlugin(args[0]);
+            if (plugin == null)
+            {
+                Say("There is no plugin named " + args[0] + ".");
+                return;
+            }
+
+            if (plugin.Enabled == enable)
+            {
+                Say(plugin.Name + " is already switched " + (enable ? "on." : "off."));
+                return;
+            }
+
+            plugin.Enabled = enable;
+            Say(plugin.Name + " is now switched " + (enable ? "on." : "off.") +
+                (enable ? "" : " Anything it has already done stays done until you restart."));
         }
 
         private static void OnSettingCommand(string[] args)
@@ -835,6 +954,7 @@ namespace PluginLoader
                     "  /setting [PluginName] - lists a plugin's settings",
                     "  /setting [PluginName] [SettingName] - shows a setting's value",
                     "  /setting [PluginName] [SettingName] [Value] - changes a setting",
+                    "  /menu - opens the settings window, if the SettingsMenu plugin is installed",
                     "Plugins with settings: " + string.Join(", ", GetPlugins().Where(candidate => candidate.Settings.Count > 0).Select(candidate => candidate.Name).OrderBy(pluginName => pluginName).ToArray())));
                 return;
             }
