@@ -52,7 +52,7 @@ namespace TranscendPlugins.Shared.UI
             if (Gui.Hover(row) && !string.IsNullOrEmpty(setting.Description))
                 Gui.Tooltip(setting.Description);
 
-            Gui.Text(Gui.Fit(setting.Label, label.Width), new Vector2(label.X, label.Y + (label.Height - Gui.LineHeight) / 2f), Gui.TextNormal);
+            Gui.TextLeftCentered(Gui.Fit(setting.Label, label.Width), label, Gui.TextNormal);
 
             var request = DrawControl(setting, control);
 
@@ -100,7 +100,8 @@ namespace TranscendPlugins.Shared.UI
         private void DrawBool(Setting setting, Rectangle area)
         {
             var on = setting.Serialize() == "true";
-            var box = new Rectangle(area.X, area.Y + (area.Height - 22) / 2, 22, 22);
+            var size = Math.Min(22, area.Height - 2);
+            var box = new Rectangle(area.X, area.Y + (area.Height - size) / 2, size, size);
 
             Gui.Tick(box, on);
 

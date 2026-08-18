@@ -11,8 +11,6 @@ namespace TranscendPlugins.Shared.UI
     /// </summary>
     public class IdPicker
     {
-        private const int RowHeight = 24;
-
         public Setting Setting { get; private set; }
 
         private IdDomain domain;
@@ -196,20 +194,24 @@ namespace TranscendPlugins.Shared.UI
         {
             if (needsOrdering) Order();
 
-            var back = new Rectangle(area.X, area.Y, 26, 24);
+            var control = Gui.RowHeight;
+
+            var back = new Rectangle(area.X, area.Y, control, control);
             var goBack = Gui.Button(back, Gui.ArrowLeft);
 
-            Gui.Text(Gui.Fit(breadcrumb, area.Width - 220), new Vector2(back.Right + 8, area.Y + 3), Gui.TextNormal);
-            Gui.TextRight(values.Count + " chosen", area.Right, area.Y + 3, Gui.TextDim);
+            var crumb = new Rectangle(back.Right + 8, area.Y, area.Width - control - 220, control);
+            Gui.TextLeftCentered(Gui.Fit(breadcrumb, crumb.Width), crumb, Gui.TextNormal);
+            Gui.TextRight(values.Count + " chosen", area.Right,
+                area.Y + (control - Gui.TextHeight) / 2f, Gui.TextDim);
 
-            var filterRow = new Rectangle(area.X, area.Y + 32, area.Width - 30, 24);
+            var filterRow = new Rectangle(area.X, back.Bottom + 8, area.Width - control - 4, control);
             filter.Draw(filterRow);
 
-            var resort = new Rectangle(area.Right - 26, filterRow.Y, 26, 24);
+            var resort = new Rectangle(area.Right - control, filterRow.Y, control, control);
             if (Gui.Button(resort, Gui.Resort)) Order();
             if (Gui.Hover(resort)) Gui.Tooltip("Gather the chosen ones back to the top");
 
-            var footerHeight = 30;
+            var footerHeight = control + 6;
             var list = new Rectangle(area.X, filterRow.Bottom + 8, area.Width - 10,
                 area.Bottom - footerHeight - 8 - (filterRow.Bottom + 8));
 
@@ -221,7 +223,8 @@ namespace TranscendPlugins.Shared.UI
 
         private void DrawList(Rectangle list, int wheelNotches)
         {
-            var visible = Math.Max(1, list.Height / RowHeight);
+            var rowHeight = Gui.RowHeight;
+            var visible = Math.Max(1, list.Height / rowHeight);
 
             scroller.Wheel(list, rows.Count, visible, wheelNotches);
             scroller.Clamp(rows.Count, visible);
@@ -237,7 +240,7 @@ namespace TranscendPlugins.Shared.UI
                 var index = scroller.Offset + line;
                 if (index >= rows.Count) break;
 
-                var row = new Rectangle(list.X, list.Y + line * RowHeight, list.Width, RowHeight);
+                var row = new Rectangle(list.X, list.Y + line * rowHeight, list.Width, rowHeight);
                 DrawRow(rows[index], row);
             }
 
@@ -264,7 +267,8 @@ namespace TranscendPlugins.Shared.UI
 
             if (hovered) Gui.Fill(row, Gui.RowHover);
 
-            var tick = new Rectangle(row.X + 2, row.Y + (row.Height - 18) / 2, 18, 18);
+            var box = Math.Min(18, row.Height - 4);
+            var tick = new Rectangle(row.X + 2, row.Y + (row.Height - box) / 2, box, box);
             Gui.Tick(tick, on);
 
             var x = tick.Right + 6;
@@ -280,7 +284,7 @@ namespace TranscendPlugins.Shared.UI
             var detailWidth = Gui.Measure(detail).X;
             var nameWidth = row.Right - x - detailWidth - 12;
 
-            var y = row.Y + (row.Height - Gui.LineHeight) / 2f;
+            var y = row.Y + Math.Max(0f, (row.Height - Gui.TextHeight) / 2f);
             Gui.Text(Gui.Fit(entry.Display, nameWidth), new Vector2(x, y), on ? Gui.TextHot : Gui.TextNormal);
             Gui.TextRight(detail, row.Right - 4, y, Gui.TextDim);
 
@@ -290,9 +294,10 @@ namespace TranscendPlugins.Shared.UI
         private void DrawFooter(Rectangle footer)
         {
             var button = 110;
+            var height = Gui.RowHeight;
             var y = footer.Y + 3;
 
-            if (Gui.Button(new Rectangle(footer.X, y, button, 24), "Clear all", chosen.Count > 0))
+            if (Gui.Button(new Rectangle(footer.X, y, button, height), "Clear all", chosen.Count > 0))
             {
                 // Leaves anything the id class does not declare where it was, the same as ticking rows off would.
                 values.RemoveAll(chosen.Contains);
@@ -302,7 +307,7 @@ namespace TranscendPlugins.Shared.UI
                 needsOrdering = true;
             }
 
-            if (Gui.Button(new Rectangle(footer.X + button + 8, y, button, 24), "Reset " + Gui.Revert, !Setting.IsDefault))
+            if (Gui.Button(new Rectangle(footer.X + button + 8, y, button, height), "Reset " + Gui.Revert, !Setting.IsDefault))
             {
                 Setting.Reset();
                 Read();
@@ -312,7 +317,7 @@ namespace TranscendPlugins.Shared.UI
             if (unrecognised > 0)
             {
                 var note = unrecognised + " value" + (unrecognised == 1 ? "" : "s") + " kept as written";
-                Gui.TextRight(note, footer.Right, y + 4, Gui.TextDim);
+                Gui.TextRight(note, footer.Right, y + (height - Gui.TextHeight) / 2f, Gui.TextDim);
             }
         }
     }

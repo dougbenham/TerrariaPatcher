@@ -32,7 +32,7 @@ namespace MrBlueSLPlugins
         {
             if (Enabled && player.whoAmI == Main.myPlayer)
             {
-                Lighting.AddLight((int)(Main.mouseX + Main.screenPosition.X + (double)(Player.defaultWidth / 2)) / 16, (int)(Main.mouseY + Main.screenPosition.Y + (double)(Player.defaultHeight / 2)) / 16, 1f, 1f, 1f);
+                Lighting.AddLight((int)(Main.mouseX + Main.screenPosition.X) / 16, (int)(Main.mouseY + Main.screenPosition.Y) / 16, 1f, 1f, 1f);
             }
         }
     }

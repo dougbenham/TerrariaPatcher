@@ -10,6 +10,7 @@ using Terraria;
 using Terraria.Chat;
 using Terraria.DataStructures;
 using Terraria.IO;
+using Terraria.UI;
 using Terraria.Utilities;
 using Keys = Microsoft.Xna.Framework.Input.Keys;
 
@@ -580,6 +581,24 @@ namespace PluginLoader
         public static void OnDrawUI()
         {
             Dispatch<IPluginDrawUI>(plugin => plugin.OnDrawUI());
+        }
+
+        private const string PluginLayerName = "TerrariaPatcher: Plugin UI";
+
+        public static void OnSetupInterfaceLayers()
+        {
+            var layers = Main.instance._gameInterfaceLayers;
+            if (layers == null) return;
+			
+            var before = layers.FindIndex(layer => layer.Name == "Vanilla: Mouse Text");
+
+            layers.Insert(before < 0 ? layers.Count : before, new LegacyGameInterfaceLayer(PluginLayerName, DrawPluginLayer, InterfaceScaleType.UI));
+        }
+
+        private static bool DrawPluginLayer()
+        {
+            OnDrawUI();
+            return true;
         }
 
         public static void OnPreUpdate()

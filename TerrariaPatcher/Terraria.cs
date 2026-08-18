@@ -516,7 +516,7 @@ namespace TerrariaPatcher
             var onDrawSplash = _mainModule.Import(IL.GetMethodDefinition(loader, "OnDrawSplash"));
             var onDrawInterface = _mainModule.Import(IL.GetMethodDefinition(loader, "OnDrawInterface"));
             var onDrawInventory = _mainModule.Import(IL.GetMethodDefinition(loader, "OnDrawInventory"));
-            var onDrawUI = _mainModule.Import(IL.GetMethodDefinition(loader, "OnDrawUI"));
+            var onSetupInterfaceLayers = _mainModule.Import(IL.GetMethodDefinition(loader, "OnSetupInterfaceLayers"));
             var onPreUpdate = _mainModule.Import(IL.GetMethodDefinition(loader, "OnPreUpdate"));
             var onUpdate = _mainModule.Import(IL.GetMethodDefinition(loader, "OnUpdate"));
             var onUpdateTime = _mainModule.Import(IL.GetMethodDefinition(loader, "OnUpdateTime"));
@@ -564,7 +564,7 @@ namespace TerrariaPatcher
             var drawSplash = IL.GetMethodDefinition(main, "DrawSplash");
             var drawInterface = IL.GetMethodDefinition(main, "DrawInterface");
             var drawInventory = IL.GetMethodDefinition(main, "DrawInventory");
-            var drawPendingMouseText = IL.GetMethodDefinition(main, "DrawPendingMouseText");
+            var setupDrawInterfaceLayers = IL.GetMethodDefinition(main, "SetupDrawInterfaceLayers");
             var update = IL.GetMethodDefinition(main, "DoUpdate");
             var updateEnterToggleChat = IL.GetMethodDefinition(main, "DoUpdate_Enter_ToggleChat");
             var updateTime = IL.GetMethodDefinition(main, "UpdateTime");
@@ -637,14 +637,12 @@ namespace TerrariaPatcher
                 });
             }
 
-            using (drawPendingMouseText.JumpFix())
+            using (setupDrawInterfaceLayers.JumpFix())
             {
-                // Main.DrawPendingMouseText pre hook, which is where a plugin gets to draw a window of its own.
-                // Main.DrawInterface calls it with a sprite batch already open in interface coordinates, and draws
-                // the mouse text and the cursor straight afterwards, so a window drawn here sits under both.
-                IL.MethodPrepend(drawPendingMouseText, new[]
+                IL.MethodAppend(setupDrawInterfaceLayers, setupDrawInterfaceLayers.Body.Instructions.Count - 1, 1, new[]
                 {
-                    Instruction.Create(OpCodes.Call, onDrawUI)
+                    Instruction.Create(OpCodes.Call, onSetupInterfaceLayers),
+                    Instruction.Create(OpCodes.Ret)
                 });
             }
 

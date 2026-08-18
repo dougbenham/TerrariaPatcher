@@ -3,16 +3,39 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using PluginLoader;
 using Terraria;
+using Terraria.GameInput;
 
 namespace TranscendPlugins.Shared.UI
 {
     public partial class SettingsWindow
     {
         private const int Padding = 12;
-        private const int TitleHeight = 30;
         private const int LeftPaneWidth = 218;
-        private const int PluginRowHeight = 24;
-        private const int SettingRowHeight = 28;
+        private const float TitleScale = 1.1f;
+
+        /// <summary>
+        /// Every height is worked out from how tall the font actually is, so that nothing can end up shorter than
+        /// the text it holds whatever language the game is running in.
+        /// </summary>
+        private static int ControlHeight
+        {
+            get { return Gui.RowHeight; }
+        }
+
+        private static int TitleHeight
+        {
+            get { return (int) Gui.Measure("Ag", TitleScale).Y + 8; }
+        }
+
+        private static int PluginRowHeight
+        {
+            get { return Gui.RowHeight; }
+        }
+
+        private static int SettingRowHeight
+        {
+            get { return Gui.RowHeight + 4; }
+        }
 
         /// <summary>
         /// Draws the window. Called from the draw hook, where the mouse and the screen are measured the same way
@@ -22,8 +45,17 @@ namespace TranscendPlugins.Shared.UI
         {
             if (!IsOpen) return;
 
+            // Terraria only takes typed characters while the IME service is on, and it turns the service off
+            // again from its own chat layer whenever WritingText is not set. That layer is drawn just after this
+            // one, and PlayerInput clears WritingText at the end of every update, so saying so once a tick is not
+            // enough: it has to be said again here, in the draw, or the service spends most of each frame off and
+            // the characters typed in that time are dropped. Backspace is unaffected, being read from the
+            // keyboard directly, which is why it alone appears to work without this.
+            PlayerInput.WritingText = true;
+            Main.instance.HandleIME();
+
             var width = Math.Min(880, Main.screenWidth - 60);
-            var height = Math.Min(560, Main.screenHeight - 60);
+            var height = Math.Min(Math.Max(560, Gui.RowHeight * 15), Main.screenHeight - 60);
             var window = new Rectangle((Main.screenWidth - width) / 2, (Main.screenHeight - height) / 2, width, height);
 
             Gui.BeginFrame();
@@ -57,20 +89,17 @@ namespace TranscendPlugins.Shared.UI
 
         private void DrawTitle(Rectangle area)
         {
-            Gui.Text("Plugin Settings", new Vector2(area.X, area.Y + 2), Gui.TextHot, 1.1f);
-
-            var close = new Rectangle(area.Right - 26, area.Y, 26, 24);
+            Gui.TextLeftCentered("TerrariaPatcher Plugin Settings", area, Gui.TextHot, TitleScale);
+            
+            var close = new Rectangle(area.Right - ControlHeight, area.Y, ControlHeight, ControlHeight);
             if (Gui.Button(close, Gui.Close)) Close();
-
-            var hint = "Esc closes";
-            Gui.TextRight(hint, close.X - 10, area.Y + 4, Gui.TextDim);
         }
 
         #region Plugin list
 
         private void DrawPluginList(Rectangle area)
         {
-            var filterRow = new Rectangle(area.X, area.Y, area.Width, 24);
+            var filterRow = new Rectangle(area.X, area.Y, area.Width, ControlHeight);
             pluginFilter.Draw(filterRow);
 
             var list = new Rectangle(area.X, filterRow.Bottom + 8, area.Width - 10, area.Bottom - (filterRow.Bottom + 8));
@@ -124,7 +153,8 @@ namespace TranscendPlugins.Shared.UI
             if (isSelected) Gui.Fill(row, Gui.RowSelected);
             else if (hovered) Gui.Fill(row, Gui.RowHover);
 
-            var tick = new Rectangle(row.X + 2, row.Y + (row.Height - 16) / 2, 16, 16);
+            var box = Math.Min(18, row.Height - 4);
+            var tick = new Rectangle(row.X + 2, row.Y + (row.Height - box) / 2, box, box);
             var locked = ReferenceEquals(plugin, Owner);
 
             Gui.Tick(tick, plugin.Enabled);
@@ -141,8 +171,7 @@ namespace TranscendPlugins.Shared.UI
             }
 
             var name = new Rectangle(tick.Right + 6, row.Y, row.Right - (tick.Right + 6), row.Height);
-            Gui.Text(Gui.Fit(plugin.Name, name.Width - 4),
-                new Vector2(name.X, name.Y + (name.Height - Gui.LineHeight) / 2f),
+            Gui.TextLeftCentered(Gui.Fit(plugin.Name, name.Width - 4), name,
                 plugin.Enabled ? (isSelected ? Gui.TextHot : Gui.TextNormal) : Gui.TextDim);
 
             if (Gui.Click(name)) Select(plugin);
@@ -183,7 +212,7 @@ namespace TranscendPlugins.Shared.UI
 
             var headerHeight = DrawHeader(area);
 
-            var footerHeight = 32;
+            var footerHeight = ControlHeight + 8;
             var list = new Rectangle(area.X, area.Y + headerHeight, area.Width - 10,
                 area.Bottom - footerHeight - 8 - (area.Y + headerHeight));
 
@@ -198,15 +227,18 @@ namespace TranscendPlugins.Shared.UI
         private int DrawHeader(Rectangle area)
         {
             var switchWidth = 90;
+            var nameRow = new Rectangle(area.X, area.Y, area.Width - switchWidth - 10, ControlHeight);
 
-            Gui.Text(Gui.Fit(selected.Name, area.Width - switchWidth - 10), new Vector2(area.X, area.Y), Gui.TextHot, 1.0f);
+            Gui.TextLeftCentered(Gui.Fit(selected.Name, nameRow.Width), nameRow, Gui.TextHot, 1.0f);
 
             if (!ReferenceEquals(selected, Owner))
             {
-                var box = new Rectangle(area.Right - switchWidth, area.Y - 2, switchWidth, 24);
-                var tick = new Rectangle(box.Right - 20, box.Y + 2, 18, 18);
+                var box = new Rectangle(area.Right - switchWidth, area.Y, switchWidth, ControlHeight);
+                var tickSize = Math.Min(18, box.Height - 4);
+                var tick = new Rectangle(box.Right - tickSize - 2, box.Y + (box.Height - tickSize) / 2, tickSize, tickSize);
 
-                Gui.TextRight(selected.Enabled ? "on" : "off", tick.X - 6, box.Y + 3,
+                Gui.TextRight(selected.Enabled ? "on" : "off", tick.X - 6,
+                    box.Y + (box.Height - Gui.TextHeight) / 2f,
                     selected.Enabled ? Gui.TextGood : Gui.TextDim);
                 Gui.Tick(tick, selected.Enabled);
 
@@ -218,12 +250,12 @@ namespace TranscendPlugins.Shared.UI
                 if (Gui.Click(box)) selected.Enabled = !selected.Enabled;
             }
 
-            var y = area.Y + 24;
+            var y = nameRow.Bottom + 2;
 
             foreach (var line in DescriptionLines(area.Width))
             {
                 Gui.Text(line, new Vector2(area.X, y), Gui.TextDim);
-                y += (int) Gui.LineHeight;
+                y += (int) Gui.TextHeight + 2;
             }
 
             y += 6;
@@ -269,7 +301,7 @@ namespace TranscendPlugins.Shared.UI
         private void DrawFooter(Rectangle footer)
         {
             var width = 180;
-            var button = new Rectangle(footer.Right - width, footer.Y + 3, width, 24);
+            var button = new Rectangle(footer.Right - width, footer.Y + 3, width, ControlHeight);
 
             var anyChanged = false;
             foreach (var setting in selected.Settings)
@@ -292,7 +324,8 @@ namespace TranscendPlugins.Shared.UI
             }
 
             if (!anyChanged)
-                Gui.TextRight("Everything is at its default", button.X - 10, footer.Y + 7, Gui.TextDim);
+                Gui.TextRight("Everything is at its default", button.X - 10,
+                    button.Y + (button.Height - Gui.TextHeight) / 2f, Gui.TextDim);
         }
 
         /// <summary>

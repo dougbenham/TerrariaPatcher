@@ -9,10 +9,10 @@ namespace TranscendPlugins
                        "settings and hotkeys, switching plugins on and off, and putting any of it back to its " +
                        "default. Settings that hold a list of tiles, buffs or the like are ticked off a list " +
                        "rather than typed out.")]
-    public class SettingsMenu : PluginBase, IPluginPreUpdate, IPluginPlayerPreUpdate, IPluginDrawUI, IPluginChatCommand
+    public class SettingsMenu : PluginBase, IPluginPreUpdate, IPluginPlayerPreUpdate, IPluginPlayerSpawn, IPluginDrawUI, IPluginChatCommand
     {
         [SettingDescription("Opens and closes the settings window.")]
-        private readonly HotkeySetting ToggleKey = new Hotkey { Key = Keys.F1 };
+        private readonly HotkeySetting ToggleKey = new Hotkey { Key = Keys.OemTilde };
 
         private readonly SettingsWindow window = new SettingsWindow();
 
@@ -53,17 +53,19 @@ namespace TranscendPlugins
             window.TakeScrollWheel();
         }
 
+        /// <summary>
+        /// Closes the window on the way into a world, for one left open on the way out to the main menu, where the
+        /// update hook that would otherwise have closed it is not raised.
+        /// </summary>
+        public void OnPlayerSpawn(Player player)
+        {
+            if (player.whoAmI != Main.myPlayer) return;
+
+            window.Close();
+        }
+
         public void OnDrawUI()
         {
-            // Also reached from the main menu and the fullscreen map, neither of which the window belongs over.
-            // Closing it here rather than from the update hook matters, because the update hook is not raised at
-            // all once the game menu is up, and the window holds the keyboard until it is closed.
-            if (Main.gameMenu || Main.mapFullscreen)
-            {
-                window.Close();
-                return;
-            }
-
             window.Draw();
         }
 

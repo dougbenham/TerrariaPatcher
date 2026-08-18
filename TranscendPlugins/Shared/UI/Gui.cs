@@ -34,6 +34,24 @@ namespace TranscendPlugins.Shared.UI
         public const float TextScale = 0.85f;
 
         /// <summary>
+        /// How tall a line of text actually is at <see cref="TextScale"/>, measured from the font rather than
+        /// assumed, since Terraria builds its font from the loaded language and the size follows from that.
+        /// </summary>
+        public static float TextHeight
+        {
+            get { return Measure("Ag").Y; }
+        }
+
+        /// <summary>
+        /// The height a row of the window is given: a line of text with room to breathe above and below it. Every
+        /// list and control is sized from this, so that no box can end up shorter than the text inside it.
+        /// </summary>
+        public static int RowHeight
+        {
+            get { return (int) TextHeight + 8; }
+        }
+
+        /// <summary>
         /// The rectangle under the mouse, kept from one frame to the next so that the hover sound plays once when
         /// the mouse arrives at a control rather than on every frame it rests there.
         /// </summary>
@@ -139,60 +157,55 @@ namespace TranscendPlugins.Shared.UI
         #endregion
 
         #region Text
-
-        public static float LineHeight
-        {
-            get { return FontAssets.MouseText.Value.LineSpacing * TextScale; }
-        }
-
-        public static Vector2 Measure(string text)
-        {
-            return Measure(text, TextScale);
-        }
-
-        public static Vector2 Measure(string text, float scale)
+		
+        public static Vector2 Measure(string text, float scale = TextScale)
         {
             if (string.IsNullOrEmpty(text)) return Vector2.Zero;
 
-            return FontAssets.MouseText.Value.MeasureString(text) * scale;
+            var r = FontAssets.MouseText.Value.MeasureString(text) * scale;
+            return new Vector2(r.X, 16f * scale);
         }
 
-        public static void Text(string text, Vector2 position, Color color)
+        private static float Center(string text, Rectangle area, float scale = TextScale)
         {
-            Text(text, position, color, TextScale);
+            return Math.Max(0f, (area.Height - Measure(text, scale).Y) / 2f);
         }
 
-        public static void Text(string text, Vector2 position, Color color, float scale)
+        public static void Text(string text, Vector2 position, Color color, float scale = TextScale)
         {
             if (string.IsNullOrEmpty(text)) return;
 
             Utils.DrawBorderString(Main.spriteBatch, text, position, color, scale);
         }
 
-        public static void TextRight(string text, float right, float y, Color color)
+        public static void TextLeftCentered(string text, Rectangle area, Color color, float scale = TextScale)
         {
-            Text(text, new Vector2(right - Measure(text).X, y), color);
+            Text(text, new Vector2(area.X, area.Y + Center(text, area, scale)), color, scale);
         }
 
-        public static void TextCentered(string text, Rectangle area, Color color)
+        public static void TextRight(string text, float right, float y, Color color, float scale = TextScale)
         {
-            var size = Measure(text);
-            Text(text, new Vector2(area.X + (area.Width - size.X) / 2f, area.Y + (area.Height - size.Y) / 2f), color);
+            Text(text, new Vector2(right - Measure(text, scale).X, y), color, scale);
+        }
+
+        public static void TextCentered(string text, Rectangle area, Color color, float scale = TextScale)
+        {
+	        Text(text, new Vector2(area.X + (area.Width - Measure(text, scale).X) / 2f, area.Y + Center(text, area, scale)), color, scale);
         }
 
         /// <summary>
         /// The text cut down to fit a width, with an ellipsis where it was cut.
         /// </summary>
-        public static string Fit(string text, float width)
+        public static string Fit(string text, float width, float scale = TextScale)
         {
-            if (string.IsNullOrEmpty(text) || Measure(text).X <= width) return text;
+            if (string.IsNullOrEmpty(text) || Measure(text, scale).X <= width) return text;
 
             var ellipsis = Ellipsis;
 
             for (var length = text.Length - 1; length > 0; length--)
             {
                 var shortened = text.Substring(0, length) + ellipsis;
-                if (Measure(shortened).X <= width) return shortened;
+                if (Measure(shortened, scale).X <= width) return shortened;
             }
 
             return ellipsis;
@@ -243,20 +256,15 @@ namespace TranscendPlugins.Shared.UI
         /// <summary>
         /// A labelled box that reports whether it was clicked. A disabled button is drawn dimmed and cannot be.
         /// </summary>
-        public static bool Button(Rectangle area, string label, bool enabled)
+        public static bool Button(Rectangle area, string label, bool enabled = true)
         {
             var hovered = enabled && Hover(area);
 
             Fill(area, hovered ? RowHover : PanelInner);
             Border(area, hovered ? Divider : PanelInner);
-            TextCentered(Fit(label, area.Width - 8), area, enabled ? (hovered ? TextHot : TextNormal) : TextDim);
+            TextCentered(Fit(label, area.Width - 4), area, enabled ? (hovered ? TextHot : TextNormal) : TextDim);
 
             return enabled && Click(area);
-        }
-
-        public static bool Button(Rectangle area, string label)
-        {
-            return Button(area, label, true);
         }
 
         public static void Border(Rectangle area, Color color)

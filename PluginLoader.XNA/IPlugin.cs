@@ -36,10 +36,17 @@ namespace PluginLoader
     }
 
     /// <summary>
-    /// Raised while the interface is being drawn, with a sprite batch already open in interface coordinates, and
-    /// before the mouse text and the cursor are drawn over the top. This is the hook to draw a window of your own
-    /// from: <see cref="IPluginDrawInterface"/> is raised after the batch has closed and after the cursor is down,
-    /// so anything drawn there covers it.
+    /// Raised from a drawing layer of the loader's own, which sits in Terraria's list of interface layers just
+    /// before the ones that draw mouse text and the cursor. A sprite batch is already open in interface
+    /// coordinates, so <see cref="Main.mouseX"/> and <see cref="Main.screenWidth"/> can be compared with what is
+    /// drawn whatever the player's UI scale is.
+    ///
+    /// This is the hook to draw a window of your own from. <see cref="IPluginDrawInterface"/> is raised after
+    /// every layer has drawn and the batch has closed, by which time the cursor is already down, so a window
+    /// drawn from there covers it.
+    ///
+    /// Terraria only walks its interface layers for the in game interface, so this is not raised on the main menu
+    /// or over the fullscreen map.
     /// </summary>
     public interface IPluginDrawUI : IPlugin
     {

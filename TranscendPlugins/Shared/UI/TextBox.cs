@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Microsoft.Xna.Framework;
 using Terraria;
 using Terraria.GameInput;
@@ -130,8 +130,8 @@ namespace TranscendPlugins.Shared.UI
             var caret = Focused && blinker < 20 ? "|" : "";
             var visible = Trim(text, width - Gui.Measure("|").X);
 
-            var y = area.Y + (area.Height - Gui.LineHeight) / 2f;
-            Gui.Text(visible + caret, new Vector2(area.X + padding, y), color);
+            Gui.TextLeftCentered(visible + caret,
+                new Rectangle(area.X + padding, area.Y, width, area.Height), color);
 
             if (Gui.Click(area)) Focus();
         }

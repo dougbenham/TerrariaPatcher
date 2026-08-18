@@ -164,6 +164,15 @@ namespace TranscendPlugins.Shared.UI
         {
             if (!IsOpen) return;
 
+            // Terraria draws its interface layers for the in game interface only, so the window cannot be seen
+            // over either of these. Closing it hands the keyboard back rather than leaving it held by a window
+            // that is no longer on screen.
+            if (Main.gameMenu || Main.mapFullscreen)
+            {
+                Close();
+                return;
+            }
+
             if (resetArmed > 0) resetArmed--;
 
             // Keeps the game's own keys, including the plugin loader's hotkeys, off the keyboard while the window
