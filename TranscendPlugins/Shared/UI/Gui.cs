@@ -30,6 +30,8 @@ namespace TranscendPlugins.Shared.UI
         public static readonly Color TextDim = new Color(150, 155, 175);
         public static readonly Color TextHot = Color.White;
         public static readonly Color TextGood = new Color(140, 230, 140);
+        public static readonly Color TextBad = new Color(230, 130, 130);
+        public static readonly Color TextWarn = new Color(240, 205, 120);
 
         public const float TextScale = 0.85f;
 

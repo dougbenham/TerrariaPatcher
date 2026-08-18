@@ -49,6 +49,20 @@ namespace TranscendPlugins.Shared.UI
         private PluginBase describedPlugin;
         private int describedWidth = -1;
 
+        /// <summary>
+        /// The plugins whose settings have been listened to, and the names of those a setting has changed on since
+        /// the window first opened. Kept by name rather than by instance so that a plugin survives being reloaded
+        /// as the same plugin.
+        /// </summary>
+        private readonly HashSet<PluginBase> watched = new HashSet<PluginBase>();
+        private readonly HashSet<string> changed = new HashSet<string>();
+
+        /// <summary>
+        /// How many plugin rows the last draw had room for, so that moving the selection with the arrow keys can
+        /// scroll the list far enough to keep the selected one in sight.
+        /// </summary>
+        private int visiblePluginRows;
+
         private readonly TextBox pluginFilter = new TextBox { Placeholder = "search" };
         private readonly Scroller pluginScroll = new Scroller();
         private readonly Scroller settingScroll = new Scroller();
@@ -125,8 +139,26 @@ namespace TranscendPlugins.Shared.UI
             matchedFor = null;
             describedPlugin = null;
 
+            Watch();
             ReadSettings();
             editor.Forget();
+        }
+
+        /// <summary>
+        /// Listens for a setting changing on any plugin not already being listened to, so that the window can say
+        /// which plugins have been changed since it was opened. A reloaded plugin is a new object with new
+        /// settings, so it is listened to again.
+        /// </summary>
+        private void Watch()
+        {
+            foreach (var plugin in plugins)
+            {
+                if (!watched.Add(plugin)) continue;
+
+                var name = plugin.Name;
+                foreach (var setting in plugin.Settings)
+                    setting.Changed += () => changed.Add(name);
+            }
         }
 
         private void ReadSettings()
@@ -184,7 +216,18 @@ namespace TranscendPlugins.Shared.UI
             var held = Main.keyState.GetPressedKeys();
 
             if (editor.Capturing != null) Capture(held);
-            else if (!TextBox.AnyFocused && (JustPressed(held, Keys.Escape) || TogglePressed(held))) Close();
+            else
+            {
+                if (!TextBox.AnyFocused && (JustPressed(held, Keys.Escape) || TogglePressed(held))) Close();
+
+                // The search box is the one place typing and arrowing belong together: type to narrow the list,
+                // arrow to walk what is left. Anywhere else a focused box has the arrow keys to itself.
+                if (IsOpen && (!TextBox.AnyFocused || pluginFilter.Focused))
+                {
+                    if (JustPressed(held, Keys.Down)) MoveSelection(1);
+                    else if (JustPressed(held, Keys.Up)) MoveSelection(-1);
+                }
+            }
 
             heldLastTick = held;
 
@@ -193,6 +236,36 @@ namespace TranscendPlugins.Shared.UI
             TextBox.UpdateFocused();
 
             if (picker.Setting != null) picker.Update();
+        }
+
+        /// <summary>
+        /// Picks the plugin before or after the one picked now, wrapping round at either end.
+        /// </summary>
+        private void MoveSelection(int by)
+        {
+            var matches = Matching();
+            if (matches.Count == 0) return;
+
+            var index = selected == null ? -1 : matches.IndexOf(selected);
+
+            if (index < 0) index = by > 0 ? 0 : matches.Count - 1;
+            else
+            {
+                index += by;
+                if (index < 0) index = matches.Count - 1;
+                else if (index >= matches.Count) index = 0;
+            }
+
+            Select(matches[index]);
+            ScrollIntoView(index);
+        }
+
+        private void ScrollIntoView(int index)
+        {
+            if (visiblePluginRows <= 0) return;
+
+            if (index < pluginScroll.Offset) pluginScroll.Offset = index;
+            else if (index >= pluginScroll.Offset + visiblePluginRows) pluginScroll.Offset = index - visiblePluginRows + 1;
         }
 
         /// <summary>

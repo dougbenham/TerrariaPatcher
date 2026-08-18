@@ -48,6 +48,22 @@ namespace PluginLoader
         }
 
         /// <summary>
+        /// Whether the plugin does work that the game keeps hold of afterwards, so that changing its settings, or
+        /// switching it off, does not undo what it has already done. Reading it from the hooks the plugin
+        /// implements is the closest the loader can get: these are the ones whose results the game stores rather
+        /// than asking for again.
+        /// </summary>
+        public bool RequiresRestart
+        {
+            get
+            {
+                return this is IPluginInitialize ||
+                       this is IPluginItemSetDefaults ||
+                       this is IPluginProjectileSetDefaults;
+            }
+        }
+
+        /// <summary>
         /// Whether the plugin's hotkeys and chat commands still reach it while it is switched off. A plugin whose
         /// own hotkey or command is how it gets switched back on has to say so, or there would be no way back.
         /// </summary>

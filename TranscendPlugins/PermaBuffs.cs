@@ -17,6 +17,8 @@ namespace DoombubblesPlugins
         [SettingRange(1, 999)]
         [SettingDescription("How many of a buff station's item you must carry.")]
         private static readonly Setting<int> StationRequiredCount = 1;
+        [SettingDescription("Adds up every stack of an item that grants the same buff, across your inventory and " +
+                            "all your banks, instead of needing one stack big enough on its own.")]
         private static readonly Setting<bool> CumulativeTotal = false;
 
         [SettingIds(typeof(BuffID))]

@@ -5,7 +5,7 @@ using TranscendPlugins.Shared.UI;
 
 namespace TranscendPlugins
 {
-    [PluginDescription("Opens a window in game, on F1 or with /menu, for reading and changing every plugin's " +
+    [PluginDescription("Opens a window in game, on ~ or with /menu, for reading and changing every plugin's " +
                        "settings and hotkeys, switching plugins on and off, and putting any of it back to its " +
                        "default. Settings that hold a list of tiles, buffs or the like are ticked off a list " +
                        "rather than typed out.")]

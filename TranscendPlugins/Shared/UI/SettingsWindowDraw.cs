@@ -107,6 +107,8 @@ namespace TranscendPlugins.Shared.UI
             var matches = Matching();
             var visible = Math.Max(1, list.Height / PluginRowHeight);
 
+            visiblePluginRows = visible;
+
             pluginScroll.Wheel(list, matches.Count, visible, wheelNotches);
             pluginScroll.Clamp(matches.Count, visible);
 
@@ -258,6 +260,20 @@ namespace TranscendPlugins.Shared.UI
                 y += (int) Gui.TextHeight + 2;
             }
 
+            if (selected.RequiresRestart && changed.Contains(selected.Name))
+            {
+                var note = new Rectangle(area.X, y + 2, area.Width, (int) Gui.TextHeight + 2);
+
+                Gui.Text("Restart Terraria for these changes to fully apply.",
+                    new Vector2(note.X, note.Y), Gui.TextWarn);
+
+                if (Gui.Hover(note))
+                    Gui.Tooltip(selected.Name + " changes things the game then keeps its own copy of, so what it" +
+                                " has already set stays as it was until the game is started again.");
+
+                y = note.Bottom;
+            }
+
             y += 6;
             Gui.HorizontalLine(area.X, y, area.Width, Gui.Divider);
 
@@ -303,6 +319,24 @@ namespace TranscendPlugins.Shared.UI
             var width = 180;
             var button = new Rectangle(footer.Right - width, footer.Y + 3, width, ControlHeight);
 
+            // Not offered for the plugin that draws this window: reloading it would retire the copy whose draw
+            // this call is part of, leaving a window on screen that nothing updates any more.
+            if (!selected.RequiresRestart && !ReferenceEquals(selected, Owner))
+            {
+                var reload = new Rectangle(footer.X, button.Y, 110, button.Height);
+
+                if (Gui.Hover(reload))
+                    Gui.Tooltip("Compile " + selected.Name + "'s source again and swap the running copy for the" +
+                                " new one, for picking up an edit to its .cs file without restarting. Its settings" +
+                                " are kept.");
+
+                if (Gui.Button(reload, "Hot Reload"))
+                {
+                    HotReload();
+                    return;
+                }
+            }
+
             var anyChanged = false;
             foreach (var setting in selected.Settings)
             {
@@ -326,6 +360,40 @@ namespace TranscendPlugins.Shared.UI
             if (!anyChanged)
                 Gui.TextRight("Everything is at its default", button.X - 10,
                     button.Y + (button.Height - Gui.TextHeight) / 2f, Gui.TextDim);
+        }
+
+        /// <summary>
+        /// Builds the selected plugin from its source again and picks the new copy back up, since the old object
+        /// the window was showing no longer exists once the loader has swapped it out.
+        /// </summary>
+        private void HotReload()
+        {
+            var name = selected.Name;
+
+            string error;
+            if (!Loader.Reload(selected, out error))
+            {
+                Main.NewText(error, Gui.TextBad.R, Gui.TextBad.G, Gui.TextBad.B);
+                return;
+            }
+
+            changed.Remove(name);
+            Refresh();
+
+            foreach (var plugin in plugins)
+            {
+                if (plugin.Name != name) continue;
+
+                selected = plugin;
+                ReadSettings();
+                break;
+            }
+
+            settingScroll.Reset();
+            picker.Close();
+            resetArmed = 0;
+
+            Main.NewText(name + " was reloaded from source.", Gui.TextGood.R, Gui.TextGood.G, Gui.TextGood.B);
         }
 
         /// <summary>

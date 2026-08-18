@@ -31,17 +31,25 @@ namespace PluginLoader
 
             if (TryGetDictionaryTypes(type, out var key, out var element))
             {
-                var pairs = new List<string>();
+                var pairs = new List<KeyValuePair<object, string>>();
                 foreach (DictionaryEntry entry in (IDictionary) value)
-                    pairs.Add(Serialize(entry.Key, key) + ": " + Serialize(entry.Value, element));
+                    pairs.Add(new KeyValuePair<object, string>(entry.Key,
+                        Serialize(entry.Key, key) + ": " + Serialize(entry.Value, element)));
 
-                return string.Join(", ", pairs.ToArray());
+                return string.Join(", ", InReadableOrder(pairs, key));
             }
 
             if (TryGetElementType(type, out element))
             {
-                var items = (from object item in (IEnumerable) value select Serialize(item, element)).ToArray();
-                return string.Join(", ", items);
+                var items = new List<KeyValuePair<object, string>>();
+                foreach (var item in (IEnumerable) value)
+                    items.Add(new KeyValuePair<object, string>(item, Serialize(item, element)));
+
+                // A list or an array is written in the order it holds its values, because that order is part of
+                // what the plugin was given. A set has no order of its own, so it is written in order of value.
+                return string.Join(", ", IsUnordered(type)
+                    ? InReadableOrder(items, element)
+                    : items.Select(entry => entry.Value).ToArray());
             }
 
             throw new NotSupportedException("Settings of type " + type.Name + " cannot be stored in Plugins.ini.");
@@ -121,6 +129,60 @@ namespace PluginLoader
             return type == typeof(byte) || type == typeof(sbyte) || type == typeof(short) || type == typeof(ushort) ||
                    type == typeof(int) || type == typeof(uint) || type == typeof(long) || type == typeof(ulong) ||
                    type == typeof(float) || type == typeof(double) || type == typeof(decimal);
+        }
+
+        /// <summary>
+        /// Whether the collection keeps its values in no particular order of its own, so that the order they come
+        /// out in is an accident of how they were added rather than anything the plugin asked for.
+        /// </summary>
+        private static readonly IComparer<object> ValueOrder = new ComparableOrder();
+
+        /// <summary>
+        /// Orders values by what they are worth, taking a null as coming first rather than as something to throw
+        /// over.
+        /// </summary>
+        private class ComparableOrder : IComparer<object>
+        {
+            public int Compare(object left, object right)
+            {
+                if (left == null) return right == null ? 0 : -1;
+                if (right == null) return 1;
+
+                return ((IComparable) left).CompareTo(right);
+            }
+        }
+
+        private static bool IsUnordered(Type type)
+        {
+            return type.IsGenericType &&
+                   (type.GetGenericTypeDefinition() == typeof(HashSet<>) ||
+                    type.GetGenericTypeDefinition() == typeof(Dictionary<,>));
+        }
+
+        /// <summary>
+        /// Puts the values of an unordered collection in order, so that the same contents always come out as the
+        /// same text. Without this a set holding exactly the values its plugin declared would not read back as the
+        /// same string, because a set rebuilt from the file enumerates in whatever order its buckets ended up in,
+        /// and the setting would never look like it was still at its default.
+        /// </summary>
+        private static string[] InReadableOrder(List<KeyValuePair<object, string>> entries, Type valueType)
+        {
+            var unordered = entries.Select(entry => entry.Value).ToArray();
+
+            // Ordered on the value rather than on the text, so that 9 comes before 10.
+            if (!typeof(IComparable).IsAssignableFrom(valueType)) return unordered;
+
+            try
+            {
+                // Ordered into a new array rather than sorted in place, so that a comparison that throws leaves
+                // the values as they were instead of half rearranged.
+                return entries.OrderBy(entry => entry.Key, ValueOrder).Select(entry => entry.Value).ToArray();
+            }
+            catch (Exception ex)
+            {
+                Loader.Report("Could not order a setting of " + valueType.Name + ": " + ex.Message);
+                return unordered;
+            }
         }
 
         public static bool TryGetDictionaryTypes(Type type, out Type key, out Type element)

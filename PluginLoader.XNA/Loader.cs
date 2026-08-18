@@ -31,6 +31,14 @@ namespace PluginLoader
         private static volatile bool settingsChangedOnDisk;
 
         /// <summary>
+        /// What it took to compile the plugins, kept so that one of them can be compiled again on its own while
+        /// the game is running.
+        /// </summary>
+        private static string[] compileReferences;
+        private static string[] sharedSources;
+        private static Dictionary<string, string[]> pluginUnits;
+
+        /// <summary>
         /// Every loaded plugin implementing an interface, and the switched on ones a hook is actually delivered to.
         /// </summary>
         private static readonly Dictionary<Type, Array> pluginCache = new Dictionary<Type, Array>();
@@ -74,16 +82,36 @@ namespace PluginLoader
                 "Terraria", MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
 
-        private static void Disable(IPlugin plugin, Exception ex)
+        /// <summary>
+        /// Takes a plugin back out of the game: no more hooks, no more hotkeys, and a chance to let go of anything
+        /// it was holding.
+        /// </summary>
+        private static void Retire(IPlugin plugin)
         {
-            var name = plugin.GetType().Name;
-
             loadedPlugins.Remove(plugin);
             pluginCache.Clear();
             dispatchCache.Clear();
 
-            if (plugin is PluginBase pluginBase)
-                hotkeys.RemoveAll(hotkey => pluginBase.Hotkeys().Any(owned => ReferenceEquals(owned, hotkey)));
+            hotkeys.RemoveAll(hotkey => ReferenceEquals(hotkey.Owner, plugin));
+
+            var disposable = plugin as IDisposable;
+            if (disposable == null) return;
+
+            try
+            {
+                disposable.Dispose();
+            }
+            catch (Exception ex)
+            {
+                Log("Plugin '" + plugin.GetType().Name + "' threw while being disposed of." + Environment.NewLine + ex);
+            }
+        }
+
+        private static void Disable(IPlugin plugin, Exception ex)
+        {
+            var name = plugin.GetType().Name;
+
+            Retire(plugin);
 
             Log("Plugin '" + name + "' threw and has been disabled for this session." + Environment.NewLine + ex);
 
@@ -243,7 +271,11 @@ namespace PluginLoader
                 ExtractAndReference(references, "Newtonsoft.Json.dll");
                 ExtractAndReference(references, "ReLogic.dll", true);
 
-                Compile(references.ToArray(), sharedFolder, GetPluginUnits(pluginsFolder, sharedFolder));
+                compileReferences = references.ToArray();
+                sharedSources = Directory.EnumerateFiles(sharedFolder, "*.cs", SearchOption.AllDirectories).ToArray();
+                pluginUnits = GetPluginUnits(pluginsFolder, sharedFolder);
+
+                Compile(compileReferences, sharedSources, pluginUnits);
 
                 LoadHotkeyBinds();
                 WatchSettings();
@@ -278,9 +310,8 @@ namespace PluginLoader
         /// Compiles every plugin into one assembly. If that fails, falls back to compiling each plugin on its
         /// own so that a single plugin with a compile error does not cost the player every other plugin.
         /// </summary>
-        private static void Compile(string[] references, string sharedFolder, Dictionary<string, string[]> units)
+        private static void Compile(string[] references, string[] shared, Dictionary<string, string[]> units)
         {
-            var shared = Directory.EnumerateFiles(sharedFolder, "*.cs", SearchOption.AllDirectories).ToArray();
             var everything = shared.Concat(units.Values.SelectMany(sources => sources)).ToArray();
 
             if (TryCompile(references, everything, out var assembly, out var combinedErrors))
@@ -346,7 +377,7 @@ namespace PluginLoader
             {
                 try
                 {
-                    loadedPlugins.Add((IPlugin) Activator.CreateInstance(type));
+                    loadedPlugins.Add(Construct(type));
                 }
                 catch (Exception ex)
                 {
@@ -356,6 +387,163 @@ namespace PluginLoader
 
             pluginCache.Clear();
             dispatchCache.Clear();
+        }
+
+        /// <summary>
+        /// Builds a plugin and claims for it every hotkey that appeared while it was being built.
+        /// </summary>
+        /// <remarks>
+        /// A plugin can register a hotkey directly rather than through a HotkeySetting, as one with a hotkey per
+        /// number key does. The instance does not exist until its constructor has finished, so those cannot be
+        /// claimed as they arrive; what can be told is where the list of hotkeys ended up longer. Owning them is
+        /// what lets switching the plugin off silence them, and reloading it take them away with the old copy.
+        ///
+        /// A hotkey registered later than the constructor, such as from OnInitialize, is not claimed this way and
+        /// stays ownerless, which leaves it always active as a hotkey bound from Plugins.ini is.
+        /// </remarks>
+        private static IPlugin Construct(Type type)
+        {
+            var before = hotkeys.Count;
+
+            var plugin = (IPlugin) Activator.CreateInstance(type);
+            var pluginBase = plugin as PluginBase;
+
+            if (pluginBase != null)
+            {
+                for (var i = before; i < hotkeys.Count; i++)
+                    if (hotkeys[i].Owner == null) hotkeys[i].Owner = pluginBase;
+            }
+
+            return plugin;
+        }
+
+        /// <summary>
+        /// Compiles a plugin's source again and swaps the running copy for the new one, so that an edit to its
+        /// .cs file can be picked up without restarting the game. Its settings are read again from Plugins.ini by
+        /// the new copy, so they survive.
+        /// </summary>
+        /// <remarks>
+        /// The old assembly stays in memory: .NET Framework cannot unload one. What the old copy is let go of is
+        /// its hooks, its hotkeys and, if it holds anything worth releasing, whatever Dispose lets go of.
+        ///
+        /// A plugin whose work the game keeps hold of cannot be reloaded usefully, since the new copy has no way
+        /// to undo what the old one already did, so those are refused rather than half done.
+        /// </remarks>
+        public static bool Reload(PluginBase plugin, out string error)
+        {
+            error = null;
+
+            if (plugin == null)
+            {
+                error = "There is no such plugin.";
+                return false;
+            }
+
+            if (plugin.RequiresRestart)
+            {
+                error = plugin.Name + " does work the game keeps hold of, so it can only be changed by restarting.";
+                return false;
+            }
+
+            if (compileReferences == null || pluginUnits == null)
+            {
+                error = "The plugins were not compiled from source this session.";
+                return false;
+            }
+
+            var typeName = plugin.GetType().Name;
+            var unit = UnitDeclaring(typeName);
+
+            if (unit == null)
+            {
+                error = "Could not find the source file " + typeName + " was compiled from.";
+                return false;
+            }
+
+            Assembly assembly;
+            string errors;
+
+            if (!TryCompile(compileReferences, sharedSources.Concat(pluginUnits[unit]).ToArray(), out assembly, out errors))
+            {
+                Log("Reloading plugin '" + unit + "' failed to compile:" + Environment.NewLine + errors);
+                error = unit + " did not compile. See " + LogPath;
+                return false;
+            }
+
+            return Swap(assembly, unit, out error);
+        }
+
+        /// <summary>
+        /// Replaces every running plugin the recompiled unit declares with a fresh copy of it.
+        /// </summary>
+        private static bool Swap(Assembly assembly, string unit, out string error)
+        {
+            error = null;
+
+            var replacements = assembly.GetTypes()
+                .Where(type => typeof(IPlugin).IsAssignableFrom(type) && !type.IsInterface && !type.IsAbstract)
+                .ToArray();
+
+            if (replacements.Length == 0)
+            {
+                error = unit + " no longer declares a plugin.";
+                return false;
+            }
+
+            foreach (var type in replacements)
+            {
+                var retiring = loadedPlugins.FirstOrDefault(loaded => loaded.GetType().FullName == type.FullName);
+                if (retiring != null) Retire(retiring);
+
+                try
+                {
+                    loadedPlugins.Add(Construct(type));
+                }
+                catch (Exception ex)
+                {
+                    Log("Plugin '" + type.Name + "' failed to start after being reloaded." + Environment.NewLine + ex);
+                    error = type.Name + " failed to start after being reloaded. See " + LogPath;
+                    return false;
+                }
+            }
+
+            pluginCache.Clear();
+            dispatchCache.Clear();
+
+            return true;
+        }
+
+        /// <summary>
+        /// The unit whose source declares a class, found by reading the sources rather than asking the type, which
+        /// does not remember the file it came from.
+        /// </summary>
+        private static string UnitDeclaring(string typeName)
+        {
+            foreach (var unit in pluginUnits)
+            {
+                foreach (var source in unit.Value)
+                {
+                    try
+                    {
+                        var text = File.ReadAllText(source);
+
+                        var at = text.IndexOf("class " + typeName, StringComparison.Ordinal);
+                        if (at < 0) continue;
+
+                        // Guards against matching a longer name that starts the same way.
+                        var after = at + 6 + typeName.Length;
+                        if (after < text.Length && (char.IsLetterOrDigit(text[after]) || text[after] == '_')) continue;
+
+                        return unit.Key;
+                    }
+                    catch (Exception ex)
+                    {
+                        Log("Could not read " + source + ": " + ex.Message);
+                    }
+                }
+            }
+
+            return null;
         }
 
         private static void LoadHotkeyBinds()
