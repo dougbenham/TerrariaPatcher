@@ -1,4 +1,4 @@
-﻿v1.3.0.11:	Settings window: arrow keys move between plugins, and a Hot Reload button rebuilds a plugin from its source.
+﻿v1.4.0.0:	Settings window: arrow keys move between plugins, and a Hot Reload button rebuilds a plugin from its source.
 		Added SettingsMenu plugin: an in game window on ~, or /menu, for every plugin's settings and hotkeys.
 		Plugins can now be switched on and off, in that window or with /plugins enable|disable.
 		Settings can be put back to their defaults, one at a time or a whole plugin at once.
