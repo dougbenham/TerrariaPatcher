@@ -503,7 +503,6 @@
             // browse
             // 
             this.browse.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.browse.Image = ((System.Drawing.Image)(resources.GetObject("browse.Image")));
             this.browse.Location = new System.Drawing.Point(278, 18);
             this.browse.Name = "browse";
             this.browse.Size = new System.Drawing.Size(24, 24);

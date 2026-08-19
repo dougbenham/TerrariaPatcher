@@ -41,6 +41,10 @@ namespace TerrariaPatcher
             InitializeComponent();
 
             var asm = Assembly.GetExecutingAssembly();
+            using (var browseImage = asm.GetManifestResourceStream("TerrariaPatcher.Resources.browse.png"))
+            using (var browseBitmap = Image.FromStream(browseImage))
+                this.browse.Image = new Bitmap(browseBitmap);
+
             var asmName = asm.GetName();
             this.Icon = Icon.ExtractAssociatedIcon(asm.Location);
             this.Text = asmName.Name + " v" + asmName.Version;

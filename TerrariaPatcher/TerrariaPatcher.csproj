@@ -12,7 +12,6 @@
 		<ApplicationManifest>app.manifest</ApplicationManifest>
 		<Configurations>Debug;Release;Release (Public)</Configurations>
 		<Platforms>x86</Platforms>
-		<GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
 	</PropertyGroup>
 
 	<PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -59,6 +58,7 @@
 		<EmbeddedResource Update="Main.resx">
 			<DependentUpon>Main.cs</DependentUpon>
 		</EmbeddedResource>
+		<EmbeddedResource Include="Resources\browse.png" LogicalName="TerrariaPatcher.Resources.browse.png" />
 		<EmbeddedResource Update="Properties\Resources.resx">
 			<Generator>ResXFileCodeGenerator</Generator>
 			<LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -78,7 +78,6 @@
 
 	<ItemGroup>
 		<PackageReference Include="Mono.Cecil" Version="0.11.6" />
-		<PackageReference Include="System.Resources.Extensions" Version="9.0.0" />
 		<Reference Include="System.IO.Compression" />
 		<Reference Include="System.IO.Compression.FileSystem" />
 	</ItemGroup>

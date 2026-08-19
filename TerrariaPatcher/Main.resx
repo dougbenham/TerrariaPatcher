@@ -121,17 +121,6 @@
     <value>17, 17</value>
   </metadata>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="browse.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-    <value>
-        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAO
-        vAAADrwBlbxySQAAARlJREFUOE+VkjFqwzAUhn2D9iShRyi+QhYbWujg3dATZPKYZC6BQhvw1AMkg3dP
-        XQyl7WIyJIEW5CbS0/jKE5GwpCghgg9s6/8/y5Kj6DA45zcAwAAAezB6rjNnB4XX244NHt8wGs7wblop
-        yRGxwZQBYKIfbn477EvqusY4jj2MgMpPiwav7l9UyYXmdrs9duzP4ApUmd72sfrxVsD33JQISyClvFUX
-        w9nJssvJFei9CJUtgQ7394Du3YKLJaCbLMuwqips21ZNuDve/35X8J7nuRcMsVwsbYEQYlSWpRcMMR5P
-        bAH9fU3TeMEQSZLYgsMpsDRNvXCIr89vWyCEeC6KwguGmL/ObYGU8oFOwA2ewwgYY9f6f7iUf3DGkTcu
-        khP7AAAAAElFTkSuQmCC
-</value>
-  </data>
   <metadata name="openFileDialog.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>146, 17</value>
   </metadata>
