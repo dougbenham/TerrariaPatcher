@@ -305,7 +305,7 @@ namespace TranscendPlugins.Shared.UI
         }
 
         /// <summary>
-        /// The values of a collection setting, in the comma separated form Plugins.ini stores them in.
+        /// The values of a collection setting, in comma separated form.
         /// </summary>
         public static IEnumerable<string> Split(string text)
         {

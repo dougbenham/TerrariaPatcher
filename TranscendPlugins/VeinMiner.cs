@@ -30,7 +30,7 @@ namespace TranscendPlugins
 
         [SettingIds(typeof(TileID))]
         [SettingDescription("The tiles a swing mines the whole vein of.")]
-        private static readonly Setting<HashSet<int>> Tiles = new HashSet<int>
+        private static readonly Setting<HashSet<ushort>> Tiles = new HashSet<ushort>
         {
             TileID.Copper, TileID.Tin, TileID.Iron, TileID.Lead, TileID.Silver, TileID.Tungsten,
             TileID.Gold, TileID.Platinum, TileID.Demonite, TileID.Crimtane, TileID.Meteorite,

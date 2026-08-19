@@ -6,9 +6,10 @@ using Terraria.ID;
 
 namespace DoombubblesPlugins
 {
-    [PluginDescription("Carrying a big enough stack of a buff potion keeps its buff permanently active. 30 potions by " +
-                       "default, counting your inventory, piggy bank and void bag; buff stations such as the Crystal Ball " +
-                       "only need 1. Well Fed buffs never override a better one, so a greater food still upgrades you.")]
+    [PluginDescription("As an alternative to the Persistent Buffs patch, this plugin makes carrying a big enough stack of a " +
+                       "buff potion keeps its buff permanently active. 30 potions by default, counting your inventory, piggy " +
+                       "bank and void bag; buff stations such as the Crystal Ball only need 1. Well Fed buffs never override " +
+                       "a better one, so a greater food still upgrades you.")]
     public class PermaBuffs : PluginBase, IPluginPlayerUpdate
     {
         [SettingRange(1, 999)]
@@ -55,7 +56,7 @@ namespace DoombubblesPlugins
 
         /// <summary>
         /// The buffs that only need <see cref="StationRequiredCount"/> of their item, kept as a set because it is
-        /// consulted for every buff every frame. Rebuilt whenever StationBuffs is edited in Plugins.ini.
+        /// consulted for every buff every frame. Rebuilt whenever StationBuffs is edited.
         /// </summary>
         private static HashSet<int> allowedStationBuffs;
 

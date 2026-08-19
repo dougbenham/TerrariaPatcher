@@ -4,7 +4,8 @@ using Terraria;
 
 namespace DoombubblesPlugins
 {
-    [PluginDescription("A full stack of ammo never runs down: firing from a stack of 9999 leaves it at 9999. Consumable " +
+    [PluginDescription("As an alternative to the Infinite Ammo patch, this plugin lets a full stack of ammo " +
+                       "never run out; firing from a stack of 9999 leaves it at 9999. Consumable " +
                        "thrown weapons have their own threshold, 999 by default. Works in multiplayer.")]
     public class PermaAmmo : PluginBase, IPluginPlayerPickAmmo, IPluginPlayerUpdate
     {

@@ -19,7 +19,7 @@ namespace DoombubblesPlugins
             ItemID.ShiverthornSeeds
         };
 
-        private static bool alreadyHappenedThisFrame;
+        private bool alreadyHappenedThisFrame;
 
         public void OnUpdate()
         {

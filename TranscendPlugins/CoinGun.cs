@@ -5,7 +5,7 @@ using Terraria.ID;
 namespace TranscendPlugins
 {
     [PluginDescription("Makes Coin Gun ammo worth using: each coin gets a configurable damage value, and can be made to " +
-                       "home in on enemies. Changes take effect on the next world load.")]
+                       "home in on enemies.")]
     public class CoinGun : PluginBase, IPluginItemSetDefaults
     {
         private static readonly Setting<bool> CopperCoinEnemyTracking = true;

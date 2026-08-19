@@ -14,8 +14,7 @@ namespace DoombubblesPlugins
     // Some code segments adapted from https://github.com/JavidPack/HelpfulHotkeys
     [PluginDescription("A set of quality of life hotkeys: auto recall, quick buff from favourited items only, quick use of " +
                        "any inventory slot, swapping armour and accessories with vanity or with the inventory, swapping the " +
-                       "hotbar, cycling ammo, quick stacking to nearby chests, and toggling the ruler, autopause and frame skip. " +
-                       "Everything is unbound by default except the few listed in Plugins.ini.")]
+                       "hotbar, cycling ammo, quick stacking to nearby chests, and toggling the ruler, autopause and frame skip.")]
     public class HelpfulHotkeys : PluginBase, IPluginPlayerUpdate, IPluginPlayerPickAmmo
     {
         private static readonly HotkeySetting AutoRecall = new Hotkey

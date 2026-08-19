@@ -42,7 +42,7 @@ namespace TranscendPlugins
         {
             if (Enabled)
             {
-                // Left for OnUpdate to apply, which is where the recipes are known to be built and ready.
+                // Left for OnUpdate to apply
                 refreshRecipes = true;
                 return;
             }

@@ -8,7 +8,7 @@ using Terraria.ID;
 namespace TranscendPlugins
 {
     [PluginDescription("Teleports you to your cursor with a hotkey, or to anywhere you right click on the fullscreen map. " +
-                       "/teleport also finds the nearest Plantera bulb or Strange Plant on the explored map.")]
+                       "/teleport also finds the nearest Plantera Bulb or Strange Plant on the explored map.")]
     public class Teleport : PluginBase, IPluginInitialize, IPluginUpdate, IPluginChatCommand
     {
 	    /// <inheritdoc />

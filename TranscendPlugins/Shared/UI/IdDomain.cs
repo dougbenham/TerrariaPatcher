@@ -69,7 +69,7 @@ namespace TranscendPlugins.Shared.UI
 
             foreach (var field in idClass.GetFields(BindingFlags.Public | BindingFlags.Static))
             {
-                if (field.FieldType != typeof(int) && field.FieldType != typeof(short)) continue;
+                if (!IsIdField(field)) continue;
 
                 // Not a piece of content, just how many there are.
                 if (field.Name == "Count") continue;
@@ -90,6 +90,18 @@ namespace TranscendPlugins.Shared.UI
             }
 
             Entries.Sort((left, right) => string.Compare(left.Display, right.Display, StringComparison.OrdinalIgnoreCase));
+        }
+
+        /// <summary>
+        /// Whether a field holds a content id. The id classes do not agree on a width: <c>ItemID</c> uses int,
+        /// <c>NPCID</c> short, and <c>TileID</c> and <c>WallID</c> ushort.
+        /// </summary>
+        private static bool IsIdField(FieldInfo field)
+        {
+            var type = field.FieldType;
+            return type == typeof(int) || type == typeof(uint)
+                || type == typeof(short) || type == typeof(ushort)
+                || type == typeof(sbyte) || type == typeof(byte);
         }
 
         /// <summary>

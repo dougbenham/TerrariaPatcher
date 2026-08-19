@@ -5,18 +5,11 @@ using TranscendPlugins.Shared.UI;
 
 namespace TranscendPlugins
 {
-    [PluginDescription("Opens a window in game, on ~ or with /menu, for reading and changing every plugin's " +
+    [PluginDescription("Opens a window in game, on pressing ~, for reading and changing every plugin's " +
                        "settings and hotkeys, switching plugins on and off, and putting any of it back to its " +
-                       "default. Settings that hold a list of tiles, buffs or the like are ticked off a list " +
-                       "rather than typed out.")]
-    public class SettingsMenu : PluginBase, IPluginPreUpdate, IPluginPlayerPreUpdate, IPluginPlayerSpawn, IPluginDrawUI, IPluginChatCommand
+                       "default.")]
+    public class SettingsMenu : PluginBase, IPluginPreUpdate, IPluginPlayerPreUpdate, IPluginPlayerSpawn, IPluginDrawUI
     {
-	    /// <inheritdoc/>
-	    public override bool RespondsWhileDisabled
-	    {
-		    get { return true; }
-	    }
-
         [SettingDescription("Opens and closes the settings window.")]
         private readonly HotkeySetting ToggleKey = new Hotkey { Key = Keys.OemTilde };
 
@@ -29,8 +22,6 @@ namespace TranscendPlugins
             window.Owner = this;
             window.ToggleKey = ToggleKey.Value;
 
-            // Switching the plugin off from Plugins.ini or from chat stops its draw and update hooks, which would
-            // otherwise leave the window on screen holding the keyboard with no way to close it.
             EnabledSetting.Changed += () => { if (!Enabled) window.Close(); };
         }
 
@@ -64,15 +55,6 @@ namespace TranscendPlugins
         public void OnDrawUI()
         {
             window.Draw();
-        }
-
-        public bool OnChatCommand(string command, string[] args)
-        {
-            // /settings belongs to the loader, which answers it by reading and writing one setting at a time.
-            if (command != "menu") return false;
-
-            window.Show();
-            return true;
         }
     }
 }
