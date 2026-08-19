@@ -8,7 +8,7 @@ namespace DoombubblesPlugins
     [PluginDescription("Sandgun shots no longer turn into sand blocks where they land, so the gun can be used as an ordinary weapon.")]
     public class SandgunTidy : PluginBase, IPluginProjectileSetDefaults
     {
-        [SettingIds(typeof(TileID))]
+        [SettingIds(typeof(ProjectileID))]
         private static readonly Setting<HashSet<int>> Sand = new HashSet<int>
         {
             ProjectileID.SandBallGun, ProjectileID.EbonsandBallGun, 

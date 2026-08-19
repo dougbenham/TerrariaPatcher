@@ -6,8 +6,9 @@ using Terraria;
 namespace TranscendPlugins
 {
     [PluginDescription("Lets you craft any recipe without the ingredients or the crafting station. " +
-                       "Off by default; toggle it with /creativecrafting. Works in multiplayer.")]
-    public class CreativeCrafting : PluginBase, IPluginUpdate, IPluginChatCommand
+                       "Off by default. Switching it off puts every recipe back the way it was. " +
+                       "Works in multiplayer.")]
+    public class CreativeCrafting : PluginBase, IPluginUpdate
     {
         private struct RecipeBackup
         {
@@ -23,13 +24,38 @@ namespace TranscendPlugins
         }
 
         private readonly Dictionary<int, RecipeBackup> recipeBackups = new Dictionary<int, RecipeBackup>();
-        private bool enabled;
         private bool refreshRecipes;
         private bool recipesOverridden;
 
+        public CreativeCrafting()
+            : base(enabledByDefault: false)
+        {
+            EnabledChanged += OnEnabledChanged;
+        }
+
+        /// <summary>
+        /// Recipes stay stripped for as long as the plugin is on, so switching it off has to put back what it
+        /// took away. Nothing else will: once it is off it stops being sent the update hook that keeps them
+        /// stripped, so a recipe left emptied would stay emptied for the rest of the session.
+        /// </summary>
+        private void OnEnabledChanged()
+        {
+            if (Enabled)
+            {
+                // Left for OnUpdate to apply, which is where the recipes are known to be built and ready.
+                refreshRecipes = true;
+                return;
+            }
+
+            RestoreRecipeOverrides();
+            if (!Main.gameMenu) Recipe.UpdateRecipeList();
+
+            refreshRecipes = false;
+        }
+
         public void OnUpdate()
         {
-            if (Main.gameMenu || !enabled)
+            if (Main.gameMenu)
                 return;
 
             EnsurePlayerCanCraftAnywhere();
@@ -44,33 +70,6 @@ namespace TranscendPlugins
                 Recipe.UpdateRecipeList();
                 refreshRecipes = false;
             }
-        }
-
-        public bool OnChatCommand(string command, string[] args)
-        {
-            if (command != "creativecrafting") return false;
-
-            bool newEnabled;
-            if (args.Length == 0)
-            {
-                newEnabled = !enabled;
-            }
-            else if (args[0].Equals("status", StringComparison.OrdinalIgnoreCase))
-            {
-	            Main.NewText(enabled ? "Craft without materials is enabled." : "Craft without materials is disabled.");
-                return true;
-            }
-            else
-            {
-	            Main.NewText("Usage:");
-	            Main.NewText("  /creativecrafting - toggles on/off");
-	            Main.NewText("  /creativecrafting status");
-                return true;
-            }
-
-            SetEnabled(newEnabled);
-
-            return true;
         }
 
         private static void EnsurePlayerCanCraftAnywhere()
@@ -88,32 +87,6 @@ namespace TranscendPlugins
             player.adjWaterSource = true;
             player.adjHoney = true;
             player.adjLava = true;
-        }
-
-        private void SetEnabled(bool newEnabled)
-        {
-            if (newEnabled == enabled)
-            {
-                if (enabled)
-                    ApplyRecipeOverrides();
-                refreshRecipes = true;
-                return;
-            }
-
-            enabled = newEnabled;
-
-            refreshRecipes = true;
-
-            if (enabled)
-            {
-                ApplyRecipeOverrides();
-                Main.NewText("Craft without materials enabled (recipes only).");
-            }
-            else
-            {
-                RestoreRecipeOverrides();
-                Main.NewText("Craft without materials disabled.");
-            }
         }
 
         private void ApplyRecipeOverrides()

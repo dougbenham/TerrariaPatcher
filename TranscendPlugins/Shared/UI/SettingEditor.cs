@@ -87,9 +87,7 @@ namespace TranscendPlugins.Shared.UI
                 return Request.None;
             }
 
-            Type element;
-            if (setting.IdClass != null && SettingConverter.TryGetElementType(type, out element))
-                return DrawCollection(setting, area);
+            if (IdPicker.CanEdit(setting)) return DrawIdChoice(setting, area);
 
             DrawText(setting, area);
             return Request.None;
@@ -152,16 +150,38 @@ namespace TranscendPlugins.Shared.UI
             else if (Gui.Click(right) || Gui.Click(middle)) Set(setting, names[(current + 1) % names.Length]);
         }
 
-        private Request DrawCollection(Setting setting, Rectangle area)
+        /// <summary>
+        /// A setting whose values come from a content id class, shown as what it holds now and opening the list to
+        /// pick from when clicked.
+        /// </summary>
+        private Request DrawIdChoice(Setting setting, Rectangle area)
         {
-            var count = Count(setting.Serialize());
-
             var box = new Rectangle(area.X, area.Y + 2, Math.Min(area.Width, 210), area.Height - 4);
-            var label = count == 1 ? "1 chosen" : count + " chosen";
+            var label = IdPicker.IsSingle(setting) ? Chosen(setting) : Counted(setting);
 
-            if (Gui.Button(box, label + "  " + Gui.ArrowInto)) return Request.OpenPicker;
+            if (Gui.Button(box, Gui.Fit(label, box.Width - 24) + "  " + Gui.ArrowInto)) return Request.OpenPicker;
 
             return Request.None;
+        }
+
+        /// <summary>
+        /// The one value a setting holds, under the name the game itself uses for it.
+        /// </summary>
+        private static string Chosen(Setting setting)
+        {
+            var text = setting.Serialize().Trim();
+            if (text.Length == 0) return "nothing chosen";
+
+            var domain = IdDomain.For(setting.IdClass);
+            var entry = domain == null ? null : domain.Find(text);
+
+            return entry == null ? text : entry.Display;
+        }
+
+        private static string Counted(Setting setting)
+        {
+            var count = Count(setting.Serialize());
+            return count == 1 ? "1 chosen" : count + " chosen";
         }
 
         private void DrawText(Setting setting, Rectangle area)

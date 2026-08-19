@@ -11,7 +11,13 @@ namespace TranscendPlugins
                        "/teleport also finds the nearest Plantera bulb or Strange Plant on the explored map.")]
     public class Teleport : PluginBase, IPluginInitialize, IPluginUpdate, IPluginChatCommand
     {
-        private const int NoSearch = 0, PlanteraSearch = 1, StrangePlantSearch = 2;
+	    /// <inheritdoc />
+	    public override bool RequiresRestart
+	    {
+		    get { return false; }
+	    }
+
+	    private const int NoSearch = 0, PlanteraSearch = 1, StrangePlantSearch = 2;
         private const int CellsPerFrame = 200000;
 
         private static readonly HotkeySetting TeleportKey = new Hotkey { Key = Keys.F, Action = TeleportToCursor };

@@ -131,6 +131,11 @@ namespace TranscendPlugins.Shared.UI
                     var name = Lang.GetNPCNameValue(id);
                     if (!string.IsNullOrEmpty(name)) return name;
                 }
+                else if (idClass == typeof(PrefixID))
+                {
+                    var text = id >= 0 && id < Lang.prefix.Length ? Lang.prefix[id] : null;
+                    if (text != null && !string.IsNullOrEmpty(text.Value)) return text.Value;
+                }
             }
             catch
             {

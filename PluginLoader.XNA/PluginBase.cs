@@ -35,6 +35,18 @@ namespace PluginLoader
         }
 
         /// <summary>
+        /// Raised whenever <see cref="Enabled"/> changes, however it was changed: from the settings window, from a
+        /// chat command, or by Plugins.ini being edited while the game is running. A plugin that has changed
+        /// something the game will go on using, such as a recipe, handles this to put it back when it is switched
+        /// off and to apply it again when it is switched back on.
+        /// </summary>
+        /// <remarks>
+        /// Raised after the loader has stopped delivering hooks to a plugin being switched off, so a handler is
+        /// the last thing the plugin is asked to do and can count on no further hook arriving to undo its work.
+        /// </remarks>
+        public event Action EnabledChanged;
+
+        /// <summary>
         /// The setting behind <see cref="Enabled"/>, for a settings menu that wants to show it apart from the rest.
         /// </summary>
         public Setting EnabledSetting => enabled;
@@ -74,7 +86,7 @@ namespace PluginLoader
             // a plugin cannot declare a second setting under the same name.
             enabled = AddSetting("Enabled", new Setting<bool>(enabledByDefault));
             enabled.Description = "Whether " + Name + " does anything at all.";
-            enabled.Changed += Loader.PluginEnabledChanged;
+            enabled.Changed += RaiseEnabledChanged;
 
             foreach (var field in GetType()
                 .GetFields(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
@@ -88,6 +100,23 @@ namespace PluginLoader
                 Describe(setting, field);
 
                 AddSetting(field.Name, setting);
+            }
+        }
+
+        private void RaiseEnabledChanged()
+        {
+            Loader.PluginEnabledChanged();
+
+            var handler = EnabledChanged;
+            if (handler == null) return;
+
+            try
+            {
+                handler();
+            }
+            catch (Exception ex)
+            {
+                Loader.Report(Name + " threw on being switched " + (Enabled ? "on" : "off") + ": " + ex.Message);
             }
         }
 

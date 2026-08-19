@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using PluginLoader;
+﻿using PluginLoader;
 using Terraria;
 using Terraria.ID;
 using Terraria.Utilities;
@@ -11,30 +10,14 @@ namespace TranscendPlugins
                        "you hold. Works in multiplayer.")]
     public class ItemPrefix : PluginBase, IPluginChatCommand, IPluginItemRollAPrefix
     {
+        [SettingDescription("Rolls the best prefix for every item instead of a random one.")]
         private static readonly Setting<bool> EnableFixedPrefixes = true;
-        private static readonly Setting<string> FixedAccessoryPrefix = "Warding";
+
+        [SettingIds(typeof(PrefixID))]
+        [SettingDescription("The prefix every accessory will roll.")]
+        private static readonly Setting<int> FixedAccessoryPrefix = PrefixID.Warding;
 
         private bool keepStats;
-
-        /// <summary>
-        /// The accessory prefix setting resolved to an id. It accepts either a number or a PrefixID name.
-        /// </summary>
-        private static int AccessoryPrefix()
-        {
-            var text = FixedAccessoryPrefix.Value;
-
-            int prefixId;
-            if (int.TryParse(text, out prefixId))
-                return prefixId;
-
-            var field = typeof(PrefixID).GetField(text, BindingFlags.Static | BindingFlags.Public);
-            var fieldValue = field == null ? null : field.GetValue(null) as int?;
-
-            if (fieldValue.HasValue) return fieldValue.Value;
-
-            Main.NewText(string.Format("[ItemPrefix] FixedAccessoryPrefix of '{0}' is invalid. Use a number or a valid prefix name.", text));
-            return PrefixID.Warding;
-        }
 		
         private bool Correct(Item item, ref int rolledPrefix)
         {
@@ -121,7 +104,7 @@ namespace TranscendPlugins
 	        }
 	        if (item.IsAPrefixableAccessory())
 	        {
-		        rolledPrefix = AccessoryPrefix();
+		        rolledPrefix = FixedAccessoryPrefix;
 		        result = true;
 		        return true;
 	        }

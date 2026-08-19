@@ -7,7 +7,7 @@ namespace TranscendPlugins
                        "gives you.")]
     public class Minions : PluginBase, IPluginPlayerUpdateArmorSets
     {
-        private static readonly Setting<int> Bonus = 2;
+        private static readonly Setting<int> Bonus = 100;
 
         public void OnPlayerUpdateArmorSets(Player player)
         {

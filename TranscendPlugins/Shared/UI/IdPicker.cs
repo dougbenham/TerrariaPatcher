@@ -6,8 +6,9 @@ using PluginLoader;
 namespace TranscendPlugins.Shared.UI
 {
     /// <summary>
-    /// Picks the values of a collection setting from the ids its plugin declared it holds, as a filtered list of
-    /// tick boxes with the chosen ones gathered at the top.
+    /// Picks what a setting holds from the ids its plugin declared it comes from, as a filtered list of tick
+    /// boxes with the chosen ones gathered at the top. A setting holding a collection takes as many as are
+    /// ticked; one holding a single value takes whichever is clicked and closes.
     /// </summary>
     public class IdPicker
     {
@@ -19,6 +20,18 @@ namespace TranscendPlugins.Shared.UI
         /// Whether the setting stores the name of each constant rather than its number.
         /// </summary>
         private bool byName;
+
+        /// <summary>
+        /// Whether the setting holds one value rather than a collection of them, in which case picking a row
+        /// replaces what is there instead of adding to it.
+        /// </summary>
+        private bool single;
+
+        /// <summary>
+        /// Set when a single value has been picked, so that the list closes itself rather than waiting to be
+        /// dismissed once there is nothing left to choose.
+        /// </summary>
+        private bool picked;
 
         /// <summary>
         /// What the setting holds, in the order it holds it, so that ticking one value on and off again leaves the
@@ -59,10 +72,31 @@ namespace TranscendPlugins.Shared.UI
         /// </summary>
         public static bool CanEdit(Setting setting)
         {
+            if (setting.IdClass == null) return false;
+
+            return Holds(setting) != null;
+        }
+
+        /// <summary>
+        /// Whether a setting holds one value rather than a collection of them.
+        /// </summary>
+        public static bool IsSingle(Setting setting)
+        {
             Type element;
-            return setting.IdClass != null &&
-                   SettingConverter.TryGetElementType(setting.ValueType, out element) &&
-                   (element == typeof(string) || SettingConverter.IsNumeric(element));
+            return !SettingConverter.TryGetElementType(setting.ValueType, out element);
+        }
+
+        /// <summary>
+        /// The type of the individual values a setting holds, or null where they are not ones an id can be
+        /// written as.
+        /// </summary>
+        private static Type Holds(Setting setting)
+        {
+            Type element;
+            if (!SettingConverter.TryGetElementType(setting.ValueType, out element))
+                element = setting.ValueType;
+
+            return element == typeof(string) || SettingConverter.IsNumeric(element) ? element : null;
         }
 
         public void Open(Setting setting)
@@ -70,9 +104,9 @@ namespace TranscendPlugins.Shared.UI
             Setting = setting;
             domain = IdDomain.For(setting.IdClass);
 
-            Type element;
-            SettingConverter.TryGetElementType(setting.ValueType, out element);
-            byName = element == typeof(string);
+            single = IsSingle(setting);
+            byName = Holds(setting) == typeof(string);
+            picked = false;
 
             filter.Text = "";
             scroller.Reset();
@@ -97,8 +131,15 @@ namespace TranscendPlugins.Shared.UI
             chosen.Clear();
             unrecognised = 0;
 
-            foreach (var value in SettingEditor.Split(Setting.Serialize()))
+            // A single value is taken whole rather than split on commas, since it is one value however it reads.
+            var held = single
+                ? new[] { Setting.Serialize().Trim() }
+                : SettingEditor.Split(Setting.Serialize());
+
+            foreach (var value in held)
             {
+                if (value.Length == 0) continue;
+
                 var entry = domain.Find(value);
 
                 if (entry == null)
@@ -126,11 +167,26 @@ namespace TranscendPlugins.Shared.UI
         }
 
         /// <summary>
-        /// Ticks a value on or off, keeping the ones already there in the order they were written.
+        /// Takes a row. A collection gains or loses the value, keeping the ones already there in the order they
+        /// were written; a single value is replaced by it, since there is only room for the one.
         /// </summary>
         private void Toggle(IdDomain.Entry entry)
         {
             var key = entry.KeyFor(byName);
+
+            if (single)
+            {
+                values.Clear();
+                chosen.Clear();
+
+                values.Add(key);
+                chosen.Add(key);
+
+                Save();
+
+                picked = true;
+                return;
+            }
 
             if (chosen.Remove(key)) values.Remove(key);
             else
@@ -201,7 +257,7 @@ namespace TranscendPlugins.Shared.UI
 
             var crumb = new Rectangle(back.Right + 8, area.Y, area.Width - control - 220, control);
             Gui.TextLeftCentered(Gui.Fit(breadcrumb, crumb.Width), crumb, Gui.TextNormal);
-            Gui.TextRight(values.Count + " chosen", area.Right,
+            Gui.TextRight(single ? Chosen() : values.Count + " chosen", area.Right,
                 area.Y + (control - Gui.TextHeight) / 2f, Gui.TextDim);
 
             var filterRow = new Rectangle(area.X, back.Bottom + 8, area.Width - control - 4, control);
@@ -218,7 +274,18 @@ namespace TranscendPlugins.Shared.UI
             DrawList(list, wheelNotches);
             DrawFooter(new Rectangle(area.X, area.Bottom - footerHeight, area.Width, footerHeight));
 
-            return !goBack;
+            return !goBack && !picked;
+        }
+
+        /// <summary>
+        /// What a single value setting is holding, read for showing rather than for saving.
+        /// </summary>
+        private string Chosen()
+        {
+            if (values.Count == 0) return "nothing chosen";
+
+            var entry = domain.Find(values[0]);
+            return entry == null ? values[0] : entry.Display;
         }
 
         private void DrawList(Rectangle list, int wheelNotches)
@@ -296,18 +363,25 @@ namespace TranscendPlugins.Shared.UI
             var button = 110;
             var height = Gui.RowHeight;
             var y = footer.Y + 3;
+            var x = footer.X;
 
-            if (Gui.Button(new Rectangle(footer.X, y, button, height), "Clear all", chosen.Count > 0))
+            // A setting holding a single value has to hold something, so there is nothing to clear it to.
+            if (!single)
             {
-                // Leaves anything the id class does not declare where it was, the same as ticking rows off would.
-                values.RemoveAll(chosen.Contains);
-                chosen.Clear();
+                if (Gui.Button(new Rectangle(x, y, button, height), "Clear all", chosen.Count > 0))
+                {
+                    // Leaves anything the id class does not declare where it was, as ticking rows off would.
+                    values.RemoveAll(chosen.Contains);
+                    chosen.Clear();
 
-                Save();
-                needsOrdering = true;
+                    Save();
+                    needsOrdering = true;
+                }
+
+                x += button + 8;
             }
 
-            if (Gui.Button(new Rectangle(footer.X + button + 8, y, button, height), "Reset " + Gui.Revert, !Setting.IsDefault))
+            if (Gui.Button(new Rectangle(x, y, button, height), "Reset " + Gui.Revert, !Setting.IsDefault))
             {
                 Setting.Reset();
                 Read();
