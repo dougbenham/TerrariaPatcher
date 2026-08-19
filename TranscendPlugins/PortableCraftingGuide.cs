@@ -1,34 +1,31 @@
-﻿using System;
-using PluginLoader;
+﻿using PluginLoader;
 using Terraria;
 using Keys = Microsoft.Xna.Framework.Input.Keys;
 
 namespace TranscendPlugins
 {
     [PluginDescription("Opens the Guide's crafting menu anywhere with a hotkey, so you can see and craft his recipes without walking back to him.")]
-    public class PortableCraftingGuide : PluginBase, IPluginPreUpdate, IPluginUpdate, IPluginPlaySound, IPluginInitialize
+    public class PortableCraftingGuide : PluginBase, IPluginPreUpdate, IPluginUpdate, IPluginPlaySound
     {
-        private static readonly HotkeySetting ToggleKey = new Hotkey { Key = Keys.C, Action = Toggle };
+        private readonly HotkeySetting ToggleKey = new Hotkey { Key = Keys.C };
+		private bool pcg;
+        
+        public PortableCraftingGuide()
+        {
+	        ToggleKey.Value.Action = Toggle;
+        }
 
-        private static bool pcg;
-
-        private static void Toggle()
+        private void Toggle()
         {
             pcg = !pcg;
 
-            if (!pcg)
+            if (pcg)
+	            Player.OpenInventory(true);
+            else
             {
                 Main.InGuideCraftMenu = false;
                 Player.SetTalkNPC(-1);
             }
-        }
-
-        public void OnInitialize()
-        {
-            // Closing the inventory closes the crafting menu with it.
-            Keys invKey;
-            Keys.TryParse(Main.cInv, out invKey);
-            Loader.RegisterHotkey(() => pcg = false, invKey);
         }
 
         public void OnPreUpdate()
@@ -41,8 +38,11 @@ namespace TranscendPlugins
             Set();
         }
 
-        private static void Set()
+        private void Set()
         {
+	        if (!Main.playerInventory)
+		        pcg = false;
+
             if (pcg)
             {
                 Main.npcChatText = "";

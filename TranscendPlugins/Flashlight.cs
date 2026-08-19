@@ -4,12 +4,10 @@ using Terraria;
 
 namespace MrBlueSLPlugins
 {
-    [PluginDescription("Shines a light at your cursor while enabled, letting you see further than your held light source reaches.")]
+    [PluginDescription("Shines a light at your cursor.")]
     public class Flashlight : PluginBase, IPluginPlayerUpdate
     {
-	    /// <summary>
-	    /// Keeps hotkeys working when Enabled is false.
-	    /// </summary>
+	    /// <inheritdoc/>
 	    public override bool RespondsWhileDisabled
 	    {
 		    get { return true; }

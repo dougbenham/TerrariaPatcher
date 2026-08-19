@@ -11,6 +11,12 @@ namespace TranscendPlugins
                        "rather than typed out.")]
     public class SettingsMenu : PluginBase, IPluginPreUpdate, IPluginPlayerPreUpdate, IPluginPlayerSpawn, IPluginDrawUI, IPluginChatCommand
     {
+	    /// <inheritdoc/>
+	    public override bool RespondsWhileDisabled
+	    {
+		    get { return true; }
+	    }
+
         [SettingDescription("Opens and closes the settings window.")]
         private readonly HotkeySetting ToggleKey = new Hotkey { Key = Keys.OemTilde };
 
@@ -26,15 +32,6 @@ namespace TranscendPlugins
             // Switching the plugin off from Plugins.ini or from chat stops its draw and update hooks, which would
             // otherwise leave the window on screen holding the keyboard with no way to close it.
             EnabledSetting.Changed += () => { if (!Enabled) window.Close(); };
-        }
-
-        /// <summary>
-        /// The window is how a plugin gets switched back on, so it has to keep answering while it is switched off.
-        /// The window itself will not offer to switch it off, but Plugins.ini and the chat command still can.
-        /// </summary>
-        public override bool RespondsWhileDisabled
-        {
-            get { return true; }
         }
 
         public void OnPreUpdate()

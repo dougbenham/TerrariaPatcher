@@ -5,12 +5,10 @@ using Terraria;
 
 namespace TranscendPlugins
 {
-    [PluginDescription("Lights the entire world evenly, so caves and night are as visible as daytime. Toggled in game with a hotkey.")]
+    [PluginDescription("Lights every block fully.")]
     public class FullBright : PluginBase, IPluginLightingGetColor
     {
-	    /// <summary>
-	    /// Keeps hotkeys working when Enabled is false.
-	    /// </summary>
+	    /// <inheritdoc/>
 	    public override bool RespondsWhileDisabled
 	    {
 		    get { return true; }
@@ -28,8 +26,7 @@ namespace TranscendPlugins
         {
             Enabled = !Enabled;
 
-            var green = Color.Green;
-            Main.NewText("Full Bright " + (Enabled ? "enabled" : "disabled"), green.R, green.G, green.B);
+            Main.NewText("Full Bright " + (Enabled ? "enabled" : "disabled"), 150, 150, 150);
         }
 
         public bool OnLightingGetColor(int x, int y, out Color color)

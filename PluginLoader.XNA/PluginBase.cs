@@ -48,29 +48,16 @@ namespace PluginLoader
         }
 
         /// <summary>
-        /// Whether the plugin does work that the game keeps hold of afterwards, so that changing its settings, or
-        /// switching it off, does not undo what it has already done. Reading it from the hooks the plugin
-        /// implements is the closest the loader can get: these are the ones whose results the game stores rather
-        /// than asking for again.
+        /// Whether the plugin does permanent changes to the game that won't be removed if the plugin is disabled.
         /// </summary>
-        public bool RequiresRestart
-        {
-            get
-            {
-                return this is IPluginInitialize ||
-                       this is IPluginItemSetDefaults ||
-                       this is IPluginProjectileSetDefaults;
-            }
-        }
+        public virtual bool RequiresRestart => this is IPluginInitialize ||
+                                               this is IPluginItemSetDefaults;
 
         /// <summary>
         /// Whether the plugin's hotkeys and chat commands still reach it while it is switched off. A plugin whose
         /// own hotkey or command is how it gets switched back on has to say so, or there would be no way back.
         /// </summary>
-        public virtual bool RespondsWhileDisabled
-        {
-            get { return false; }
-        }
+        public virtual bool RespondsWhileDisabled => false;
 
         protected static Player Player => Main.LocalPlayer;
 
@@ -184,9 +171,6 @@ namespace PluginLoader
             return settings.FirstOrDefault(setting => string.Equals(setting.Name, name, StringComparison.OrdinalIgnoreCase));
         }
 
-        /// <summary>
-        /// Puts every setting back to the value the plugin declared.
-        /// </summary>
         public void ResetSettings()
         {
             foreach (var setting in settings)

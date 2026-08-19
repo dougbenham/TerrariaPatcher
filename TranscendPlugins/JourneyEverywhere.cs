@@ -10,15 +10,20 @@ namespace TildemancerPlugins
     [PluginDescription("Unlocks the Journey mode research and power menu on any character, in any world. On a server the " +
                        "powers still go through it, so any the server has locked down with a journeypermission_ line in " +
                        "serverconfig.txt will not take, and what you research is tracked on your own client.")]
-    public class JourneyModeUnlocked : PluginBase, IPluginInitialize, IPluginPlayerUpdateBuffs
+    public class JourneyModeUnlocked : PluginBase, IPluginPlayerUpdateBuffs
     {
         [SettingDescription("Says in chat whether the Journey mode menu was unlocked.")]
         private static readonly Setting<bool> ShowChatMessage = true;
 
+        /// <inheritdoc />
+        public override bool RequiresRestart
+        {
+	        get { return true; }
+        }
+
         private static readonly byte[] Aob = new byte[] { 0x74, 0x10, 0x8B, 0xCE, 0x33, 0xD2, 0xE8 };
 
         private bool _attempted;
-        private bool _patched;
 		
         public void OnPlayerUpdateBuffs(Player player)
         {
@@ -29,12 +34,12 @@ namespace TildemancerPlugins
 
             try
             {
-                _patched = TryApplyPatch();
-                if (_patched && ShowChatMessage)
+                var patched = TryApplyPatch();
+                if (patched && ShowChatMessage)
                 {
                     Main.NewText("Journey Mode UI loaded successfully. Have fun!");
                 }
-                else if (!_patched && ShowChatMessage)
+                else if (!patched && ShowChatMessage)
                 {
                     Main.NewText("Journey Mode UI failed to load; Patch not applied (signature not found).");
                 }
@@ -194,10 +199,5 @@ namespace TildemancerPlugins
 
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern bool FlushInstructionCache(IntPtr hProcess, IntPtr lpBaseAddress, UIntPtr dwSize);
-
-        /// Only added so that disabling the plugin tells the user that restart is needed
-        public void OnInitialize()
-        {
-        }
     }
 }
