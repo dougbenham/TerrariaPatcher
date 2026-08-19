@@ -7,24 +7,8 @@ namespace MrBlueSLPlugins
     [PluginDescription("Shines a light at your cursor.")]
     public class Flashlight : PluginBase, IPluginPlayerUpdate
     {
-	    /// <inheritdoc/>
-	    public override bool RespondsWhileDisabled
-	    {
-		    get { return true; }
-	    }
-
-        private readonly HotkeySetting ToggleKey = new Hotkey { Key = Keys.U };
-        
-        public Flashlight() : base(enabledByDefault: false)
-        {
-	        ToggleKey.Value.Action = Toggle;
-        }
-
-        private void Toggle()
-        {
-            Enabled = !Enabled;
-            Main.NewText("Flashlight " + (Enabled ? "enabled" : "disabled"), 150, 150, 150);
-        }
+        public Flashlight() : base(enabledByDefault: false, toggleKey: Keys.U)
+        { }
 
         public void OnPlayerUpdate(Player player)
         {

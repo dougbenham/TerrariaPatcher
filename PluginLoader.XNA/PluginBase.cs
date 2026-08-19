@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using Microsoft.Xna.Framework.Input;
 using Terraria;
 
 namespace PluginLoader
@@ -17,6 +18,8 @@ namespace PluginLoader
         private readonly List<Setting> settings = new List<Setting>();
 
         private readonly Setting<bool> enabled;
+
+        private readonly HotkeySetting toggleKey;
 
         public string Name => GetType().Name;
 
@@ -52,6 +55,12 @@ namespace PluginLoader
         public Setting EnabledSetting => enabled;
 
         /// <summary>
+        /// The hotkey that switches the plugin on and off, for a plugin that asked for one, and null for one that
+        /// did not.
+        /// </summary>
+        public HotkeySetting ToggleKeySetting => toggleKey;
+
+        /// <summary>
         /// Every setting except <see cref="EnabledSetting"/>.
         /// </summary>
         public IEnumerable<Setting> ConfigurableSettings
@@ -68,25 +77,46 @@ namespace PluginLoader
         /// <summary>
         /// Whether the plugin's hotkeys and chat commands still reach it while it is switched off. A plugin whose
         /// own hotkey or command is how it gets switched back on has to say so, or there would be no way back.
+        /// A plugin that asked for a toggle hotkey gets this for free.
         /// </summary>
-        public virtual bool RespondsWhileDisabled => false;
+        public virtual bool RespondsWhileDisabled => toggleKey != null;
 
         protected static Player Player => Main.LocalPlayer;
-
-        protected PluginBase()
-            : this(true)
+		
+        /// <param name="toggleKey">The key that switches the plugin on and off.</param>
+        protected PluginBase(Keys toggleKey)
+            : this(true, new Hotkey { Key = toggleKey })
         { }
 
         /// <param name="enabledByDefault">
         /// Whether the plugin starts switched on, for one that does nothing until the player asks for it.
         /// </param>
-        protected PluginBase(bool enabledByDefault)
+        /// <param name="toggleKey">The key that switches the plugin on and off.</param>
+        protected PluginBase(bool enabledByDefault, Keys toggleKey)
+            : this(enabledByDefault, new Hotkey { Key = toggleKey })
+        { }
+
+        /// <param name="enabledByDefault">
+        /// Whether the plugin starts switched on, for one that does nothing until the player asks for it.
+        /// </param>
+        /// <param name="toggleKey">
+        /// The binding that switches the plugin on and off, registered under the name ToggleKey so that the player
+        /// can rebind it, or null for a plugin that is only switched from the settings window.
+        /// </param>
+        protected PluginBase(bool enabledByDefault = true, Hotkey toggleKey = null)
         {
             // Registered first so that it is the first setting in the plugin's section of Plugins.ini, and so that
             // a plugin cannot declare a second setting under the same name.
             enabled = AddSetting("Enabled", new Setting<bool>(enabledByDefault));
             enabled.Description = "Whether " + Name + " does anything at all.";
             enabled.Changed += RaiseEnabledChanged;
+
+            if (toggleKey != null)
+            {
+                toggleKey.Action = Toggle;
+                this.toggleKey = AddSetting("ToggleKey", new HotkeySetting(toggleKey));
+                this.toggleKey.Description = "Switches " + Name + " on and off.";
+            }
 
             foreach (var field in GetType()
                 .GetFields(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
@@ -101,6 +131,13 @@ namespace PluginLoader
 
                 AddSetting(field.Name, setting);
             }
+        }
+
+        protected virtual void Toggle()
+        {
+            Enabled = !Enabled;
+
+            Main.NewText(Name + " " + (Enabled ? "enabled" : "disabled"), 150, 150, 150);
         }
 
         private void RaiseEnabledChanged()
