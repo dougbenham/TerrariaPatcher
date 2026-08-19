@@ -693,6 +693,33 @@ namespace PluginLoader
             return hotkeys.AsReadOnly();
         }
 
+        /// <summary>
+        /// Whether any other registered hotkey acts on the same press as this one.
+        /// </summary>
+        public static bool HasConflicts(Hotkey hotkey)
+        {
+            if (hotkey == null) return false;
+
+            foreach (var other in hotkeys)
+                if (hotkey.Overlaps(other)) return true;
+
+            return false;
+        }
+
+        /// <summary>
+        /// The other registered hotkeys that act on the same press as this one, in the order they were registered.
+        /// </summary>
+        public static List<Hotkey> GetConflicts(Hotkey hotkey)
+        {
+            var conflicts = new List<Hotkey>();
+            if (hotkey == null) return conflicts;
+
+            foreach (var other in hotkeys)
+                if (hotkey.Overlaps(other)) conflicts.Add(other);
+
+            return conflicts;
+        }
+
         public static Hotkey ParseHotkey(string hotkey)
         {
             var key = Keys.None;

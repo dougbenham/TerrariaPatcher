@@ -68,6 +68,38 @@ namespace PluginLoader
             return label == null ? ToBinding() : ToBinding() + " " + label;
         }
 
+        /// <summary>
+        /// What the hotkey does, in a form worth showing a player: the plugin and setting it is bound to, the chat
+        /// command it runs, or the binding on its own for one that is neither.
+        /// </summary>
+        public string Describe()
+        {
+            if (Name != null)
+            {
+                var dot = Name.IndexOf('.');
+                return dot < 0
+                    ? Name
+                    : Name.Substring(0, dot) + ": " + PluginBase.Prettify(Name.Substring(dot + 1));
+            }
+
+            return Tag ?? ToBinding();
+        }
+
+        /// <summary>
+        /// Whether both hotkeys act on the same press. A press is not consumed by the first hotkey that wants it,
+        /// so two that overlap both run their action.
+        /// </summary>
+        public bool Overlaps(Hotkey other)
+        {
+            if (other == null || ReferenceEquals(this, other)) return false;
+            if (Key == Keys.None || other.Key != Key) return false;
+
+            // One that ignores the modifiers matches whatever the other is held with.
+            if (IgnoreModifierKeys || other.IgnoreModifierKeys) return true;
+
+            return Control == other.Control && Shift == other.Shift && Alt == other.Alt;
+        }
+
         public bool Equals(Hotkey other)
         {
             if (other == null) return false;

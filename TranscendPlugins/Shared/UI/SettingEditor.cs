@@ -107,6 +107,11 @@ namespace TranscendPlugins.Shared.UI
                 Set(setting, on ? "false" : "true");
         }
 
+        /// <summary>
+        /// The mark put beside a binding that another hotkey also acts on.
+        /// </summary>
+        private const string ConflictMark = "[!]";
+
         private void DrawHotkey(Setting setting, Rectangle area)
         {
             var listening = ReferenceEquals(Capturing, setting);
@@ -115,18 +120,50 @@ namespace TranscendPlugins.Shared.UI
                 ? "press a key, or Escape to clear"
                 : (string.IsNullOrEmpty(binding) || binding == "None" ? "unbound" : binding);
 
-            var box = new Rectangle(area.X, area.Y + 2, Math.Min(area.Width, 210), area.Height - 4);
+            var hotkey = ((Setting<Hotkey>) setting).Value;
+            var conflicted = !listening && Loader.HasConflicts(hotkey);
+            var markWidth = conflicted ? (int) Gui.Measure(ConflictMark).X + 10 : 0;
+
+            var box = new Rectangle(area.X, area.Y + 2, Math.Min(area.Width - markWidth, 210), area.Height - 4);
             var hovered = Gui.Hover(box);
 
             Gui.Fill(box, listening ? Gui.RowSelected : Gui.PanelInner);
             Gui.Border(box, listening ? Gui.TextHot : (hovered ? Gui.Divider : Gui.PanelInner));
             Gui.TextCentered(Gui.Fit(text, box.Width - 8), box, listening ? Gui.TextHot : Gui.TextNormal);
 
+            if (conflicted)
+            {
+                var mark = new Rectangle(box.Right, box.Y, markWidth, box.Height);
+
+                Gui.TextCentered(ConflictMark, mark, Gui.TextWarn);
+
+                // Drawn after the row's own tooltip, so hovering the mark says what the clash is rather than what
+                // the setting does.
+                if (Gui.Hover(mark)) Gui.Tooltip(DescribeConflicts(text, hotkey));
+            }
+
             if (Gui.Click(box))
             {
                 TextBox.Unfocus();
                 Capturing = listening ? null : setting;
             }
+        }
+
+        /// <summary>
+        /// What else the key is bound to, and whether any of it is switched off and so not acting for now.
+        /// </summary>
+        private static string DescribeConflicts(string binding, Hotkey hotkey)
+        {
+            var text = binding + " is also bound to:";
+
+            foreach (var other in Loader.GetConflicts(hotkey))
+            {
+                text += "\n  " + other.Describe();
+
+                if (other.Owner != null && !other.Owner.Enabled) text += " (switched off)";
+            }
+
+            return text;
         }
 
         private void DrawEnum(Setting setting, Rectangle area)
