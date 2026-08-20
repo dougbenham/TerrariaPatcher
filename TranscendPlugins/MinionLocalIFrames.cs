@@ -20,7 +20,16 @@ namespace DoombubblesPlugins
             ProjectileID.DangerousSpider,
             ProjectileID.Retanimini,
             ProjectileID.Spazmamini,
-            ProjectileID.Tempest
+            ProjectileID.Tempest,
+            ProjectileID.Bee,
+            ProjectileID.GiantBee,
+            ProjectileID.FrostHydra,
+            ProjectileID.KrakenWave,
+            ProjectileID.Chik,
+            ProjectileID.ExplosiveBullet,
+            ProjectileID.ToxicFlask,
+            ProjectileID.SporeTrap,
+            ProjectileID.SporeTrap2,
         };
 
         public void OnProjectileSetDefaults(Projectile projectile)

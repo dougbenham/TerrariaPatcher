@@ -18,7 +18,7 @@ namespace DoombubblesPlugins
             if (dontConsume) return;
 
             foreach (var item in player.inventory.Where(item =>
-                         item.active && weapon.useAmmo == item.ammo && item.stack == RequiredCount - 1))
+                         !item.IsAir && weapon.useAmmo == item.ammo && item.stack == RequiredCount - 1))
             {
                 item.stack++;
             }
@@ -26,7 +26,7 @@ namespace DoombubblesPlugins
 
         public void OnPlayerUpdate(Player player)
         {
-            if (player.HeldItem != null && player.HeldItem.active && player.itemTime == player.itemTimeMax &&
+            if (player.HeldItem != null && !player.HeldItem.IsAir && player.itemTime == player.itemTimeMax &&
                 player.HeldItem.damage > 0 && player.HeldItem.consumable &&
                 player.HeldItem.stack == ThrownRequiredCount - 1)
             {

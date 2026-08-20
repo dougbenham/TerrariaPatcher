@@ -327,7 +327,7 @@ namespace DoombubblesPlugins
 
             var item = Player.inventory[index];
 
-            if (item == null || !item.active) return;
+            if (item == null || item.IsAir) return;
 
             if (item.mountType != -1)
             {
@@ -335,7 +335,7 @@ namespace DoombubblesPlugins
 
                 foreach (var i in Player.inventory.Concat(Player.miscEquips))
                 {
-                    if (!i.active || i.mountType == -1 || item == i) continue;
+                    if (i.IsAir || i.mountType == -1 || item == i) continue;
 
                     mountDict[i] = i.mountType;
                     i.mountType = -1;

@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework;
 using Terraria;
 using Terraria.Chat;
 using Terraria.DataStructures;
+using Terraria.GameInput;
 using Terraria.IO;
 using Terraria.UI;
 using Terraria.Utilities;
@@ -45,6 +46,13 @@ namespace PluginLoader
         private static readonly Dictionary<Type, Array> dispatchCache = new Dictionary<Type, Array>();
 
         private static string LogPath => Path.Combine(".", "PluginLoader.log");
+
+        /// <summary>
+        /// Where an assembly the plugin compiler needs a file for is put. Kept out of Terraria's own folder, since
+        /// the game looks there first and would load the extracted copy in place of the one it ships with.
+        /// </summary>
+        private static readonly string ExtractFolder = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "TerrariaPatcher");
 
         #endregion
 
@@ -571,7 +579,9 @@ namespace PluginLoader
                 var resourceName = assembly.GetManifestResourceNames().FirstOrDefault(s => s.Contains(dllName));
                 if (resourceName == null) throw new Exception(error);
 
-                var path = Path.Combine(".", dllName);
+                Directory.CreateDirectory(ExtractFolder);
+
+                var path = Path.Combine(ExtractFolder, dllName);
                 if (!File.Exists(path) || forceExtract)
                 {
                     using (var stream = assembly.GetManifestResourceStream(resourceName))
@@ -718,6 +728,65 @@ namespace PluginLoader
                 if (hotkey.Overlaps(other)) conflicts.Add(other);
 
             return conflicts;
+        }
+
+        /// <summary>
+        /// Whether one of Terraria's own controls is on the same key as this hotkey.
+        /// </summary>
+        public static bool HasGameConflicts(Hotkey hotkey)
+        {
+            var bindings = GameBindings();
+            if (bindings == null || hotkey == null || hotkey.Key == Keys.None) return false;
+
+            var key = hotkey.Key.ToString();
+
+            foreach (var binding in bindings)
+                if (binding.Value != null && binding.Value.Contains(key)) return true;
+
+            return false;
+        }
+
+        /// <summary>
+        /// The names of Terraria's own controls on the same key as this hotkey.
+        /// </summary>
+        /// <remarks>
+        /// Terraria takes no notice of the modifier keys when reading its controls, so a control on the same key
+        /// acts on the press whether or not the hotkey asks for Control, Shift or Alt alongside it.
+        /// </remarks>
+        public static List<string> GetGameConflicts(Hotkey hotkey)
+        {
+            var conflicts = new List<string>();
+
+            var bindings = GameBindings();
+            if (bindings == null || hotkey == null || hotkey.Key == Keys.None) return conflicts;
+
+            var key = hotkey.Key.ToString();
+
+            foreach (var binding in bindings)
+                if (binding.Value != null && binding.Value.Contains(key))
+                    conflicts.Add(PluginBase.Prettify(binding.Key));
+
+            return conflicts;
+        }
+
+        /// <summary>
+        /// The controls of the profile the player is using, each against the keys bound to it, under the names
+        /// Terraria writes them as, which are the same ones <see cref="Keys.ToString"/> gives. Null before the
+        /// game has a profile to read.
+        /// </summary>
+        /// <remarks>
+        /// Only the in game controls are read. The menu ones are on a profile of their own, and a hotkey does not
+        /// act while the game is in a menu.
+        /// </remarks>
+        private static Dictionary<string, List<string>> GameBindings()
+        {
+            var profile = PlayerInput.CurrentProfile;
+            if (profile == null || profile.InputModes == null) return null;
+
+            if (!profile.InputModes.TryGetValue(InputMode.Keyboard, out var configuration) || configuration == null)
+                return null;
+
+            return configuration.KeyStatus;
         }
 
         public static Hotkey ParseHotkey(string hotkey)

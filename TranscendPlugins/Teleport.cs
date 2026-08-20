@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using PluginLoader;
 using Terraria;
+using Terraria.GameInput;
 using Terraria.ID;
 
 namespace TranscendPlugins
@@ -58,9 +59,9 @@ namespace TranscendPlugins
             {
                 int num = Main.maxTilesX * 16;
                 int num2 = Main.maxTilesY * 16;
-                Vector2 vector = new Vector2((float)Main.mouseX, (float)Main.mouseY);
-                vector.X -= (float)(Main.screenWidth / 2);
-                vector.Y -= (float)(Main.screenHeight / 2);
+                Vector2 vector = new Vector2((float)PlayerInput.MouseX, (float)PlayerInput.MouseY);
+                vector.X -= (float)(PlayerInput.RealScreenWidth / 2);
+                vector.Y -= (float)(PlayerInput.RealScreenHeight / 2);
                 Vector2 mapFullscreenPos = Main.mapFullscreenPos;
                 Vector2 vector2 = mapFullscreenPos;
                 vector /= 16f;

@@ -33,4 +33,12 @@
 		</Reference>
 	</ItemGroup>
 
+	<ItemGroup>
+		<PackageReference Include="Krafs.Publicizer" Version="1.0.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Publicize Include="Terraria" />
+	</ItemGroup>
+
 </Project>

@@ -459,6 +459,8 @@ namespace TerrariaPatcher
                 {
                     Terraria.Patch(original, saveFileDialog.FileName, details);
 
+                    RemoveStaleExtracts(Path.GetDirectoryName(saveFileDialog.FileName));
+
                     if (details.Plugins && !DeployPlugins(Path.GetDirectoryName(saveFileDialog.FileName)))
                         return;
                 }
@@ -469,6 +471,43 @@ namespace TerrariaPatcher
 
                 MessageBox.Show("Done.", Program.AssemblyName);
             }
+        }
+
+        /// <summary>
+        /// The assemblies an earlier version of the plugin loader extracted beside the game, where Terraria then
+        /// found them in place of the copies it carries itself.
+        /// </summary>
+        private static readonly string[] StaleExtracts = { "Newtonsoft.Json.dll", "ReLogic.dll" };
+
+        /// <summary>
+        /// Deletes what an earlier version left beside the game. Done from here, where Terraria is not running and
+        /// so is not holding the files open.
+        /// </summary>
+        private static void RemoveStaleExtracts(string targetFolder)
+        {
+            var failures = new List<string>();
+
+            foreach (var name in StaleExtracts)
+            {
+                var path = Path.Combine(targetFolder, name);
+
+                try
+                {
+                    if (File.Exists(path)) File.Delete(path);
+                }
+                catch (Exception ex)
+                {
+                    failures.Add(path + ": " + ex.Message);
+                }
+            }
+
+            if (failures.Count == 0) return;
+
+            MessageBox.Show("These files were left beside Terraria by an earlier version and should be deleted, but" +
+                            " could not be:" + Environment.NewLine + Environment.NewLine +
+                            string.Join(Environment.NewLine, failures) + Environment.NewLine + Environment.NewLine +
+                            "Terraria will load them in place of the copies it carries itself while they are there.",
+                Program.AssemblyName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
 
         /// <summary>

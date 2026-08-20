@@ -80,7 +80,7 @@ namespace DoombubblesPlugins
                 .Concat(player.bank2.item)
                 .Concat(player.bank3.item)
                 .Concat(player.bank4.item)
-                .Where(item => item.active && !item.IsAir);
+                .Where(item => !item.IsAir);
 
             var buffCounts = new Dictionary<int, int>();
 

@@ -32,7 +32,8 @@
 			<HintPath>$(TerrariaPath)\Terraria.exe</HintPath>
 		</Reference>
 		<Reference Include="ReLogic">
-			<HintPath>$(TerrariaPath)\ReLogic.dll</HintPath>
+			<HintPath>..\ReferenceAssemblies\ReLogic.dll</HintPath>
+			<Private>false</Private>
 		</Reference>
 	</ItemGroup>
 

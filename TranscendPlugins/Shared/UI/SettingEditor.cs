@@ -121,7 +121,7 @@ namespace TranscendPlugins.Shared.UI
                 : (string.IsNullOrEmpty(binding) || binding == "None" ? "unbound" : binding);
 
             var hotkey = ((Setting<Hotkey>) setting).Value;
-            var conflicted = !listening && Loader.HasConflicts(hotkey);
+            var conflicted = !listening && (Loader.HasConflicts(hotkey) || Loader.HasGameConflicts(hotkey));
             var markWidth = conflicted ? (int) Gui.Measure(ConflictMark).X + 10 : 0;
 
             var box = new Rectangle(area.X, area.Y + 2, Math.Min(area.Width - markWidth, 210), area.Height - 4);
@@ -150,7 +150,8 @@ namespace TranscendPlugins.Shared.UI
         }
 
         /// <summary>
-        /// What else the key is bound to, and whether any of it is switched off and so not acting for now.
+        /// What else the key is bound to, whether any of it is switched off and so not acting for now, and which
+        /// of it is one of Terraria's own controls.
         /// </summary>
         private static string DescribeConflicts(string binding, Hotkey hotkey)
         {
@@ -162,6 +163,16 @@ namespace TranscendPlugins.Shared.UI
 
                 if (other.Owner != null && !other.Owner.Enabled) text += " (switched off)";
             }
+
+            var controls = Loader.GetGameConflicts(hotkey);
+
+            foreach (var control in controls)
+                text += "\n  Terraria: " + control;
+
+            // Terraria reads its own controls from the key alone, so one of them clashes with a hotkey that asks
+            // for a modifier as well, which is worth saying rather than leaving to look like a mistake.
+            if (controls.Count > 0 && (hotkey.Control || hotkey.Shift || hotkey.Alt))
+                text += "\nTerraria's own controls take no notice of Control, Shift or Alt.";
 
             return text;
         }
