@@ -192,31 +192,64 @@ namespace TerrariaPatcher
         private static void OneHitKill()
         {
             var npc = IL.GetTypeDefinition(_mainModule, "NPC");
-            var strikeNPC = IL.GetMethodDefinition(npc, "StrikeNPC");
+
+            // The damage calculation lives in StrikeNPC_Inner; StrikeNPC is just the netplay wrapper around it.
+            var strikeNPC = IL.GetMethodDefinition(npc, "StrikeNPC_Inner", -1, false)
+                            ?? IL.GetMethodDefinition(npc, "StrikeNPC");
+            if (strikeNPC == null) return;
 
             using (strikeNPC.JumpFix())
             {
-                int spot = IL.ScanForOpcodePattern(strikeNPC,
-                    OpCodes.Ldarg_1,
-                    OpCodes.Conv_R8,
-                    OpCodes.Stloc_1);
+                var instructions = strikeNPC.Body.Instructions;
 
-                var life = IL.GetFieldDefinition(npc, "life");
-                strikeNPC.Body.Instructions[spot].OpCode = OpCodes.Ldarg_0;
-                strikeNPC.Body.Instructions.Insert(spot + 1, Instruction.Create(OpCodes.Ldfld, life));
-
-                int spot2 = IL.ScanForOpcodePattern(strikeNPC,
+                // int num = (int)Math.Max(1.0, Main.CalculateDamageNPCsTake(Damage, defense) * (crit ? 2 : 1));
+                int calculate = IL.ScanForOpcodePattern(strikeNPC,
                     (i, instruction) =>
                     {
-                        var i0 = strikeNPC.Body.Instructions[i].Operand as ParameterReference;
-                        return i0 != null && i0.Name == "crit";
+                        var method = instruction.Operand as MethodReference;
+                        return method != null && method.Name == "CalculateDamageNPCsTake";
                     },
-                    spot,
-                    OpCodes.Ldarg_S,
-                    OpCodes.Brfalse_S);
+                    OpCodes.Call);
 
-                for (int i = spot + 4; i < spot2; i++)
-                    strikeNPC.Body.Instructions[i].OpCode = OpCodes.Nop;
+                // Invariant.Assert(num >= 1, "StrikeNPC must do at least 1 damage");
+                int assert = calculate < 0 ? -1 : IL.ScanForOpcodePattern(strikeNPC,
+                    (i, instruction) => (instruction.Operand as string) == "StrikeNPC must do at least 1 damage",
+                    calculate,
+                    OpCodes.Ldstr,
+                    OpCodes.Call);
+
+                // The expression starts at the "ldc.r8 1" argument of Math.Max() that precedes the damage calculation.
+                int start = calculate;
+                while (start > 0 && instructions[start].OpCode != OpCodes.Ldc_R8) start--;
+
+                // The store of the result into the damage local, which is what the rest of the method works from.
+                int store = calculate;
+                while (store < instructions.Count && !instructions[store].OpCode.Name.StartsWith("stloc")) store++;
+
+                if (calculate < 0 || assert < 0 || start == 0 || store >= instructions.Count)
+                {
+                    Program.ShowErrorMessage("OneHitKill(): Failed to locate the NPC damage calculation!");
+                    return;
+                }
+
+                // Replace the whole calculation, including the RedHatSkeletron and takenDamageMultiplier
+                // adjustments that follow it, with "num = this.life" so every hit removes the NPC's remaining health.
+                var damage = instructions[store];
+                var life = IL.GetFieldDefinition(npc, "life");
+
+                instructions[start].OpCode = OpCodes.Ldarg_0;
+                instructions[start].Operand = null;
+                instructions[start + 1].OpCode = OpCodes.Ldfld;
+                instructions[start + 1].Operand = life;
+                instructions[start + 2].OpCode = damage.OpCode;
+                instructions[start + 2].Operand = damage.Operand;
+
+                // Everything up to and including the assert call is now dead; all of its branches are self-contained.
+                for (int i = start + 3; i <= assert + 1; i++)
+                {
+                    instructions[i].OpCode = OpCodes.Nop;
+                    instructions[i].Operand = null;
+                }
             }
         }
 
