@@ -1,13 +1,18 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 using PluginLoader;
 using Terraria;
 using Terraria.ID;
 
 namespace TranscendPlugins
 {
-    public class HomingBullets : MarshalByRefObject, IPluginProjectileAI
+    [PluginDescription("Bullets, arrows and most other projectiles you fire steer themselves towards nearby enemies.")]
+    public class HomingBullets : PluginBase, IPluginProjectileAI
     {
+        public HomingBullets() : base(toggleKey: Keys.None)
+        { }
+
         public void OnProjectileAI001(Projectile pProjectile)
         {
             if (pProjectile.owner != Main.myPlayer) return;

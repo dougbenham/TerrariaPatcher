@@ -1,11 +1,15 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.Xna.Framework.Input;
 using PluginLoader;
 using Terraria;
 
 namespace TranscendPlugins
 {
-    public class CreativeCrafting : MarshalByRefObject, IPluginUpdate, IPluginChatCommand
+    [PluginDescription("Lets you craft any recipe without the ingredients or the crafting station. " +
+                       "Off by default. Switching it off puts every recipe back the way it was. " +
+                       "Works in multiplayer.")]
+    public class CreativeCrafting : PluginBase, IPluginUpdate
     {
         private struct RecipeBackup
         {
@@ -21,13 +25,38 @@ namespace TranscendPlugins
         }
 
         private readonly Dictionary<int, RecipeBackup> recipeBackups = new Dictionary<int, RecipeBackup>();
-        private bool enabled;
         private bool refreshRecipes;
         private bool recipesOverridden;
 
+        public CreativeCrafting()
+            : base(enabledByDefault: false, toggleKey: Keys.None)
+        {
+            EnabledChanged += OnEnabledChanged;
+        }
+
+        /// <summary>
+        /// Recipes stay stripped for as long as the plugin is on, so switching it off has to put back what it
+        /// took away. Nothing else will: once it is off it stops being sent the update hook that keeps them
+        /// stripped, so a recipe left emptied would stay emptied for the rest of the session.
+        /// </summary>
+        private void OnEnabledChanged()
+        {
+            if (Enabled)
+            {
+                // Left for OnUpdate to apply
+                refreshRecipes = true;
+                return;
+            }
+
+            RestoreRecipeOverrides();
+            if (!Main.gameMenu) Recipe.UpdateRecipeList();
+
+            refreshRecipes = false;
+        }
+
         public void OnUpdate()
         {
-            if (Main.gameMenu || !enabled)
+            if (Main.gameMenu)
                 return;
 
             EnsurePlayerCanCraftAnywhere();
@@ -42,43 +71,6 @@ namespace TranscendPlugins
                 Recipe.UpdateRecipeList();
                 refreshRecipes = false;
             }
-        }
-
-        public bool OnChatCommand(string command, string[] args)
-        {
-            if (command != "craftmode") return false;
-
-            bool newEnabled;
-            if (args.Length == 0 || args[0].Equals("toggle", StringComparison.OrdinalIgnoreCase))
-            {
-                newEnabled = !enabled;
-            }
-            else if (args[0].Equals("on", StringComparison.OrdinalIgnoreCase))
-            {
-                newEnabled = true;
-            }
-            else if (args[0].Equals("off", StringComparison.OrdinalIgnoreCase))
-            {
-                newEnabled = false;
-            }
-            else if (args[0].Equals("status", StringComparison.OrdinalIgnoreCase))
-            {
-                LocalMessage(enabled ? "Craft without materials is enabled." : "Craft without materials is disabled.");
-                return true;
-            }
-            else
-            {
-                LocalMessage("Usage:");
-                LocalMessage("  /craftmode on");
-                LocalMessage("  /craftmode off");
-                LocalMessage("  /craftmode status");
-                LocalMessage("  /craftmode toggle");
-                return true;
-            }
-
-            SetEnabled(newEnabled);
-
-            return true;
         }
 
         private static void EnsurePlayerCanCraftAnywhere()
@@ -96,38 +88,6 @@ namespace TranscendPlugins
             player.adjWaterSource = true;
             player.adjHoney = true;
             player.adjLava = true;
-        }
-
-        private static void LocalMessage(string message)
-        {
-            if (Main.netMode != 2)
-                Main.NewText(message);
-        }
-
-        private void SetEnabled(bool newEnabled)
-        {
-            if (newEnabled == enabled)
-            {
-                if (enabled)
-                    ApplyRecipeOverrides();
-                refreshRecipes = true;
-                return;
-            }
-
-            enabled = newEnabled;
-
-            refreshRecipes = true;
-
-            if (enabled)
-            {
-                ApplyRecipeOverrides();
-                LocalMessage("Craft without materials enabled (recipes only).");
-            }
-            else
-            {
-                RestoreRecipeOverrides();
-                LocalMessage("Craft without materials disabled.");
-            }
         }
 
         private void ApplyRecipeOverrides()

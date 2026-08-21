@@ -1,182 +1,227 @@
-﻿using System;
-using System.Reflection;
 using PluginLoader;
 using Terraria;
-using Terraria.Chat;
 using Terraria.GameContent.Achievements;
+using Terraria.GameContent.Events;
+using Terraria.ID;
 using Keys = Microsoft.Xna.Framework.Input.Keys;
 
 namespace TranscendPlugins
 {
-    public class Events : MarshalByRefObject, IPlugin
+    [PluginDescription("Starts and stops world events from the number pad: meteors, blood moons, eclipses, the goblin, " +
+                       "frost, pirate and martian invasions, the pumpkin and frost moons, the lunar apocalypse and the Moon Lord. " +
+                       "Works in multiplayer, where starting an event is a request the server may refuse and only the server " +
+                       "can stop an event. The meteor and starting the lunar apocalypse are single player only.")]
+    public class Events : PluginBase
     {
-        private Keys bloodMoon, goblin, meteor, frost, pirates, martians, pumpkinMoon, frostMoon, lunarApocalypse, eclipse, moonLord;
-        private MethodInfo triggerLunarApocalypse;
-        private FieldInfo spawnMeteor;
-        private MethodInfo dropMeteor;
-        private bool SpawnMeteor
+        private static readonly HotkeySetting Meteor = new Hotkey
         {
-            get { return (bool)spawnMeteor.GetValue(null); }
-            set { spawnMeteor.SetValue(null, value); }
-        }
+            Key = Keys.NumPad0,
+            Action = () =>
+            {
+                // WorldGen.dropMeteor writes tiles, which on a client only exist until the server sends the area back,
+                // and message 61 has no id for asking the server to drop one.
+                if (Main.netMode != 0)
+                {
+                    Main.NewText("Dropping a meteor is only handled on the server.", 50, 255, 130);
+                    return;
+                }
+
+                WorldGen.spawnMeteor = false;
+                WorldGen.dropMeteor();
+            }
+        };
         
-        public Events()
-        {
-            var worldGen = Assembly.GetEntryAssembly().GetType("Terraria.WorldGen");
-            triggerLunarApocalypse = worldGen.GetMethod("TriggerLunarApocalypse");
-            spawnMeteor = worldGen.GetField("spawnMeteor");
-            dropMeteor = worldGen.GetMethod("dropMeteor");
+        private static readonly HotkeySetting BloodMoon = new Hotkey { Key = Keys.NumPad1, Action = ToggleBloodMoon };
+        private static readonly HotkeySetting GoblinArmy = new Hotkey { Key = Keys.NumPad2, Action = () => ToggleInvasion(InvasionID.GoblinArmy) };
+        private static readonly HotkeySetting FrostLegion = new Hotkey { Key = Keys.NumPad3, Action = () => ToggleInvasion(InvasionID.SnowLegion) };
+        private static readonly HotkeySetting PirateInvasion = new Hotkey { Key = Keys.NumPad4, Action = () => ToggleInvasion(InvasionID.PirateInvasion) };
+		private static readonly HotkeySetting SolarEclipse = new Hotkey { Key = Keys.NumPad5, Action = ToggleSolarEclipse };
+		private static readonly HotkeySetting PumpkinMoon = new Hotkey { Key = Keys.NumPad6, Action = TogglePumpkinMoon };
+		private static readonly HotkeySetting FrostMoon = new Hotkey { Key = Keys.NumPad7, Action = ToggleFrostMoon };
+		private static readonly HotkeySetting MartianMadness = new Hotkey { Key = Keys.NumPad8, Action = () => ToggleInvasion(InvasionID.MartianMadness) };
+		private static readonly HotkeySetting LunarApocalypse = new Hotkey { Key = Keys.NumPad9, Action = ToggleLunarApocalypse };
+		private static readonly HotkeySetting MoonLord = new Hotkey { Key = Keys.Add, Action = ToggleMoonLord };
 
-            if (!Keys.TryParse(IniAPI.ReadIni("Events", "Meteor", "NumPad0", writeIt: true), out meteor))
-                meteor = Keys.NumPad0;
-            if (!Keys.TryParse(IniAPI.ReadIni("Events", "BloodMoon", "NumPad1", writeIt: true), out bloodMoon))
-                bloodMoon = Keys.NumPad1;
-            if (!Keys.TryParse(IniAPI.ReadIni("Events", "GoblinArmy", "NumPad2", writeIt: true), out goblin))
-                goblin = Keys.NumPad2;
-            if (!Keys.TryParse(IniAPI.ReadIni("Events", "FrostLegion", "NumPad3", writeIt: true), out frost))
-                frost = Keys.NumPad3;
-            if (!Keys.TryParse(IniAPI.ReadIni("Events", "PirateInvasion", "NumPad4", writeIt: true), out pirates))
-                pirates = Keys.NumPad4;
-            if (!Keys.TryParse(IniAPI.ReadIni("Events", "SolarEclipse", "NumPad5", writeIt: true), out eclipse))
-                eclipse = Keys.NumPad5;
-            if (!Keys.TryParse(IniAPI.ReadIni("Events", "PumpkinMoon", "NumPad6", writeIt: true), out pumpkinMoon))
-                pumpkinMoon = Keys.NumPad6;
-            if (!Keys.TryParse(IniAPI.ReadIni("Events", "FrostMoon", "NumPad7", writeIt: true), out frostMoon))
-                frostMoon = Keys.NumPad7;
-            if (!Keys.TryParse(IniAPI.ReadIni("Events", "MartianMadness", "NumPad8", writeIt: true), out martians))
-                martians = Keys.NumPad8;
-            if (!Keys.TryParse(IniAPI.ReadIni("Events", "LunarApocalypse", "NumPad9", writeIt: true), out lunarApocalypse))
-                lunarApocalypse = Keys.NumPad9;
-            if (!Keys.TryParse(IniAPI.ReadIni("Events", "Moon Lord", "Add", writeIt: true), out moonLord))
-                moonLord = Keys.Add;
 
-            Loader.RegisterHotkey(() =>
-            {
-                if (Main.invasionType > 0)
-                    Main.invasionSize = 0;
-                else
-                    Main.StartInvasion(1);
-            }, goblin);
-            Loader.RegisterHotkey(() =>
-            {
-                if (Main.invasionType > 0)
-                    Main.invasionSize = 0;
-                else
-                    Main.StartInvasion(2);
-            }, frost);
-            Loader.RegisterHotkey(() =>
-            {
-                if (Main.invasionType > 0)
-                    Main.invasionSize = 0;
-                else
-                    Main.StartInvasion(3);
-            }, pirates);
-            Loader.RegisterHotkey(() =>
-            {
-                if (Main.invasionType > 0)
-                    Main.invasionSize = 0;
-                else
-                    Main.StartInvasion(4);
-            }, martians);
-            Loader.RegisterHotkey(() =>
-            {
-                if (Main.pumpkinMoon)
-                    Main.stopMoonEvent();
-                else
-                    Main.startPumpkinMoon();
-            }, pumpkinMoon);
-            Loader.RegisterHotkey(() =>
-            {
-                if (Main.snowMoon)
-                    Main.stopMoonEvent();
-                else
-                    Main.startSnowMoon();
-            }, frostMoon);
-            Loader.RegisterHotkey(() =>
-            {
-                if (Terraria.NPC.LunarApocalypseIsUp || Terraria.NPC.AnyNPCs(398))
-                    StopLunarEvent();
-                else
-                    TriggerLunarApocalypse();
-            }, lunarApocalypse);
-            Loader.RegisterHotkey(() =>
-            {
-                if (Terraria.NPC.LunarApocalypseIsUp || Terraria.NPC.AnyNPCs(398))
-                    StopLunarEvent();
-                else
-                    SpawnMoonLord();
-            }, moonLord);
-            Loader.RegisterHotkey(() =>
-            {
-                if (Main.bloodMoon)
-                    Main.bloodMoon = false;
-                else
-                    TriggerBloodMoon();
-            }, bloodMoon);
-            Loader.RegisterHotkey(() =>
-            {
-                if (Main.eclipse)
-                    Main.eclipse = false;
-                else
-                    TriggerEclipse();
-            }, eclipse);
-            Loader.RegisterHotkey(() =>
-            {
-                SpawnMeteor = false;
-                DropMeteor();
-            }, meteor);
-        }
         
-        private void DropMeteor()
+        /// <summary>
+        /// The world event ids a client can ask the server to start through message 61. The server applies these
+        /// itself and broadcasts the result, which is the only way a client can change world state in multiplayer.
+        /// </summary>
+        private const int RequestPumpkinMoon = -4, RequestFrostMoon = -5, RequestEclipse = -6, RequestMartianMadness = -7, RequestMoonLord = -8, RequestBloodMoon = -10;
+
+        private static void RequestFromServer(int what)
         {
-            dropMeteor.Invoke(null, null);
+	        NetMessage.SendData(61, -1, -1, null, Main.myPlayer, what, 0f, 0f, 0, 0, 0);
         }
 
-        private void TriggerLunarApocalypse()
+        private static void RequestFromServer(int what, string refusal)
         {
-            triggerLunarApocalypse.Invoke(null, null);
+	        if (refusal != null)
+	        {
+		        Main.NewText(refusal, 255, 50, 50);
+		        return;
+	        }
+
+	        RequestFromServer(what);
         }
 
-        private void TriggerEclipse()
+        private static void ToggleInvasion(int type)
         {
-            if (Main.netMode == 0)
+	        if (Main.invasionType > 0)
             {
-                Main.eclipse = true;
-                Main.NewText(Lang.misc[20].Value, 50, 255, 130);
+	            if (Main.netMode == 0)
+		            Main.invasionSize = 0;
+	            else
+		            Main.NewText("Stopping invasions is only handled on the server.", 50, 255, 130);
+	            return;
             }
-            else
-            {
-                NetMessage.SendData(61, -1, -1, null, Main.myPlayer, -6f, 0f, 0f, 0, 0, 0);
-            }
+
+	        if (Main.netMode == 0)
+		        Main.StartInvasion(type);
+	        else
+	        {
+		        // The server takes an invasion request as the negated invasion id, except for Martian Madness: -4 is
+		        // already the Pumpkin Moon, so that one has its own id.
+		        RequestFromServer(type == InvasionID.MartianMadness ? RequestMartianMadness : -type);
+	        }
         }
 
-        private void TriggerBloodMoon()
+        private static void ToggleBloodMoon()
         {
-            Main.bloodMoon = true;
-            AchievementsHelper.NotifyProgressionEvent(4);
-            if (Main.netMode == 0)
-            {
-                Main.NewText(Lang.misc[8].Value, 50, byte.MaxValue, 130);
-            }
-            else if (Main.netMode == 2)
-            {
-                ChatHelper.BroadcastChatMessage(Lang.misc[8].ToNetworkText(), new Microsoft.Xna.Framework.Color(50, 255, 130), -1);
-            }
+	        if (Main.bloodMoon)
+	        {
+		        if (Main.netMode == 0)
+			        Main.bloodMoon = false;
+		        else
+			        Main.NewText("Stopping blood moon is only handled on the server.", 50, 255, 130);
+		        return;
+	        }
+
+	        if (Main.netMode == 0)
+	        {
+		        Main.bloodMoon = true;
+		        AchievementsHelper.NotifyProgressionEvent(4);
+		        Main.NewText(Lang.misc[8].Value, 50, byte.MaxValue, 130);
+	        }
+	        else
+	        {
+		        RequestFromServer(RequestBloodMoon,
+			        Main.dayTime ? "The server only starts a blood moon at night." : null);
+	        }
         }
 
-        private void SpawnMoonLord()
+        private static void ToggleSolarEclipse()
         {
-            if (Main.netMode == 0)
-            {
-                WorldGen.StartImpendingDoom(720);
-            }
-            else
-            {
-                NetMessage.SendData(61, -1, -1, null, Main.myPlayer, -8f, 0f, 0f, 0, 0, 0);
-            }
+	        if (Main.eclipse)
+	        {
+		        if (Main.netMode == 0)
+			        Main.eclipse = false;
+		        else
+			        Main.NewText("Stopping solar eclipse is only handled on the server.", 50, 255, 130);
+		        return;
+	        }
+
+	        if (Main.netMode == 0)
+	        {
+		        Main.eclipse = true;
+		        Main.NewText(Lang.misc[20].Value, 50, 255, 130);
+	        }
+	        else
+	        {
+		        RequestFromServer(RequestEclipse,
+			        Main.dayTime ? null : "The server only starts a solar eclipse during the day.");
+	        }
         }
 
-        private void StopLunarEvent()
+        private static void TogglePumpkinMoon()
+        {
+	        if (Main.pumpkinMoon)
+	        {
+		        if (Main.netMode == 0)
+			        Main.stopMoonEvent();
+		        else
+			        Main.NewText("Stopping pumpkin moon is only handled on the server.", 50, 255, 130);
+		        return;
+	        }
+
+	        if (Main.netMode == 0)
+		        Main.startPumpkinMoon();
+	        else
+	        {
+		        RequestFromServer(RequestPumpkinMoon,
+			        Main.dayTime ? "The server only starts a pumpkin moon at night."
+			        : DD2Event.Ongoing ? "The server will not start a pumpkin moon during the Old One's Army."
+			        : null);
+	        }
+        }
+
+        private static void ToggleFrostMoon()
+        {
+	        if (Main.snowMoon)
+	        {
+		        if (Main.netMode == 0)
+			        Main.stopMoonEvent();
+		        else
+			        Main.NewText("Stopping frost moon is only handled on the server.", 50, 255, 130);
+		        return;
+	        }
+
+	        if (Main.netMode == 0)
+		        Main.startSnowMoon();
+	        else
+	        {
+		        RequestFromServer(RequestFrostMoon,
+			        Main.dayTime ? "The server only starts a frost moon at night."
+			        : DD2Event.Ongoing ? "The server will not start a frost moon during the Old One's Army."
+			        : null);
+	        }
+        }
+
+        private static void ToggleLunarApocalypse()
+        {
+	        if (Terraria.NPC.LunarApocalypseIsUp || Terraria.NPC.AnyNPCs(398))
+	        {
+		        if (Main.netMode == 0)
+		            StopLunarEvent();
+		        else
+			        Main.NewText("Stopping lunar apocalypse is only handled on the server.", 50, 255, 130);
+	        }
+	        else
+	        {
+		        if (Main.netMode == 0)
+		            WorldGen.TriggerLunarApocalypse();
+		        else
+			        Main.NewText("Starting lunar apocalypse is only handled on the server.", 50, 255, 130);
+	        }
+        }
+
+        private static void ToggleMoonLord()
+        {
+	        if (Terraria.NPC.LunarApocalypseIsUp || Terraria.NPC.AnyNPCs(398))
+	        {
+		        if (Main.netMode == 0)
+		            StopLunarEvent();
+		        else
+			        Main.NewText("Stopping lunar apocalypse is only handled on the server.", 50, 255, 130);
+	        }
+	        else
+	        {
+		        if (Main.netMode == 0)
+		        {
+			        WorldGen.StartImpendingDoom(720);
+		        }
+		        else
+		        {
+			        RequestFromServer(RequestMoonLord,
+				        !Main.hardMode ? "The server will not start the Moon Lord outside hardmode."
+				        : !Terraria.NPC.downedGolemBoss ? "The server will not start the Moon Lord until Golem is defeated."
+				        : null);
+		        }
+	        }
+        }
+
+        private static void StopLunarEvent()
         {
             Main.NewText("Stopped lunar event!", 50, 255, 130);
             Terraria.NPC.LunarApocalypseIsUp = false;

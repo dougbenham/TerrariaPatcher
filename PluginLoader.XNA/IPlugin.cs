@@ -34,6 +34,24 @@ namespace PluginLoader
     {
         void OnDrawInventory();
     }
+
+    /// <summary>
+    /// Raised from a drawing layer of the loader's own, which sits in Terraria's list of interface layers just
+    /// before the ones that draw mouse text and the cursor. A sprite batch is already open in interface
+    /// coordinates, so <see cref="Main.mouseX"/> and <see cref="Main.screenWidth"/> can be compared with what is
+    /// drawn whatever the player's UI scale is.
+    ///
+    /// This is the hook to draw a window of your own from. <see cref="IPluginDrawInterface"/> is raised after
+    /// every layer has drawn and the batch has closed, by which time the cursor is already down, so a window
+    /// drawn from there covers it.
+    ///
+    /// Terraria only walks its interface layers for the in game interface, so this is not raised on the main menu
+    /// or over the fullscreen map.
+    /// </summary>
+    public interface IPluginDrawUI : IPlugin
+    {
+        void OnDrawUI();
+    }
     public interface IPluginPreUpdate : IPlugin
     {
         void OnPreUpdate();
@@ -117,6 +135,15 @@ namespace PluginLoader
         bool OnPlayerQuickBuff(Player player);
     }
 
+    /// <summary>
+    /// Raised for every swing that lands on a tile, before the swing is resolved, so that the tile about to be broken
+    /// can still be read. Whether the swing finished it off is seen from the tile no longer being active afterwards.
+    /// </summary>
+    public interface IPluginPlayerPickTile : IPlugin
+    {
+        void OnPlayerPickTile(Player player, int x, int y, int pickPower);
+    }
+
     #endregion
 
     #region Item
@@ -142,6 +169,11 @@ namespace PluginLoader
     public interface IPluginProjectileAI : IPlugin
     {
         void OnProjectileAI001(Projectile projectile);
+    }
+
+    public interface IPluginProjectileSetDefaults : IPlugin
+    {
+        void OnProjectileSetDefaults(Projectile projectile);
     }
 
     #endregion

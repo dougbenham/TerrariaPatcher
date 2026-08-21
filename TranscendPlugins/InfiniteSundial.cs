@@ -1,14 +1,22 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework.Input;
 using PluginLoader;
 using Terraria;
 
 namespace TranscendPlugins
 {
-    public class InfiniteSundial : MarshalByRefObject, IPluginUpdate
+    [PluginDescription("Removes the Enchanted Sundial's and Enchanted Moondial's cooldowns, so you can skip to the next " +
+                       "day or night as often as you like. Single player only.")]
+    public class InfiniteSundial : PluginBase, IPluginUpdate
     {
+        public InfiniteSundial() : base(toggleKey: Keys.None)
+        { }
+
         public void OnUpdate()
         {
+            if (Main.netMode != 0) return;
+
             Main.sundialCooldown = 0;
+            Main.moondialCooldown = 0;
         }
     }
 }

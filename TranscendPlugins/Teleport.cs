@@ -3,28 +3,43 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using PluginLoader;
 using Terraria;
+using Terraria.GameInput;
 using Terraria.ID;
 
 namespace TranscendPlugins
 {
-    public class Teleport : MarshalByRefObject, IPluginInitialize, IPluginUpdate, IPluginChatCommand
+    [PluginDescription("Teleports you to your cursor with a hotkey, or to anywhere you right click on the fullscreen map. " +
+                       "/teleport also finds the nearest Plantera Bulb or Strange Plant on the explored map.")]
+    public class Teleport : PluginBase, IPluginInitialize, IPluginUpdate, IPluginChatCommand
     {
+	    /// <inheritdoc />
+	    public override bool RequiresRestart
+	    {
+		    get { return false; }
+	    }
+
+	    private const int NoSearch = 0, PlanteraSearch = 1, StrangePlantSearch = 2;
+        private const int CellsPerFrame = 200000;
+
+        private static readonly HotkeySetting TeleportKey = new Hotkey { Key = Keys.F, Action = TeleportToCursor };
+
         private int planteraBulbTileLookup, plant1Lookup, plant2Lookup, plant3Lookup, plant4Lookup;
-        private Keys teleportKey;
+        private int searchMode, searchX;
 
-        public Teleport()
+        private static void TeleportToCursor()
         {
-            if (!Keys.TryParse(IniAPI.ReadIni("Teleport", "TeleportKey", "F", writeIt: true), out teleportKey))
-                teleportKey = Keys.F;
+            TeleportTo(new Vector2(Main.mouseX + Main.screenPosition.X, Main.mouseY + Main.screenPosition.Y));
+        }
 
-            Loader.RegisterHotkey(() =>
-            {
-                var player = Main.player[Main.myPlayer];
-                var vector = new Vector2(Main.mouseX + Main.screenPosition.X, Main.mouseY + Main.screenPosition.Y);
-                player.Teleport(vector, 1, 0);
-                player.velocity = Vector2.Zero;
-                NetMessage.SendData(65, -1, -1, null, 0, player.whoAmI, vector.X, vector.Y, 1, 0, 0);
-            }, teleportKey);
+        /// <summary>
+        /// Moves the player through <see cref="Terraria.Player.Teleport"/> and tells the server about it with message
+        /// 65, which the server applies and relays to the other clients.
+        /// </summary>
+        private static void TeleportTo(Vector2 position)
+        {
+            Player.Teleport(position, 1, 0);
+            Player.velocity = Vector2.Zero;
+            NetMessage.SendData(65, -1, -1, null, 0, Player.whoAmI, position.X, position.Y, 1, 0, 0);
         }
 
         public void OnInitialize()
@@ -38,13 +53,15 @@ namespace TranscendPlugins
 
         public void OnUpdate()
         {
+            StepSearch();
+
             if (Main.mapFullscreen && Main.mouseRight && Main.keyState.IsKeyUp(Keys.LeftControl))
             {
                 int num = Main.maxTilesX * 16;
                 int num2 = Main.maxTilesY * 16;
-                Vector2 vector = new Vector2((float)Main.mouseX, (float)Main.mouseY);
-                vector.X -= (float)(Main.screenWidth / 2);
-                vector.Y -= (float)(Main.screenHeight / 2);
+                Vector2 vector = new Vector2((float)PlayerInput.MouseX, (float)PlayerInput.MouseY);
+                vector.X -= (float)(PlayerInput.RealScreenWidth / 2);
+                vector.Y -= (float)(PlayerInput.RealScreenHeight / 2);
                 Vector2 mapFullscreenPos = Main.mapFullscreenPos;
                 Vector2 vector2 = mapFullscreenPos;
                 vector /= 16f;
@@ -69,10 +86,7 @@ namespace TranscendPlugins
                 {
                     vector2.Y = (float)(num2 - player.height);
                 }
-                player.position = vector2;
-                player.velocity = Vector2.Zero;
-                player.fallStart = (int)(player.position.Y / 16f);
-                NetMessage.SendData(13, -1, -1, null, Main.myPlayer, 0f, 0f, 0f, 0, 0, 0);
+                TeleportTo(vector2);
             }
         }
 
@@ -87,56 +101,72 @@ namespace TranscendPlugins
                 Main.NewText("  /teleport strangeplant");
             };
 
-            if (args.Length < 1 || args.Length > 1 || args[0] == "help")
+            var option = args.Length > 0 ? args[0].ToLower() : "";
+
+            if (args.Length < 1 || args.Length > 1 || option == "help")
             {
                 usage();
                 return true;
             }
 
-            switch (args[0])
+            switch (option)
             {
                 case "plantera":
-                    for (int i = 0; i < Main.Map.MaxWidth; i++)
-                    {
-                        for (int j = 0; j < Main.Map.MaxHeight; j++)
-                        {
-                            if (Main.Map[i, j].Type == planteraBulbTileLookup)
-                            {
-                                Player player = Main.player[Main.myPlayer];
-                                player.position = new Vector2(i * 16, j * 16);
-                                player.velocity = Vector2.Zero;
-                                player.fallStart = (int)(player.position.Y / 16f);
-                                NetMessage.SendData(13, -1, -1, null, Main.myPlayer, 0f, 0f, 0f, 0, 0, 0);
-                                return true;
-                            }
-                        }
-                    }
+                    BeginSearch(PlanteraSearch);
                     return true;
                 case "strangeplant":
-                    for (int i = 0; i < Main.Map.MaxWidth; i++)
-                    {
-                        for (int j = 0; j < Main.Map.MaxHeight; j++)
-                        {
-                            var type = Main.Map[i, j].Type;
-                            if (type == plant1Lookup ||
-                                type == plant2Lookup ||
-                                type == plant3Lookup ||
-                                type == plant4Lookup)
-                            {
-                                Player player = Main.player[Main.myPlayer];
-                                player.position = new Vector2(i * 16, j * 16);
-                                player.velocity = Vector2.Zero;
-                                player.fallStart = (int)(player.position.Y / 16f);
-                                NetMessage.SendData(13, -1, -1, null, Main.myPlayer, 0f, 0f, 0f, 0, 0, 0);
-                                return true;
-                            }
-                        }
-                    }
+                    BeginSearch(StrangePlantSearch);
                     return true;
                 default:
                     usage();
                     return true;
             }
+        }
+
+        private void BeginSearch(int mode)
+        {
+            searchMode = mode;
+            searchX = 0;
+            Main.NewText("Searching the map...");
+        }
+
+        private void StepSearch()
+        {
+            if (searchMode == NoSearch) return;
+
+            int width = Main.Map.MaxWidth;
+            int height = Main.Map.MaxHeight;
+            int columns = Math.Max(1, CellsPerFrame / Math.Max(1, height));
+            int limit = Math.Min(width, searchX + columns);
+
+            for (; searchX < limit; searchX++)
+            {
+                for (int j = 0; j < height; j++)
+                {
+                    if (!IsSearchMatch(Main.Map[searchX, j].Type)) continue;
+
+                    TeleportTo(new Vector2(searchX * 16, j * 16));
+                    searchMode = NoSearch;
+                    return;
+                }
+            }
+
+            if (searchX >= width)
+            {
+                Main.NewText("Nothing found on the explored map.");
+                searchMode = NoSearch;
+            }
+        }
+
+        private bool IsSearchMatch(int type)
+        {
+            if (searchMode == PlanteraSearch)
+                return type == planteraBulbTileLookup;
+
+            return type == plant1Lookup ||
+                   type == plant2Lookup ||
+                   type == plant3Lookup ||
+                   type == plant4Lookup;
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Xna.Framework;
@@ -9,122 +9,128 @@ using Keys = Microsoft.Xna.Framework.Input.Keys;
 
 namespace TranscendPlugins
 {
-    public class NPC : MarshalByRefObject, IPluginChatCommand
+    [PluginDescription("Controls monster spawning and spawns them on demand. SpawnLimit is how many can be alive at once " +
+                       "and SpawnRate is a percentage of the vanilla rate; hotkeys adjust both, and Toggle stops spawning " +
+                       "entirely and clears what is already out. /npc spawns any NPC by id or name, and /npc search " +
+                       "finds an NPC's id. Single player only, apart from /npc search: a server owns every NPC, so none " +
+                       "of the spawn settings, the hotkeys or /npc spawning reach it.")]
+    public class NPC : PluginBase, IPluginChatCommand
     {
+        private static readonly Setting<int> SpawnLimit = 5;
+        private static readonly Setting<int> SpawnRate = 100;
+
+        private static Shared.IdLookup npcs;
+
+        private static Shared.IdLookup Npcs
+        {
+            get { return npcs ?? (npcs = new Shared.IdLookup(typeof(NPCID))); }
+        }
+
+        private static readonly HotkeySetting Toggle = new Hotkey { Key = Keys.N, Action = ToggleSpawning };
+        private static readonly HotkeySetting Increase = new Hotkey { Key = Keys.OemPlus, Action = () => ModifySpawnRate(20) };
+        private static readonly HotkeySetting IncreaseLimit = new Hotkey { Key = Keys.OemPlus, Control = true, Action = () => ModifySpawnLimit(1) };
+        private static readonly HotkeySetting Decrease = new Hotkey { Key = Keys.OemMinus, Action = () => ModifySpawnRate(-20) };
+        private static readonly HotkeySetting DecreaseLimit = new Hotkey { Key = Keys.OemMinus, Control = true, Action = () => ModifySpawnLimit(-1) };
+
+        private static readonly FieldInfo defaultMaxSpawns;
+        private static readonly FieldInfo defaultSpawnRate;
+
+        private static int previousSpawnLimit = 5;
+        private static int previousSpawnRate = 100;
+
         private bool cnpc;
-        private Keys toggleKey, increaseKey, decreaseKey;
-        private int previousMaxSpawns;
-        private int previousSpawnRate;
 
-        private FieldInfo defaultMaxSpawns;
-        private int DefaultMaxSpawns
-        {
-            get { return (int)defaultMaxSpawns.GetValue(null); }
-            set { defaultMaxSpawns.SetValue(null, value); }
-        }
-
-        private int internalSpawnRatePercent;
-        private FieldInfo defaultSpawnRate;
-        private int DefaultSpawnRate
-        {
-            get
-            {
-                return internalSpawnRatePercent;
-                /*var val = (int) defaultSpawnRate.GetValue(null);
-                if (val == 0) return int.MaxValue;
-                return 60000 / val;*/
-            }
-            set
-            {
-                internalSpawnRatePercent = value;
-                if (value == 0)
-                    defaultSpawnRate.SetValue(null, int.MaxValue);
-                else
-                    defaultSpawnRate.SetValue(null, 60000 / value);
-            }
-        }
-
-        public NPC()
+        static NPC()
         {
             var npc = Assembly.GetEntryAssembly().GetType("Terraria.NPC");
             defaultMaxSpawns = npc.GetField("defaultMaxSpawns", BindingFlags.Static | BindingFlags.NonPublic);
             defaultSpawnRate = npc.GetField("defaultSpawnRate", BindingFlags.Static | BindingFlags.NonPublic);
-
-            DefaultMaxSpawns = int.Parse(IniAPI.ReadIni("Spawning", "SpawnLimit", "5", writeIt: true));
-            DefaultSpawnRate = int.Parse(IniAPI.ReadIni("Spawning", "SpawnRate", "100", writeIt: true));
-
-            if (!Keys.TryParse(IniAPI.ReadIni("NPC", "Toggle", "N", writeIt: true), out toggleKey))
-                toggleKey = Keys.N;
-            if (!Keys.TryParse(IniAPI.ReadIni("NPC", "Increase", "OemPlus", writeIt: true), out increaseKey))
-                increaseKey = Keys.OemPlus;
-            if (!Keys.TryParse(IniAPI.ReadIni("NPC", "Decrease", "OemMinus", writeIt: true), out decreaseKey))
-                decreaseKey = Keys.OemMinus;
-
-            Color purple = Color.Purple;
-            Loader.RegisterHotkey(() =>
-            {
-                ModifySpawnLimit(-1);
-                Main.NewText("Spawn limit: " + DefaultMaxSpawns, purple.R, purple.G, purple.B);
-            }, decreaseKey, control: true);
-
-            Loader.RegisterHotkey(() =>
-            {
-                ModifySpawnRate(-20);
-                Main.NewText("Spawn rate: " + DefaultSpawnRate + "%", purple.R, purple.G, purple.B);
-            }, decreaseKey, control: false);
-
-            Loader.RegisterHotkey(() =>
-            {
-                ModifySpawnLimit(1);
-                Main.NewText("Spawn limit: " + DefaultMaxSpawns, purple.R, purple.G, purple.B);
-            }, increaseKey, control: true);
-
-            Loader.RegisterHotkey(() =>
-            {
-                ModifySpawnRate(20);
-                Main.NewText("Spawn rate: " + DefaultSpawnRate + "%", purple.R, purple.G, purple.B);
-            }, increaseKey, control: false);
-
-            Loader.RegisterHotkey(() =>
-            {
-                if (DefaultMaxSpawns > 0)
-                {
-                    previousMaxSpawns = DefaultMaxSpawns;
-                    previousSpawnRate = DefaultSpawnRate;
-                    DefaultMaxSpawns = 0;
-                    DefaultSpawnRate = 0;
-                    KillAllNPCs();
-                }
-                else
-                {
-                    DefaultMaxSpawns = previousMaxSpawns;
-                    DefaultSpawnRate = previousSpawnRate;
-                }
-                Main.NewText("Spawn rate: " + DefaultSpawnRate + "%", purple.R, purple.G, purple.B);
-                Main.NewText("Spawn limit: " + DefaultMaxSpawns, purple.R, purple.G, purple.B);
-            }, toggleKey);
         }
 
-        private void ModifySpawnRate(int rate)
+        public NPC()
         {
-            DefaultSpawnRate += rate;
-            if (DefaultSpawnRate < 0) DefaultSpawnRate = 0;
-            if (DefaultSpawnRate > 1000) DefaultSpawnRate = 1000;
+            Apply();
 
-            IniAPI.WriteIni("Spawning", "SpawnRate", DefaultSpawnRate.ToString());
+            SpawnLimit.Changed += Apply;
+            SpawnRate.Changed += Apply;
         }
 
-        private void ModifySpawnLimit(int rate)
+        /// <summary>
+        /// Pushes the settings into Terraria's own spawn fields, which hold a delay rather than a percentage.
+        /// </summary>
+        private static void Apply()
         {
-            DefaultMaxSpawns += rate;
-            if (DefaultMaxSpawns < 0) DefaultMaxSpawns = 0;
-            if (DefaultMaxSpawns > 150) DefaultMaxSpawns = 150;
-            if (DefaultMaxSpawns == 0) KillAllNPCs();
-
-            IniAPI.WriteIni("Spawning", "SpawnLimit", DefaultMaxSpawns.ToString());
+            defaultMaxSpawns.SetValue(null, SpawnLimit.Value);
+            defaultSpawnRate.SetValue(null, SpawnRate.Value == 0 ? int.MaxValue : 60000 / SpawnRate.Value);
         }
 
-        private void KillAllNPCs()
+        /// <summary>
+        /// Everything about an NPC belongs to the server: NPC.SpawnNPC only runs where netMode is not 1, NPC.NewNPC only
+        /// marks a spawn for syncing where netMode is 2, and an NPC killed on a client is sent straight back by the next
+        /// update. There is no packet a client can send to ask for any of it.
+        /// </summary>
+        private static bool ServerOwnsNpcs()
+        {
+            if (Main.netMode == 0) return false;
+
+            Main.NewText("The server controls monster spawning.");
+            return true;
+        }
+
+        private static void ToggleSpawning()
+        {
+            if (ServerOwnsNpcs()) return;
+
+            if (SpawnLimit.Value > 0)
+            {
+                previousSpawnLimit = SpawnLimit.Value;
+                previousSpawnRate = SpawnRate.Value;
+                SpawnLimit.Value = 0;
+                SpawnRate.Value = 0;
+                KillAllNPCs();
+            }
+            else
+            {
+                SpawnLimit.Value = previousSpawnLimit;
+                SpawnRate.Value = previousSpawnRate;
+            }
+
+            Announce();
+        }
+
+        private static void ModifySpawnRate(int rate)
+        {
+            if (ServerOwnsNpcs()) return;
+
+            SpawnRate.Value = Clamp(SpawnRate.Value + rate, 0, 1000);
+            Announce();
+        }
+
+        private static void ModifySpawnLimit(int limit)
+        {
+            if (ServerOwnsNpcs()) return;
+
+            SpawnLimit.Value = Clamp(SpawnLimit.Value + limit, 0, 150);
+
+            if (SpawnLimit.Value == 0)
+                KillAllNPCs();
+
+            Announce();
+        }
+
+        private static int Clamp(int value, int min, int max)
+        {
+            return value < min ? min : (value > max ? max : value);
+        }
+
+        private static void Announce()
+        {
+            var purple = Color.Purple;
+            Main.NewText("Spawn rate: " + SpawnRate.Value + "%", purple.R, purple.G, purple.B);
+            Main.NewText("Spawn limit: " + SpawnLimit.Value, purple.R, purple.G, purple.B);
+        }
+
+        private static void KillAllNPCs()
         {
             for (int i = 0; i < Main.npc.Length; i++)
             {
@@ -143,33 +149,50 @@ namespace TranscendPlugins
         {
             if (command != "npc") return false;
 
-            if (args.Length < 1 || args.Length > 2 || args[0] == "help")
+            var option = args.Length > 0 ? args[0].ToLower() : "";
+
+            if (args.Length < 1 || args.Length > 2 || option == "help")
             {
                 Main.NewText("Usage:");
                 Main.NewText("  /npc id [count]");
                 Main.NewText("  /npc name [count]");
                 Main.NewText("  /npc cnpc (Toggles NPC spawn at cursor position)");
+                Main.NewText("  /npc search text");
                 Main.NewText("  /npc help");
                 Main.NewText("Example:");
                 Main.NewText("  /npc 21");
                 Main.NewText("  /npc 21 20");
                 Main.NewText("  /npc Skeleton 20");
+                Main.NewText("  /npc search goblin");
                 return true;
             }
 
-            if (args[0] == "cnpc")
+            if (option == "cnpc")
             {
                 cnpc = !cnpc;
                 Main.NewText("NPC spawn at cursor " + (cnpc ? "enabled" : "disabled"));
                 return true;
             }
 
-            int npcId;
-            if (!int.TryParse(args[0], out npcId))
+            if (option == "search")
             {
-                var field = typeof(NPCID).GetFields().FirstOrDefault(info => info.Name.ToLower() == args[0].ToLower());
-                if (field != null)
-                    npcId = Convert.ToInt32(field.GetValue(null));
+                if (args.Length < 2)
+                {
+                    Main.NewText("Usage: /npc search text");
+                    return true;
+                }
+
+                Shared.IdLookup.Report(Npcs.Search(args[1]), "NPCs");
+                return true;
+            }
+
+            if (ServerOwnsNpcs()) return true;
+
+            int npcId;
+            if (!int.TryParse(args[0], out npcId) && !Npcs.TryGetId(args[0], out npcId))
+            {
+                Main.NewText("Invalid NPCID.");
+                return true;
             }
             if (npcId == 0)
             {
@@ -195,9 +218,8 @@ namespace TranscendPlugins
             }
             else
             {
-                var player = Main.player[Main.myPlayer];
-                x = (int)player.Center.X;
-                y = (int)player.Center.Y - 150;
+                x = (int)Player.Center.X;
+                y = (int)Player.Center.Y - 150;
             }
             for (int i = 0; i < count; i++)
             {

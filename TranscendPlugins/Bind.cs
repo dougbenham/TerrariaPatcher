@@ -5,15 +5,18 @@ using Terraria;
 
 namespace MrBlueSLPlugins
 {
-    public class Bind : MarshalByRefObject, IPluginChatCommand
+    [PluginDescription("Binds any chat command to a key with /bind, so '/bind Control,T /npc Skeleton' makes Ctrl+T summon a Skeleton.")]
+    public class Bind : PluginBase, IPluginChatCommand
     {
         public bool OnChatCommand(string command, string[] args)
         {
             if (command != "bind" && command != "unbind" && command != "listbinds") return false;
-            
-            if ((command == "bind" && (args.Length <= 1 || args[0] == "help")) ||
-                (command == "unbind" && (args.Length <= 0 || args[0] == "help")) ||
-                (command == "listbinds" && args.Length > 0 && args[0] == "help"))
+
+            var option = args.Length > 0 ? args[0].ToLower() : "";
+
+            if ((command == "bind" && (args.Length <= 1 || option == "help")) ||
+                (command == "unbind" && (args.Length <= 0 || option == "help")) ||
+                (command == "listbinds" && args.Length > 0 && option == "help"))
             {
                 Main.NewText("Usage:");
                 Main.NewText("  /bind modifiers,hotkey command");

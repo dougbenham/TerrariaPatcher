@@ -1,46 +1,41 @@
-﻿using System;
 using PluginLoader;
 using Terraria;
 using Terraria.ID;
 
 namespace TranscendPlugins
 {
-    public class CoinGun : MarshalByRefObject, IPluginItemSetDefaults
+    [PluginDescription("Makes Coin Gun ammo worth using: each coin gets a configurable damage value, and can be made to " +
+                       "home in on enemies.")]
+    public class CoinGun : PluginBase, IPluginItemSetDefaults
     {
-        private bool copperCoinEnemyTracking, silverCoinEnemyTracking, goldCoinEnemyTracking, platinumCoinEnemyTracking;
-        private int copperCoinDamage, silverCoinDamage, goldCoinDamage, platinumCoinDamage;
-
-        public CoinGun()
-        {
-            copperCoinEnemyTracking = bool.Parse(IniAPI.ReadIni("CoinGunModifications", "CopperCoinEnemyTracking", "true", writeIt: true));
-            copperCoinDamage = int.Parse(IniAPI.ReadIni("CoinGunModifications", "CopperCoinDamage", "200", writeIt: true));
-            silverCoinEnemyTracking = bool.Parse(IniAPI.ReadIni("CoinGunModifications", "SilverCoinEnemyTracking", "true", writeIt: true));
-            silverCoinDamage = int.Parse(IniAPI.ReadIni("CoinGunModifications", "SilverCoinDamage", "200", writeIt: true));
-            goldCoinEnemyTracking = bool.Parse(IniAPI.ReadIni("CoinGunModifications", "GoldCoinEnemyTracking", "true", writeIt: true));
-            goldCoinDamage = int.Parse(IniAPI.ReadIni("CoinGunModifications", "GoldCoinDamage", "200", writeIt: true));
-            platinumCoinEnemyTracking = bool.Parse(IniAPI.ReadIni("CoinGunModifications", "PlatinumCoinEnemyTracking", "true", writeIt: true));
-            platinumCoinDamage = int.Parse(IniAPI.ReadIni("CoinGunModifications", "PlatinumCoinDamage", "200", writeIt: true));
-        }
+        private static readonly Setting<bool> CopperCoinEnemyTracking = true;
+        private static readonly Setting<int> CopperCoinDamage = 200;
+        private static readonly Setting<bool> SilverCoinEnemyTracking = true;
+        private static readonly Setting<int> SilverCoinDamage = 200;
+        private static readonly Setting<bool> GoldCoinEnemyTracking = true;
+        private static readonly Setting<int> GoldCoinDamage = 200;
+        private static readonly Setting<bool> PlatinumCoinEnemyTracking = true;
+        private static readonly Setting<int> PlatinumCoinDamage = 200;
 
         public void OnItemSetDefaults(Item item)
         {
             switch (item.type)
             {
                 case ItemID.CopperCoin:
-                    if (copperCoinEnemyTracking) item.shoot = ProjectileID.ChlorophyteBullet;
-                    item.damage = copperCoinDamage;
+                    if (CopperCoinEnemyTracking) item.shoot = ProjectileID.ChlorophyteBullet;
+                    item.damage = CopperCoinDamage;
                     break;
                 case ItemID.SilverCoin:
-                    if (silverCoinEnemyTracking) item.shoot = ProjectileID.ChlorophyteBullet;
-                    item.damage = silverCoinDamage;
+                    if (SilverCoinEnemyTracking) item.shoot = ProjectileID.ChlorophyteBullet;
+                    item.damage = SilverCoinDamage;
                     break;
                 case ItemID.GoldCoin:
-                    if (goldCoinEnemyTracking) item.shoot = ProjectileID.ChlorophyteBullet;
-                    item.damage = goldCoinDamage;
+                    if (GoldCoinEnemyTracking) item.shoot = ProjectileID.ChlorophyteBullet;
+                    item.damage = GoldCoinDamage;
                     break;
                 case ItemID.PlatinumCoin:
-                    if (platinumCoinEnemyTracking) item.shoot = ProjectileID.ChlorophyteBullet;
-                    item.damage = platinumCoinDamage;
+                    if (PlatinumCoinEnemyTracking) item.shoot = ProjectileID.ChlorophyteBullet;
+                    item.damage = PlatinumCoinDamage;
                     break;
             }
         }

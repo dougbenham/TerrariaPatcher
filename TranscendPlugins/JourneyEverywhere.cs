@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -7,37 +7,26 @@ using Terraria;
 
 namespace TildemancerPlugins
 {
-    public class JourneyModeUnlocked : MarshalByRefObject, IPluginPlayerUpdateBuffs
+    [PluginDescription("Unlocks the Journey mode research and power menu on any character, in any world. On a server the " +
+                       "powers still go through it, so any the server has locked down with a journeypermission_ line in " +
+                       "serverconfig.txt will not take, and what you research is tracked on your own client.")]
+    public class JourneyModeUnlocked : PluginBase, IPluginPlayerUpdateBuffs
     {
-        private static readonly byte[] Aob = new byte[] { 0x74, 0x10, 0x8B, 0xCE, 0x33, 0xD2, 0xE8 };
+        [SettingDescription("Says in chat whether the Journey mode menu was unlocked.")]
+        private static readonly Setting<bool> ShowChatMessage = true;
 
-        private bool _enabled;
-        private bool _showChatMessage;
-        private bool _attempted;
-        private bool _patched;
-
-        private IntPtr _patchAddress = IntPtr.Zero;
-        private byte _originalOpcode;
-
-        public JourneyModeUnlocked()
+        /// <inheritdoc />
+        public override bool RequiresRestart
         {
-            bool enabled;
-            if (!bool.TryParse(IniAPI.ReadIni("JourneyModeUnlocked", "Enabled", "True", writeIt: true), out enabled))
-                enabled = true;
-
-            bool showMsg;
-            if (!bool.TryParse(IniAPI.ReadIni("JourneyModeUnlocked", "ShowChatMessage", "True", writeIt: true), out showMsg))
-                showMsg = true;
-
-            _enabled = enabled;
-            _showChatMessage = showMsg;
+	        get { return true; }
         }
 
+        private static readonly byte[] Aob = new byte[] { 0x74, 0x10, 0x8B, 0xCE, 0x33, 0xD2, 0xE8 };
+
+        private bool _attempted;
+		
         public void OnPlayerUpdateBuffs(Player player)
         {
-            if (!_enabled)
-                return;
-
             if (_attempted || player == null || player.whoAmI != Main.myPlayer)
                 return;
 
@@ -45,19 +34,19 @@ namespace TildemancerPlugins
 
             try
             {
-                _patched = TryApplyPatch();
-                if (_patched && _showChatMessage)
+                var patched = TryApplyPatch();
+                if (patched && ShowChatMessage)
                 {
                     Main.NewText("Journey Mode UI loaded successfully. Have fun!");
                 }
-                else if (!_patched && _showChatMessage)
+                else if (!patched && ShowChatMessage)
                 {
                     Main.NewText("Journey Mode UI failed to load; Patch not applied (signature not found).");
                 }
             }
             catch (Exception ex)
             {
-                if (_showChatMessage)
+                if (ShowChatMessage)
                     Main.NewText("Journey Mode UI failed to load; Exception while patching: " + ex.GetType().Name);
             }
         }
@@ -92,9 +81,6 @@ namespace TildemancerPlugins
                 if (check[i] != Aob[i])
                     return false;
             }
-
-            _patchAddress = found;
-            _originalOpcode = check[0];
 
             return WriteByte(found, 0x76);
         }

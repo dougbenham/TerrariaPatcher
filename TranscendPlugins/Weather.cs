@@ -1,50 +1,66 @@
-﻿using System;
 using Microsoft.Xna.Framework.Input;
 using PluginLoader;
 using Terraria;
 
 namespace TranscendPlugins
 {
-    public class Weather : MarshalByRefObject, IPlugin
+    [PluginDescription("Starts and stops rain and slime rain on demand with a hotkey. In multiplayer only starting slime " +
+                       "rain works, as a request to the server; rain and stopping either are single player only.")]
+    public class Weather : PluginBase
     {
-        private Keys toggleKey;
-        private Keys toggleSlimeKey;
+        private static readonly HotkeySetting ToggleRain = new Hotkey { Key = Keys.OemSemicolon, Action = ToggleRaining };
+        private static readonly HotkeySetting ToggleSlimeRain = new Hotkey { Key = Keys.OemQuotes, Action = ToggleSlimeRaining };
 
-        public Weather()
+        /// <summary>
+        /// The only weather change a client can ask the server for, through message 61. Rain, and stopping either
+        /// kind, have no request packet.
+        /// </summary>
+        private const int RequestSlimeRain = -19;
+
+        private static void ToggleRaining()
         {
-            if (!Keys.TryParse(IniAPI.ReadIni("Weather", "ToggleRain", "OemSemicolon", writeIt: true), out toggleKey))
-                toggleKey = Keys.OemSemicolon;
-
-            if (!Keys.TryParse(IniAPI.ReadIni("Weather", "ToggleSlimeRain", "OemQuotes", writeIt: true), out toggleSlimeKey))
-                toggleSlimeKey = Keys.OemQuotes;
-
-            Loader.RegisterHotkey(() =>
+            if (Main.netMode != 0)
             {
-                if (Main.raining)
-                {
-                    Main.StopRain();
-                    Main.NewText("Rain stopped.");
-                }
-                else
-                {
-                    Main.StartRain();
-                    Main.NewText("Rain started.");
-                }
-            }, toggleKey);
+                Main.NewText("The server controls the weather.");
+                return;
+            }
 
-            Loader.RegisterHotkey(() =>
+            if (Main.raining)
+            {
+                Main.StopRain();
+                Main.NewText("Rain stopped.");
+            }
+            else
+            {
+                Main.StartRain();
+                Main.NewText("Rain started.");
+            }
+        }
+
+        private static void ToggleSlimeRaining()
+        {
+            if (Main.netMode != 0)
             {
                 if (Main.slimeRain)
                 {
-                    Main.StopSlimeRain();
-                    Main.NewText("Slime rain stopped.");
+                    Main.NewText("Only the server can stop slime rain.");
+                    return;
                 }
-                else
-                {
-                    Main.StartSlimeRain();
-                    Main.NewText("Slime rain started.");
-                }
-            }, toggleSlimeKey);
+
+                NetMessage.SendData(61, -1, -1, null, Main.myPlayer, RequestSlimeRain, 0f, 0f, 0, 0, 0);
+                return;
+            }
+
+            if (Main.slimeRain)
+            {
+                Main.StopSlimeRain();
+                Main.NewText("Slime rain stopped.");
+            }
+            else
+            {
+                Main.StartSlimeRain();
+                Main.NewText("Slime rain started.");
+            }
         }
     }
 }

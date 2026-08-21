@@ -1,44 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Microsoft.Xna.Framework.Input;
 using PluginLoader;
 using Terraria;
 using Terraria.ID;
 
 namespace TranscendPlugins
 {
-    public class BuffImmunity : MarshalByRefObject, IPluginPlayerUpdateBuffs
+    [PluginDescription("Makes you permanently immune to the listed debuffs, and strips them if you already have them.")]
+    public class BuffImmunity : PluginBase, IPluginPlayerUpdateBuffs
     {
-        private List<int> buffs;
- 
-        public BuffImmunity()
+        [SettingIds(typeof(BuffID))]
+        [SettingDescription("The debuffs you are permanently immune to.")]
+        private static readonly Setting<int[]> Buffs = new[]
         {
-            buffs = new List<int>();
-            IniAPI.ReadIni("BuffImmunity", "Buffs", "PotionSickness, ManaSickness, Blackout, Darkness, Webbed", writeIt: true).Split(new [] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList().ForEach(buff =>
-            {
-                buff = buff.Trim().ToLower();
-
-                int buffId;
-                if (!int.TryParse(buff, out buffId))
-                {
-                    var field = typeof(BuffID).GetFields().FirstOrDefault(info => info.Name.ToLower() == buff);
-                    if (field == null)
-                    {
-                        Main.NewText("Invalid BuffID (" + buff + ").");
-                        return;
-                    }
-                    buffId = Convert.ToInt32(field.GetValue(null));
-                }
-
-                buffs.Add(buffId);
-            });
-        }
+            BuffID.PotionSickness, BuffID.ManaSickness, BuffID.Blackout, BuffID.Darkness, BuffID.Webbed
+        };
+		
+        public BuffImmunity() : base(toggleKey: Keys.None)
+        { }
 
         public void OnPlayerUpdateBuffs(Player player)
         {
-            foreach (var type in buffs)
+            foreach (var type in Buffs.Value)
             {
-                for (int j = 0; j < 22; j++)
+                for (int j = player.buffType.Length - 1; j >= 0; j--)
                 {
                     if (player.buffType[j] == type)
                         player.DelBuff(j);

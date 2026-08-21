@@ -1,38 +1,19 @@
-﻿using System;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using PluginLoader;
-using Terraria;
 
 namespace ZeromaruPlugins
 {
-    public class InfiniteFlight : MarshalByRefObject, IPluginUpdate
+    [PluginDescription("Wings, rocket boots, and flying carpets never run out while enabled.")]
+    public class InfiniteFlight : PluginBase, IPluginUpdate
     {
-        private bool flight = false;
-        private Keys flightKey;
-
-        public InfiniteFlight()
-        {
-            if (!Keys.TryParse(IniAPI.ReadIni("InfiniteFlight", "FlightKey", "I", writeIt: true), out flightKey))
-                flightKey = Keys.I;
-
-            Color green = Color.Green;
-            Loader.RegisterHotkey(() =>
-            {
-                flight = !flight;
-                Main.NewText("Infinite Flight " + (flight ? "Enabled" : "Disabled"), green.R, green.G, green.B);
-            }, flightKey);
-        }
+        public InfiniteFlight() : base(toggleKey: Keys.I)
+        { }
 
         public void OnUpdate()
         {
-            if (flight)
-            {
-                var player = Main.player[Main.myPlayer];
-                player.rocketTime = 1;
-                player.carpetTime = 1;
-                player.wingTime = 1f;
-            }
+            Player.rocketTime = 1;
+            Player.carpetTime = 1;
+            Player.wingTime = 1f;
         }
     }
 }

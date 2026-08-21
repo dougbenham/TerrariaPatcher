@@ -1,22 +1,22 @@
-﻿using System;
+using Microsoft.Xna.Framework.Input;
 using PluginLoader;
 using Terraria;
 
 namespace TranscendPlugins
 {
-    public class Minions : MarshalByRefObject, IPluginPlayerUpdateArmorSets
+    [PluginDescription("Adds to the number of minions you can summon at once, on top of what your summoner gear already " +
+                       "gives you.")]
+    public class Minions : PluginBase, IPluginPlayerUpdateArmorSets
     {
-        private int minions;
+        private static readonly Setting<int> Bonus = 100;
 
-        public Minions()
-        {
-            if (!int.TryParse(IniAPI.ReadIni("Minions", "Max", "100", writeIt: true), out minions))
-                minions = 100;
-        }
+        public Minions() : base(toggleKey: Keys.None)
+        { }
+
         public void OnPlayerUpdateArmorSets(Player player)
         {
             if (player.whoAmI == Main.myPlayer)
-                player.maxMinions = minions;
+                player.maxMinions += Bonus;
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using PluginLoader;
 using Terraria;
 using Terraria.ID;
@@ -32,7 +33,9 @@ namespace YellowAfterlifePlugins
     /// float? scale; // size (1.0 is normal)
     /// string toolTip;
     /// string toolTip2;
-    public class ItemConfig : IPluginItemSetDefaults
+    [PluginDescription("Rewrites the stats of any item from ItemConfig.ini: name, damage, knockback, crit, defense, " +
+                       "use time, stack size, size and tooltip. See the top of ItemConfig.cs for the full list of fields.")]
+    public class ItemConfig : PluginBase, IPluginItemSetDefaults
     {
         #region Read INI
 
@@ -48,21 +51,25 @@ namespace YellowAfterlifePlugins
         private int? LoadInt(string section, string field)
         {
             string s = IniAPI.ReadIni(section, field, "", path: confPath);
-            if (s != "")
+            int value;
+            if (s != "" && int.TryParse(s.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out value))
             {
-                return int.Parse(s);
+                return value;
             }
-            else return null;
+
+            return null;
         }
 
         private float? LoadFloat(string section, string field)
         {
             string s = IniAPI.ReadIni(section, field, "", path: confPath);
-            if (s != "")
-            {
-                return float.Parse(s);
-            }
-            else return null;
+            if (s == "") return null;
+
+            float value;
+            if (!float.TryParse(s.Trim().Replace(',', '.'), NumberStyles.Float, CultureInfo.InvariantCulture, out value))
+                return null;
+
+            return value;
         }
 
         private bool? LoadBool(string section, string field)

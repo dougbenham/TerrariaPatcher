@@ -1,36 +1,31 @@
-﻿using System;
-using PluginLoader;
+﻿using PluginLoader;
 using Terraria;
 using Keys = Microsoft.Xna.Framework.Input.Keys;
 
 namespace TranscendPlugins
 {
-    public class PortableCraftingGuide : MarshalByRefObject, IPluginPreUpdate, IPluginUpdate, IPluginPlaySound, IPluginInitialize
+    [PluginDescription("Opens the Guide's crafting menu anywhere with a hotkey, so you can see and craft his recipes without walking back to him.")]
+    public class PortableCraftingGuide : PluginBase, IPluginPreUpdate, IPluginUpdate, IPluginPlaySound
     {
-        private bool pcg;
-        private Keys pcgKey;
-
-        public void OnInitialize()
+        private readonly HotkeySetting ToggleKey = new Hotkey { Key = Keys.C };
+		private bool pcg;
+        
+        public PortableCraftingGuide()
         {
-            if (!Keys.TryParse(IniAPI.ReadIni("PortableCraftingGuide", "ToggleKey", "C", writeIt: true), out pcgKey))
-                pcgKey = Keys.C;
+	        ToggleKey.Value.Action = Toggle;
+        }
 
-            Loader.RegisterHotkey(() =>
-            {
-                pcg = !pcg;
-                if (!pcg)
-                {
-                    Main.InGuideCraftMenu = false;
-                    Main.player[Main.myPlayer].SetTalkNPC(-1);
-                }
-            }, pcgKey);
+        private void Toggle()
+        {
+            pcg = !pcg;
 
-            Keys invKey;
-            Keys.TryParse(Main.cInv, out invKey);
-            Loader.RegisterHotkey(() =>
+            if (pcg)
+	            Player.OpenInventory(true);
+            else
             {
-                pcg = false;
-            }, invKey);
+                Main.InGuideCraftMenu = false;
+                Player.SetTalkNPC(-1);
+            }
         }
 
         public void OnPreUpdate()
@@ -45,11 +40,14 @@ namespace TranscendPlugins
 
         private void Set()
         {
+	        if (!Main.playerInventory)
+		        pcg = false;
+
             if (pcg)
             {
                 Main.npcChatText = "";
-                Main.player[Main.myPlayer].chest = -1;
-                Main.player[Main.myPlayer].SetTalkNPC(22);
+                Player.chest = -1;
+                Player.SetTalkNPC(22);
                 Main.InGuideCraftMenu = true;
                 Main.playerInventory = true;
             }

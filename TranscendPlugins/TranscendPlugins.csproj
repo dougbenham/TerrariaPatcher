@@ -1,123 +1,57 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
-  <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{55C89F3A-2F84-4513-8D4C-905B8513C91C}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>TranscendPlugins</RootNamespace>
-    <AssemblyName>TranscendPlugins</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <SccProjectName>SAK</SccProjectName>
-    <SccLocalPath>SAK</SccLocalPath>
-    <SccAuxPath>SAK</SccAuxPath>
-    <SccProvider>SAK</SccProvider>
-    <TargetFrameworkProfile />
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="Microsoft.Xna.Framework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
-    <Reference Include="Microsoft.Xna.Framework.Game, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
-    <Reference Include="Microsoft.Xna.Framework.Graphics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-    <Reference Include="Terraria">
-      <HintPath>..\ReferenceAssemblies\Terraria.exe</HintPath>
-    </Reference>
-    <Reference Include="Terraria.Libraries.ReLogic.ReLogic">
-      <HintPath>..\ReferenceAssemblies\Terraria.Libraries.ReLogic.ReLogic.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Bind.cs" />
-    <Compile Include="BuffImmunity.cs" />
-    <Compile Include="BuffRates.cs" />
-    <Compile Include="CoinGun.cs" />
-    <Compile Include="CreativeCrafting.cs" />
-    <Compile Include="Flashlight.cs" />
-    <Compile Include="FullBright.cs" />
-    <Compile Include="GodMode.cs" />
-    <Compile Include="HomingBullets.cs" />
-    <Compile Include="InfiniteFlight.cs" />
-    <Compile Include="InfiniteLifeSteal.cs" />
-    <Compile Include="InfiniteSundial.cs" />
-    <Compile Include="ItemConfig.cs" />
-    <Compile Include="ItemPrefix.cs" />
-    <Compile Include="JourneyEverywhere.cs" />
-    <Compile Include="LoadoutSwap.cs" />
-    <Compile Include="Shared\Extensions\ItemTooltipExtensions.cs" />
-    <Compile Include="Turrets.cs" />
-    <Compile Include="PortableCraftingGuide.cs" />
-    <Compile Include="SavePosition.cs" />
-    <Compile Include="Shared\UI\Button.cs" />
-    <Compile Include="ItemReplication.cs" />
-    <Compile Include="ItemSpawner.cs" />
-    <Compile Include="Minions.cs" />
-    <Compile Include="MoreAccessorySlots.cs" />
-    <Compile Include="NPC.cs" />
-    <Compile Include="Respawn.cs" />
-    <Compile Include="Season.cs" />
-    <Compile Include="SlashCommandPrivacy.cs" />
-    <Compile Include="ShopSellsScalingPotions.cs" />
-    <Compile Include="FastSplash.cs" />
-    <Compile Include="Time.cs" />
-    <Compile Include="UseTime.cs" />
-    <Compile Include="Teleport.cs" />
-    <Compile Include="Reveal.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Events.cs" />
-    <Compile Include="EnhancedCellPhone.cs" />
-    <Compile Include="Weather.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\PluginLoader.XNA\PluginLoader.XNA.csproj">
-      <Project>{a2185dcd-c7e8-4578-881c-b797d901a263}</Project>
-      <Name>PluginLoader.XNA</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json">
-      <Version>10.0.3</Version>
-    </PackageReference>
-    <PackageReference Include="Krafs.Publicizer" Version="1.0.1" />
-  </ItemGroup>
-  <ItemGroup>
-    <Publicize Include="Terraria;Terraria.Libraries.ReLogic.ReLogic" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Library</OutputType>
+		<TargetFramework>net481</TargetFramework>
+		<LangVersion>5</LangVersion>
+		<UseWindowsForms>true</UseWindowsForms>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<AssemblySearchPaths>$(AssemblySearchPaths);{GAC}</AssemblySearchPaths>
+		<TerrariaPath>C:\Program Files (x86)\Steam\steamapps\common\Terraria</TerrariaPath>
+		<Platforms>x86</Platforms>
+	</PropertyGroup>
+
+	<PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+		<OutputPath>bin\Debug\</OutputPath>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+		<OutputPath>bin\Release\</OutputPath>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Reference Include="Microsoft.Xna.Framework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
+			<HintPath>C:\Windows\Microsoft.NET\assembly\GAC_32\Microsoft.Xna.Framework\v4.0_4.0.0.0__842cf8be1de50553\Microsoft.Xna.Framework.dll</HintPath>
+		</Reference>
+		<Reference Include="Microsoft.Xna.Framework.Game, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
+			<HintPath>C:\Windows\Microsoft.NET\assembly\GAC_32\Microsoft.Xna.Framework.Game\v4.0_4.0.0.0__842cf8be1de50553\Microsoft.Xna.Framework.Game.dll</HintPath>
+		</Reference>
+		<Reference Include="Microsoft.Xna.Framework.Graphics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
+			<HintPath>C:\Windows\Microsoft.NET\assembly\GAC_32\Microsoft.Xna.Framework.Graphics\v4.0_4.0.0.0__842cf8be1de50553\Microsoft.Xna.Framework.Graphics.dll</HintPath>
+		</Reference>
+		<Reference Include="Terraria">
+			<HintPath>$(TerrariaPath)\Terraria.exe</HintPath>
+		</Reference>
+		<Reference Include="ReLogic">
+			<HintPath>..\ReferenceAssemblies\ReLogic.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="app.config" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\PluginLoader.XNA\PluginLoader.XNA.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Newtonsoft.Json" Version="10.0.2" />
+		<PackageReference Include="Krafs.Publicizer" Version="1.0.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Publicize Include="Terraria;ReLogic" />
+	</ItemGroup>
+
 </Project>
