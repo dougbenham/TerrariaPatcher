@@ -6,8 +6,9 @@ using Terraria.ID;
 
 namespace DoombubblesPlugins
 {
-    [PluginDescription("Minion projectiles that share immunity frames get their own instead, so Baby Slimes, Vampire Frogs, " +
-                       "Imp Fireballs, Mini Spiders, Retanimini, Spazmamini and Tempests no longer take turns hitting.")]
+    [PluginDescription("Projectiles that share immunity frames with every other copy of themselves get their own " +
+                       "instead, so a swarm of Baby Slimes, Mini Spiders, Bees, Toxic Flask clouds or Chik shards all " +
+                       "land their hits rather than taking turns.")]
     public class MinionLocalIFrames : PluginBase, IPluginProjectileSetDefaults
     {
         [SettingIds(typeof(ProjectileID))]
@@ -24,11 +25,20 @@ namespace DoombubblesPlugins
             ProjectileID.Tempest,
             ProjectileID.Bee,
             ProjectileID.GiantBee,
-            ProjectileID.FrostHydra,
+            ProjectileID.FlinxMinion,
+            ProjectileID.PalworldMinionFoxsparksFlames,
+            ProjectileID.ClingerStaff,
+            ProjectileID.MonkStaffT2,
+            ProjectileID.WeatherPainShot,
+            ProjectileID.VolatileGelatinBall,
             ProjectileID.KrakenWave,
-            ProjectileID.Chik,
             ProjectileID.ExplosiveBullet,
-            ProjectileID.ToxicFlask,
+            ProjectileID.ArcSurge,
+            ProjectileID.ChlorophyteClaymoreSporeCloud,
+            ProjectileID.CrystalShardMelee,
+            ProjectileID.ToxicCloud,
+            ProjectileID.ToxicCloud2,
+            ProjectileID.ToxicCloud3,
             ProjectileID.SporeTrap,
             ProjectileID.SporeTrap2,
         };

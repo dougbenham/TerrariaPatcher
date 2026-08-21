@@ -24,6 +24,7 @@ namespace TerrariaPatcher
         public bool Plugins = false;
         public bool InfiniteCloudJumps = false;
         public bool FunctionalSocialSlots = false;
+        public bool UnlockAllAccessorySlots = false;
         public bool MaxCraftingRange = false;
         public float VampiricHealing = 7.5f;
         public float SpectreHealing = 20f;
@@ -80,6 +81,8 @@ namespace TerrariaPatcher
                     RecipeRange();
                 if (details.FunctionalSocialSlots)
                     FunctionalSocialSlots();
+                if (details.UnlockAllAccessorySlots)
+                    UnlockAllAccessorySlots();
                 if (details.InfiniteCloudJumps)
                     InfiniteCloudJumps();
                 if (details.RemoveManaCost)
@@ -114,18 +117,15 @@ namespace TerrariaPatcher
             IL.MakeLargeAddressAware(target);
         }
 
+        /// <summary>
+        /// Gives the items worn in the social slots their effects, by widening the two Player.UpdateEquips loops that
+        /// stop at the functional slots so that they run over the social ones as well.
+        /// </summary>
         private static void FunctionalSocialSlots()
         {
             var player = IL.GetTypeDefinition(_mainModule, "Player");
-            var ctor = IL.GetMethodDefinition(player, ".ctor");
             var updateEquips = IL.GetMethodDefinition(player, "UpdateEquips");
-            
-            int spot0 = IL.ScanForOpcodePattern(ctor, (i, instruction) =>
-            {
-                var i3 = ctor.Body.Instructions[i + 3].Operand as FieldReference;
-                return i3 != null && i3.Name == "hideVisibleAccessory";
-            }, OpCodes.Ldarg_0, OpCodes.Ldc_I4_S, OpCodes.Newarr, OpCodes.Stfld);
-            ctor.Body.Instructions[spot0 + 1].Operand = (sbyte) 20;
+            var applyEquipFunctional = IL.GetMethodDefinition(player, "ApplyEquipFunctional");
 
             int spot = 0;
             while (true)
@@ -142,7 +142,51 @@ namespace TerrariaPatcher
                 spot++;
             }
 
+            // The widened loops reach ApplyEquipFunctional with a social slot, and it reads hideVisibleAccessory by
+            // that slot. The array holds one entry per functional slot, and a social slot takes the hide setting of
+            // the functional slot ten places below it, which is how Player.UpdateDyes already reads it. Growing the
+            // array instead would break EquipmentLoadout.Swap, which walks it to the end against its own bool[10].
+            var indices = new List<Instruction>();
+
+            using (applyEquipFunctional.JumpFix())
+            {
+                var instructions = applyEquipFunctional.Body.Instructions;
+
+                for (int i = 0; i < instructions.Count - 3; i++)
+                {
+                    var field = instructions[i + 1].Operand as FieldReference;
+
+                    if (instructions[i].OpCode == OpCodes.Ldarg_0 &&
+                        instructions[i + 1].OpCode == OpCodes.Ldfld &&
+                        field != null && field.Name == "hideVisibleAccessory" &&
+                        instructions[i + 2].OpCode == OpCodes.Ldarg_1 &&
+                        instructions[i + 3].OpCode == OpCodes.Ldelem_U1)
+                        indices.Add(instructions[i + 2]);
+                }
+
+                var il = applyEquipFunctional.Body.GetILProcessor();
+
+                // Added after the index rather than before the load, so that a branch onto the index still runs them.
+                foreach (var index in indices)
+                {
+                    il.InsertAfter(index, Instruction.Create(OpCodes.Rem));
+                    il.InsertAfter(index, Instruction.Create(OpCodes.Ldc_I4_S, (sbyte) 10));
+                }
+            }
+
+            if (indices.Count == 0)
+                Program.ShowErrorMessage("FunctionalSocialSlots(): Failed to locate the accessory hide lookups!");
+        }
+
+        /// <summary>
+        /// Makes every accessory slot usable, rather than the Demon Heart slot needing Expert and the seventh slot
+        /// needing Master.
+        /// </summary>
+        private static void UnlockAllAccessorySlots()
+        {
+            var player = IL.GetTypeDefinition(_mainModule, "Player");
             var isItemSlotUnlockedAndUsable = IL.GetMethodDefinition(player, "IsItemSlotUnlockedAndUsable");
+
             isItemSlotUnlockedAndUsable.Body.ExceptionHandlers.Clear();
             isItemSlotUnlockedAndUsable.Body.Instructions.Clear();
             isItemSlotUnlockedAndUsable.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_I4_1));

@@ -1,65 +1,33 @@
-﻿using System.Collections.Generic;
-using Microsoft.Xna.Framework.Input;
+﻿using Microsoft.Xna.Framework.Input;
 using PluginLoader;
 using Terraria;
-using Terraria.ID;
+using Terraria.GameContent.Items;
 
 namespace DoombubblesPlugins
 {
-    [PluginDescription("Whip self-buffs are no longer cancelled by using another whip, so the Spider, Snapthorn, Snowflake, " +
-                       "Durendal and Dark Harvest buffs stack. Enemies still only carry one tag at a time.")]
-    public class WhipBuffStacking : PluginBase, IPluginUpdate, IPluginPlayerPreUpdate
+    [PluginDescription("Raises how many whip tag effects you can keep going at once, so the Spider, Snapthorn, " +
+                       "Snowflake, Durendal and Dark Harvest buffs stack without the Silver Bracer, Mobius Strip, " +
+                       "Wicked Armlet or Twilight Grasp. 5 is the maximum the game can hold, 1 is vanilla " +
+                       "without wearing those accessories, and wearing them still counts for at least as much as they " +
+                       "are worth (without going over the game maximum of 5).")]
+    public class WhipBuffStacking : PluginBase, IPluginPlayerUpdateEquips
     {
-        [SettingIds(typeof(BuffID))]
-        private static readonly Setting<HashSet<int>> WorkingBuffs = new HashSet<int>
-        {
-            BuffID.SwordWhipPlayerBuff,
-            BuffID.CoolWhipPlayerBuff,
-            BuffID.ScytheWhipPlayerBuff,
-            BuffID.ThornWhipPlayerBuff,
-            BuffID.CobWhipPlayerBuff
-        };
-
-        private static readonly Dictionary<int, int> CurrentBuffs = new Dictionary<int, int>();
+        [SettingRange(1, 5)]
+        [SettingDescription("How many whip tag effects can be active at once.")]
+        private static readonly Setting<int> MaxTagEffects = 5;
 
         public WhipBuffStacking() : base(toggleKey: Keys.None)
         { }
 
-        public void OnPlayerPreUpdate(Player player)
+        public void OnPlayerUpdateEquips(Player player)
         {
-            if (Main.myPlayer != player.whoAmI) return;
+            if (player.whoAmI != Main.myPlayer) return;
 
-            if (player.dead || player.mouseInterface) // Don't maintain while dead or hovering buff icons
-            {
-                CurrentBuffs.Clear();
-                return;
-            }
+            var count = MaxTagEffects > TagEffectStack.MaxEffects ? TagEffectStack.MaxEffects : MaxTagEffects.Value;
 
-            foreach (var buffType in CurrentBuffs.Keys)
-            {
-                if (CurrentBuffs[buffType] > 1 && player.FindBuffIndex(buffType) == -1)
-                {
-                    player.AddBuff(buffType, CurrentBuffs[buffType] - 1);
-                }
-            }
-
-            CurrentBuffs.Clear();
-
-            for (var i = 0; i < player.buffType.Length; i++)
-            {
-                if (WorkingBuffs.Value.Contains(player.buffType[i]))
-                {
-                    CurrentBuffs[player.buffType[i]] = player.buffTime[i];
-                }
-            }
-        }
-
-        public void OnUpdate()
-        {
-            if (Main.gameMenu)
-            {
-                CurrentBuffs.Clear();
-            }
+            // Player.ResetEffects puts the count back to one every frame and Player.UpdateEquips has just added the
+            // tag accessories, so this is the last word before Player.TagEffectStack trims the stack down to it.
+            if (count > player.maxTagEffects) player.maxTagEffects = count;
         }
     }
 }

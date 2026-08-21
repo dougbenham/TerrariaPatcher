@@ -23,6 +23,14 @@ namespace TerrariaPatcher
         };
 
         /// <summary>
+        /// Sections belonging to plugins that no longer exist, which are dropped rather than carried over.
+        /// </summary>
+        private static readonly string[] Retired =
+        {
+            "MoreAccessorySlots"
+        };
+
+        /// <summary>
         /// Individual settings that moved section, changed name, or both.
         /// </summary>
         private static readonly string[][] Keys =
@@ -50,6 +58,8 @@ namespace TerrariaPatcher
 
             var moved = Sections.Sum(section => MoveSection(section.Key, section.Value, iniPath));
 
+            moved += Retired.Sum(section => RemoveSection(section, iniPath));
+
             moved += Keys.Sum(key => MoveKey(key[0], key[1], key[2], key[3], iniPath));
 
             moved += SplitHotkey("GodMode", "Key", "NextMode", "PreviousMode", "Shift,", iniPath);
@@ -68,6 +78,19 @@ namespace TerrariaPatcher
             DeleteEmptySection(oldSection, iniPath);
 
             return moved;
+        }
+
+        /// <summary>
+        /// Drops a section and everything in it, and returns how many settings went with it.
+        /// </summary>
+        private static int RemoveSection(string section, string iniPath)
+        {
+            var count = IniAPI.GetIniKeys(section, iniPath).Count();
+
+            // A null key name tells WritePrivateProfileString to take the whole section, entries included.
+            IniAPI.WriteIni(section, null, null, iniPath);
+
+            return count;
         }
 
         private static int MoveKey(string oldSection, string oldKey, string newSection, string newKey, string iniPath)

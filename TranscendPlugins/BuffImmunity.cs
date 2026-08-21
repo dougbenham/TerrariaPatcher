@@ -22,7 +22,7 @@ namespace TranscendPlugins
         {
             foreach (var type in Buffs.Value)
             {
-                for (int j = 0; j < 22; j++)
+                for (int j = player.buffType.Length - 1; j >= 0; j--)
                 {
                     if (player.buffType[j] == type)
                         player.DelBuff(j);

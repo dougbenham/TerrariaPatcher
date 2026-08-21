@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.label10 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
@@ -35,8 +36,8 @@
             this.timeEnabled = new System.Windows.Forms.CheckBox();
             this.steamFixEnabled = new System.Windows.Forms.CheckBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.alwaysAllowRespawnSkip = new System.Windows.Forms.CheckBox();
             this.functionalSocialSlots = new System.Windows.Forms.CheckBox();
+            this.unlockAllAccessorySlots = new System.Windows.Forms.CheckBox();
             this.plugins = new System.Windows.Forms.CheckBox();
             this.maxCraftingRange = new System.Windows.Forms.CheckBox();
             this.infiniteCloudJumps = new System.Windows.Forms.CheckBox();
@@ -48,6 +49,7 @@
             this.removeManaCosts = new System.Windows.Forms.CheckBox();
             this.removePotionSickness = new System.Windows.Forms.CheckBox();
             this.removeRodBuffEnabled = new System.Windows.Forms.CheckBox();
+            this.alwaysAllowRespawnSkip = new System.Windows.Forms.CheckBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.allIn = new System.Windows.Forms.Button();
             this.filterBuffsIn = new System.Windows.Forms.TextBox();
@@ -74,6 +76,7 @@
             this.linkLabel = new System.Windows.Forms.LinkLabel();
             this.groupBox7 = new System.Windows.Forms.GroupBox();
             this.treasureBagsDropAll = new System.Windows.Forms.CheckBox();
+            this.toolTip = new System.Windows.Forms.ToolTip(this.components);
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.spawnRateVoodoo)).BeginInit();
             this.groupBox2.SuspendLayout();
@@ -127,6 +130,7 @@
             this.spawnRateVoodoo.Name = "spawnRateVoodoo";
             this.spawnRateVoodoo.Size = new System.Drawing.Size(63, 20);
             this.spawnRateVoodoo.TabIndex = 4;
+            this.toolTip.SetToolTip(this.spawnRateVoodoo, "How often a Demon in the Underworld spawns as a Voodoo Demon instead.");
             this.spawnRateVoodoo.Value = new decimal(new int[] {
             15,
             0,
@@ -141,9 +145,10 @@
             this.timeEnabled.CheckState = System.Windows.Forms.CheckState.Checked;
             this.timeEnabled.Location = new System.Drawing.Point(6, 19);
             this.timeEnabled.Name = "timeEnabled";
-            this.timeEnabled.Size = new System.Drawing.Size(86, 17);
+            this.timeEnabled.Size = new System.Drawing.Size(122, 17);
             this.timeEnabled.TabIndex = 2;
-            this.timeEnabled.Text = "Display Time";
+            this.timeEnabled.Text = "Always Display Time";
+            this.toolTip.SetToolTip(this.timeEnabled, "Shows the in-game clock without a watch equipped.");
             this.timeEnabled.UseVisualStyleBackColor = true;
             this.timeEnabled.CheckedChanged += new System.EventHandler(this.config_Changed);
             // 
@@ -152,17 +157,19 @@
             this.steamFixEnabled.AutoSize = true;
             this.steamFixEnabled.Checked = true;
             this.steamFixEnabled.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.steamFixEnabled.Location = new System.Drawing.Point(6, 316);
+            this.steamFixEnabled.Location = new System.Drawing.Point(6, 339);
             this.steamFixEnabled.Name = "steamFixEnabled";
             this.steamFixEnabled.Size = new System.Drawing.Size(72, 17);
             this.steamFixEnabled.TabIndex = 4;
             this.steamFixEnabled.Text = "Steam Fix";
+            this.toolTip.SetToolTip(this.steamFixEnabled, "Stops the game loading Steam, so a copy running outside it still starts.");
             this.steamFixEnabled.UseVisualStyleBackColor = true;
             this.steamFixEnabled.CheckedChanged += new System.EventHandler(this.config_Changed);
             // 
             // groupBox2
             // 
             this.groupBox2.Controls.Add(this.functionalSocialSlots);
+            this.groupBox2.Controls.Add(this.unlockAllAccessorySlots);
             this.groupBox2.Controls.Add(this.plugins);
             this.groupBox2.Controls.Add(this.maxCraftingRange);
             this.groupBox2.Controls.Add(this.infiniteCloudJumps);
@@ -179,23 +186,10 @@
             this.groupBox2.Controls.Add(this.alwaysAllowRespawnSkip);
             this.groupBox2.Location = new System.Drawing.Point(12, 63);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(308, 361);
+            this.groupBox2.Size = new System.Drawing.Size(308, 384);
             this.groupBox2.TabIndex = 5;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "General:";
-            // 
-            // alwaysAllowRespawnSkip
-            // 
-            this.alwaysAllowRespawnSkip.AutoSize = true;
-            this.alwaysAllowRespawnSkip.Checked = true;
-            this.alwaysAllowRespawnSkip.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.alwaysAllowRespawnSkip.Location = new System.Drawing.Point(6, 293);
-            this.alwaysAllowRespawnSkip.Name = "alwaysAllowRespawnSkip";
-            this.alwaysAllowRespawnSkip.Size = new System.Drawing.Size(159, 17);
-            this.alwaysAllowRespawnSkip.TabIndex = 34;
-            this.alwaysAllowRespawnSkip.Text = "Always Allow Respawn Skip";
-            this.alwaysAllowRespawnSkip.UseVisualStyleBackColor = true;
-            this.alwaysAllowRespawnSkip.CheckedChanged += new System.EventHandler(this.config_Changed);
             // 
             // functionalSocialSlots
             // 
@@ -207,19 +201,35 @@
             this.functionalSocialSlots.Size = new System.Drawing.Size(133, 17);
             this.functionalSocialSlots.TabIndex = 33;
             this.functionalSocialSlots.Text = "Functional Social Slots";
+            this.toolTip.SetToolTip(this.functionalSocialSlots, "Items worn in the social slots give their effects as well as their look. Set bonuses still come only from the armor slots.");
             this.functionalSocialSlots.UseVisualStyleBackColor = true;
             this.functionalSocialSlots.CheckedChanged += new System.EventHandler(this.config_Changed);
+            // 
+            // unlockAllAccessorySlots
+            // 
+            this.unlockAllAccessorySlots.AutoSize = true;
+            this.unlockAllAccessorySlots.Checked = true;
+            this.unlockAllAccessorySlots.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.unlockAllAccessorySlots.Location = new System.Drawing.Point(6, 270);
+            this.unlockAllAccessorySlots.Name = "unlockAllAccessorySlots";
+            this.unlockAllAccessorySlots.Size = new System.Drawing.Size(152, 17);
+            this.unlockAllAccessorySlots.TabIndex = 35;
+            this.unlockAllAccessorySlots.Text = "Unlock All Accessory Slots";
+            this.toolTip.SetToolTip(this.unlockAllAccessorySlots, "Makes every accessory slot usable, rather than the Demon Heart slot needing Expert and the seventh slot needing Master.");
+            this.unlockAllAccessorySlots.UseVisualStyleBackColor = true;
+            this.unlockAllAccessorySlots.CheckedChanged += new System.EventHandler(this.config_Changed);
             // 
             // plugins
             // 
             this.plugins.AutoSize = true;
             this.plugins.Checked = true;
             this.plugins.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.plugins.Location = new System.Drawing.Point(6, 339);
+            this.plugins.Location = new System.Drawing.Point(6, 362);
             this.plugins.Name = "plugins";
             this.plugins.Size = new System.Drawing.Size(215, 17);
             this.plugins.TabIndex = 32;
             this.plugins.Text = "Plugin support (loads from \\Plugins\\*.cs)";
+            this.toolTip.SetToolTip(this.plugins, "Adds the plugin loader, which compiles and runs the .cs files in Terraria's Plugins folder.");
             this.plugins.UseVisualStyleBackColor = true;
             this.plugins.CheckedChanged += new System.EventHandler(this.config_Changed);
             // 
@@ -228,11 +238,12 @@
             this.maxCraftingRange.AutoSize = true;
             this.maxCraftingRange.Checked = true;
             this.maxCraftingRange.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.maxCraftingRange.Location = new System.Drawing.Point(6, 270);
+            this.maxCraftingRange.Location = new System.Drawing.Point(6, 293);
             this.maxCraftingRange.Name = "maxCraftingRange";
             this.maxCraftingRange.Size = new System.Drawing.Size(120, 17);
             this.maxCraftingRange.TabIndex = 30;
             this.maxCraftingRange.Text = "Max Crafting Range";
+            this.toolTip.SetToolTip(this.maxCraftingRange, "Lifts the 20 tile cap on how far a crafting station or chest can be and still count as nearby, leaving your block reach to decide it.");
             this.maxCraftingRange.UseVisualStyleBackColor = true;
             this.maxCraftingRange.CheckedChanged += new System.EventHandler(this.config_Changed);
             // 
@@ -244,6 +255,7 @@
             this.infiniteCloudJumps.Size = new System.Drawing.Size(120, 17);
             this.infiniteCloudJumps.TabIndex = 24;
             this.infiniteCloudJumps.Text = "Infinite Cloud Jumps";
+            this.toolTip.SetToolTip(this.infiniteCloudJumps, "Bottle and mount jumps recharge the moment they are used, so your extra jumps never run out.");
             this.infiniteCloudJumps.UseVisualStyleBackColor = true;
             this.infiniteCloudJumps.CheckedChanged += new System.EventHandler(this.wings_CheckedChanged);
             // 
@@ -258,6 +270,7 @@
             this.infiniteAmmo.Size = new System.Drawing.Size(147, 17);
             this.infiniteAmmo.TabIndex = 20;
             this.infiniteAmmo.Text = "Infinite Ammo (by Ryan S)";
+            this.toolTip.SetToolTip(this.infiniteAmmo, "Firing never consumes ammunition.");
             this.infiniteAmmo.UseVisualStyleBackColor = true;
             this.infiniteAmmo.CheckedChanged += new System.EventHandler(this.config_Changed);
             // 
@@ -269,6 +282,7 @@
             this.oneHitKill.Size = new System.Drawing.Size(78, 17);
             this.oneHitKill.TabIndex = 18;
             this.oneHitKill.Text = "One Hit Kill";
+            this.toolTip.SetToolTip(this.oneHitKill, "Damage you inflict takes an enemy\'s remaining health.");
             this.oneHitKill.UseVisualStyleBackColor = true;
             this.oneHitKill.CheckedChanged += new System.EventHandler(this.config_Changed);
             // 
@@ -282,6 +296,7 @@
             this.removeDrowning.Size = new System.Drawing.Size(114, 17);
             this.removeDrowning.TabIndex = 16;
             this.removeDrowning.Text = "Remove Drowning";
+            this.toolTip.SetToolTip(this.removeDrowning, "Your breath never runs out, so you can stay underwater indefinitely.");
             this.removeDrowning.UseVisualStyleBackColor = true;
             this.removeDrowning.CheckedChanged += new System.EventHandler(this.config_Changed);
             // 
@@ -293,6 +308,7 @@
             this.removeAnglerQuestLimit.Size = new System.Drawing.Size(195, 17);
             this.removeAnglerQuestLimit.TabIndex = 15;
             this.removeAnglerQuestLimit.Text = "Remove Angler Quest Per Day Limit";
+            this.toolTip.SetToolTip(this.removeAnglerQuestLimit, "The Angler hands out a new quest as soon as you turn one in, rather than one a day.");
             this.removeAnglerQuestLimit.UseVisualStyleBackColor = true;
             this.removeAnglerQuestLimit.CheckedChanged += new System.EventHandler(this.removeAnglerQuestLimit_CheckedChanged);
             // 
@@ -306,6 +322,7 @@
             this.permanentWings.Size = new System.Drawing.Size(238, 17);
             this.permanentWings.TabIndex = 12;
             this.permanentWings.Text = "Permanent Stardust Wings + Infinite Up Time";
+            this.toolTip.SetToolTip(this.permanentWings, "Gives you Stardust Wings with unlimited flight time.");
             this.permanentWings.UseVisualStyleBackColor = true;
             this.permanentWings.CheckedChanged += new System.EventHandler(this.wings_CheckedChanged);
             // 
@@ -319,6 +336,7 @@
             this.removeManaCosts.Size = new System.Drawing.Size(125, 17);
             this.removeManaCosts.TabIndex = 11;
             this.removeManaCosts.Text = "Remove Mana Costs";
+            this.toolTip.SetToolTip(this.removeManaCosts, "Magic weapons, and everything else that spends mana, cost nothing to use.");
             this.removeManaCosts.UseVisualStyleBackColor = true;
             this.removeManaCosts.CheckedChanged += new System.EventHandler(this.config_Changed);
             // 
@@ -332,6 +350,7 @@
             this.removePotionSickness.Size = new System.Drawing.Size(180, 17);
             this.removePotionSickness.TabIndex = 10;
             this.removePotionSickness.Text = "Remove Potion Sickness Debuff";
+            this.toolTip.SetToolTip(this.removePotionSickness, "Healing and mana potions no longer inflict Potion Sickness or Mana Sickness, and have no delay between uses.");
             this.removePotionSickness.UseVisualStyleBackColor = true;
             this.removePotionSickness.CheckedChanged += new System.EventHandler(this.config_Changed);
             // 
@@ -345,8 +364,23 @@
             this.removeRodBuffEnabled.Size = new System.Drawing.Size(175, 17);
             this.removeRodBuffEnabled.TabIndex = 5;
             this.removeRodBuffEnabled.Text = "Remove Rod of Discord Debuff";
+            this.toolTip.SetToolTip(this.removeRodBuffEnabled, "Rod of Discord teleports no longer inflict Chaos State, and are no longer blocked by solid ground.");
             this.removeRodBuffEnabled.UseVisualStyleBackColor = true;
             this.removeRodBuffEnabled.CheckedChanged += new System.EventHandler(this.config_Changed);
+            // 
+            // alwaysAllowRespawnSkip
+            // 
+            this.alwaysAllowRespawnSkip.AutoSize = true;
+            this.alwaysAllowRespawnSkip.Checked = true;
+            this.alwaysAllowRespawnSkip.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.alwaysAllowRespawnSkip.Location = new System.Drawing.Point(6, 316);
+            this.alwaysAllowRespawnSkip.Name = "alwaysAllowRespawnSkip";
+            this.alwaysAllowRespawnSkip.Size = new System.Drawing.Size(159, 17);
+            this.alwaysAllowRespawnSkip.TabIndex = 34;
+            this.alwaysAllowRespawnSkip.Text = "Always Allow Respawn Skip";
+            this.toolTip.SetToolTip(this.alwaysAllowRespawnSkip, "Lets you skip the respawn timer whenever you die, rather than only when nothing dangerous is nearby.");
+            this.alwaysAllowRespawnSkip.UseVisualStyleBackColor = true;
+            this.alwaysAllowRespawnSkip.CheckedChanged += new System.EventHandler(this.config_Changed);
             // 
             // groupBox3
             // 
@@ -362,7 +396,7 @@
             this.groupBox3.Controls.Add(this.moveIn);
             this.groupBox3.Location = new System.Drawing.Point(326, 12);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(308, 412);
+            this.groupBox3.Size = new System.Drawing.Size(308, 435);
             this.groupBox3.TabIndex = 6;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Persistent Buffs:";
@@ -444,6 +478,7 @@
             this.buffsIn.Name = "buffsIn";
             this.buffsIn.Size = new System.Drawing.Size(130, 342);
             this.buffsIn.TabIndex = 1;
+            this.toolTip.SetToolTip(this.buffsIn, "The buffs held permanently active, reapplied every frame while you are in a world.");
             this.buffsIn.SelectedIndexChanged += new System.EventHandler(this.buffs_Update);
             // 
             // buffsOut
@@ -454,6 +489,7 @@
             this.buffsOut.Name = "buffsOut";
             this.buffsOut.Size = new System.Drawing.Size(130, 342);
             this.buffsOut.TabIndex = 0;
+            this.toolTip.SetToolTip(this.buffsOut, "Every buff the game has. Move the ones you want held permanently over to the right.");
             this.buffsOut.SelectedIndexChanged += new System.EventHandler(this.buffs_Update);
             // 
             // moveIn
@@ -471,7 +507,7 @@
             // save
             // 
             this.save.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.save.Location = new System.Drawing.Point(747, 401);
+            this.save.Location = new System.Drawing.Point(747, 419);
             this.save.Name = "save";
             this.save.Size = new System.Drawing.Size(83, 23);
             this.save.TabIndex = 0;
@@ -482,11 +518,12 @@
             // syncPlugins
             // 
             this.syncPlugins.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.syncPlugins.Location = new System.Drawing.Point(836, 401);
+            this.syncPlugins.Location = new System.Drawing.Point(836, 419);
             this.syncPlugins.Name = "syncPlugins";
             this.syncPlugins.Size = new System.Drawing.Size(112, 23);
             this.syncPlugins.TabIndex = 29;
             this.syncPlugins.Text = "Sync Plugins Only";
+            this.toolTip.SetToolTip(this.syncPlugins, "Copies the plugin loader and your chosen plugins into Terraria's folder, without patching the game again.");
             this.syncPlugins.UseVisualStyleBackColor = true;
             this.syncPlugins.Click += new System.EventHandler(this.syncPlugins_Click);
             // 
@@ -542,6 +579,7 @@
             this.vampiricKnivesHealingRate.Name = "vampiricKnivesHealingRate";
             this.vampiricKnivesHealingRate.Size = new System.Drawing.Size(63, 20);
             this.vampiricKnivesHealingRate.TabIndex = 24;
+            this.toolTip.SetToolTip(this.vampiricKnivesHealingRate, "How much of the damage Vampire Knives deal comes back to you as health.");
             this.vampiricKnivesHealingRate.Value = new decimal(new int[] {
             75,
             0,
@@ -592,6 +630,7 @@
             this.spectreHealingRate.Name = "spectreHealingRate";
             this.spectreHealingRate.Size = new System.Drawing.Size(63, 20);
             this.spectreHealingRate.TabIndex = 27;
+            this.toolTip.SetToolTip(this.spectreHealingRate, "How much of the magic damage dealt while wearing the Spectre Hood comes back as health.");
             this.spectreHealingRate.Value = new decimal(new int[] {
             20,
             0,
@@ -603,7 +642,7 @@
             // 
             this.linkLabel.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.linkLabel.AutoSize = true;
-            this.linkLabel.Location = new System.Drawing.Point(689, 385);
+            this.linkLabel.Location = new System.Drawing.Point(689, 403);
             this.linkLabel.Name = "linkLabel";
             this.linkLabel.Size = new System.Drawing.Size(259, 13);
             this.linkLabel.TabIndex = 28;
@@ -629,14 +668,21 @@
             this.treasureBagsDropAll.Size = new System.Drawing.Size(216, 17);
             this.treasureBagsDropAll.TabIndex = 0;
             this.treasureBagsDropAll.Text = "Treasure Bags always drop full loot table";
+            this.toolTip.SetToolTip(this.treasureBagsDropAll, "Opening a boss Treasure Bag gives every item on its loot table instead of a random pick, removing the need to grind a boss.");
             this.treasureBagsDropAll.UseVisualStyleBackColor = true;
             this.treasureBagsDropAll.CheckedChanged += new System.EventHandler(this.config_Changed);
+            // 
+            // toolTip
+            // 
+            this.toolTip.AutoPopDelay = 20000;
+            this.toolTip.InitialDelay = 500;
+            this.toolTip.ReshowDelay = 100;
             // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(956, 432);
+            this.ClientSize = new System.Drawing.Size(956, 455);
             this.Controls.Add(this.groupBox7);
             this.Controls.Add(this.linkLabel);
             this.Controls.Add(this.save);
@@ -714,9 +760,11 @@
         private System.Windows.Forms.TextBox filterBuffsIn;
         private System.Windows.Forms.TextBox filterBuffsOut;
         private System.Windows.Forms.CheckBox functionalSocialSlots;
+        private System.Windows.Forms.CheckBox unlockAllAccessorySlots;
         private System.Windows.Forms.Button allIn;
         private System.Windows.Forms.GroupBox groupBox7;
         private System.Windows.Forms.CheckBox treasureBagsDropAll;
+        private System.Windows.Forms.ToolTip toolTip;
     }
 }
 
