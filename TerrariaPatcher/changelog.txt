@@ -1,9 +1,46 @@
-﻿v1.4.0.0:	Replaced the Respawn plugin with an "Always Allow Respawn Skip" patch: the game's own jump-to-respawn prompt, offered even when there is danger nearby.
-		Settings window: arrow keys move between plugins, and a Hot Reload button rebuilds a plugin from its source.
+﻿v1.4.0.0:	Updated for Terraria v1.4.5.7.
 		Added SettingsMenu plugin: an in game window on ~, or /menu, for every plugin's settings and hotkeys.
 		Plugins can now be switched on and off, in that window or with /plugins enable|disable.
-		Settings can be put back to their defaults, one at a time or a whole plugin at once.
-		Settings holding a list of tiles or buffs are now ticked off a searchable list.
+		Settings holding a list of tiles, buffs or items are configurable with a searchable list.
+		Settings window: arrow keys move between plugins, and a Hot Reload button rebuilds a plugin from its source.
+		Hotkeys that clash with another plugin's are now flagged in the settings window.
+		Most plugins gained a hotkey to switch them on and off, unbound by default.
+		Editing Plugins.ini while the game is running now takes effect right away.
+		Every plugin's settings now live under the plugin's own name in Plugins.ini, and your existing settings are migrated over for you.
+		A plugin that fails to build or throws an error is now switched off on its own instead of taking the others down with it, with the details written to a log.
+		Every plugin now carries a description, shown while picking plugins in the patcher, including whether it works in multiplayer.
+		Plugins that can only work in single player now say so in chat instead of quietly doing nothing.
+		Every option in the patcher window now has a tooltip explaining what it does.
+		Added a "Sync Plugins Only" button to copy plugins over without patching the game again.
+		Added "Unlock All Accessory Slots" patch, replacing the MoreAccessorySlots plugin: every accessory slot is usable without Expert or Master mode.
+		Replaced the Respawn plugin with an "Always Allow Respawn Skip" patch: the game's own jump-to-respawn prompt, offered even when there is danger nearby.
+		Added the buffs missing from the persistent buffs list and corrected several buff names.
+		Fixed "Functional Social Slots" (items worn in the social slots give their effects again).
+		Fixed "One Hit Kill".
+		Fixed "Remove Mana Costs" for Forbidden Storm, Nimbus Rod, Medusa Head, Life Drain and the Forbidden armor set.
+		The patcher now points out files left beside Terraria by older versions that should be deleted (ReLogic.dll, Newtonsoft.Json.dll).
+		Now built against .NET Framework 4.8.1.
+		Added VeinMiner plugin: mining one block of an ore or gem vein mines the rest of it.
+		Added PermaBuffs plugin (credit to @Doombubbles): carrying a big enough stack of a buff potion keeps its buff permanently active.
+		Added PermaAmmo plugin (credit to @Doombubbles): a full stack of ammo never runs out.
+		Added HelpfulHotkeys plugin (credit to @Doombubbles): auto recall, quick buff from favourited items only, quick use of any inventory slot, swapping armor and accessories with vanity or the inventory, swapping the hotbar, cycling ammo, quick stacking to nearby chests, and toggling the ruler, autopause and frame skip.
+		Added MinionLocalIFrames plugin (credit to @Doombubbles): swarms of Baby Slimes, Mini Spiders, Bees and the like all land their hits instead of taking turns.
+		Added WhipBuffStacking plugin (credit to @Doombubbles): keep up to five whip tag effects going at once without needing the accessories that normally allow it.
+		Added DartUnNerfs plugin (credit to @Doombubbles): undoes the 1.4.5 Crystal, Ichor and Cursed dart nerfs.
+		Added DryadSeeds plugin (credit to @Doombubbles): the Dryad sells the seeds for every herb, whether it is in bloom or not.
+		Added SandgunTidy plugin (credit to @Doombubbles): Sandgun shots no longer turn into sand blocks where they land.
+		Added TrashRemovesPrefix plugin (credit to @Doombubbles): trashing an item strips its prefix, so drops stack together in chests.
+		Added LegendaryYoyos plugin (credit to @Doombubbles): every yoyo can roll the Legendary prefix, not just the Terrarian.
+		Added GunsMinimumKnockback plugin (credit to @Doombubbles): guns can roll the prefixes that need knockback, such as Unreal.
+		Added multiplayer support to the Events, Teleport, Weather, ItemReplication, CreativeCrafting, ShopSellsScalingPotions, ItemPrefix and JourneyEverywhere plugins.
+		Fixed GodMode to protect only you instead of everyone on the server.
+		Added '/item search' and '/npc search' to look up an item or NPC id by name, and both commands now take names as well as ids.
+		Changed UseTime's bonus block reach and item pickup range to add to what the game already gives you, so Journey mode range and reach accessories still count.
+		Changed the Teleport plugin's Plantera Bulb and Strange Plant search to spread over several frames, so the game no longer stutters while it looks.
+		Changed EnhancedCellPhone to cycle its destinations by clicking the icon beside the phone.
+		Removed the LoadoutSwap plugin; swapping armor and accessories with vanity is now a HelpfulHotkeys hotkey.
+		Removed the /season command; the Season plugin is set from the settings window.
+		Fixed SavePosition and ItemConfig for languages that use commas in their decimals.
 v1.3.0.10:	Fixed SavePosition plugin.
 v1.3.0.9:	Fixed JourneyEverywhere plugin.
 v1.3.0.8:	Added CreativeCrafting, SlashCommandPrivacy plugins (credit to @louanfontenele).

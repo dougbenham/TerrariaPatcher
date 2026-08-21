@@ -1222,7 +1222,7 @@ namespace PluginLoader
             if (args.Length == 0)
             {
                 Say("Usage: /plugins " + (enable ? "enable" : "disable") + " [PluginName]");
-                Say((enable ? "Switched off" : "Switched on") + ": " + string.Join(", ", GetPlugins()
+                Say((enable ? "Currently switched off" : "Currently switched on") + ": " + string.Join(", ", GetPlugins()
                     .Where(candidate => candidate.Enabled != enable)
                     .Select(candidate => candidate.Name)
                     .OrderBy(pluginName => pluginName)
