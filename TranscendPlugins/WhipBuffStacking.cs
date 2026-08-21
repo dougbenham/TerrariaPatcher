@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Microsoft.Xna.Framework.Input;
 using PluginLoader;
 using Terraria;
 using Terraria.ID;
@@ -20,6 +21,9 @@ namespace DoombubblesPlugins
         };
 
         private static readonly Dictionary<int, int> CurrentBuffs = new Dictionary<int, int>();
+
+        public WhipBuffStacking() : base(toggleKey: Keys.None)
+        { }
 
         public void OnPlayerPreUpdate(Player player)
         {

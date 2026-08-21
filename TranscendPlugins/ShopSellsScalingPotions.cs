@@ -1,3 +1,4 @@
+using Microsoft.Xna.Framework.Input;
 using PluginLoader;
 using Terraria;
 using Terraria.ID;
@@ -8,6 +9,9 @@ namespace EraselsPlugins
                        "as your maximum life and mana grow. Works in multiplayer, where only your own shop is upgraded.")]
     public class ShopSellsScalingPotions : PluginBase, IPluginChestSetupShop
     {
+        public ShopSellsScalingPotions() : base(toggleKey: Keys.None)
+        { }
+
         public void OnChestSetupShop(Chest chest, int type)
         {
             if (type != 1) return;

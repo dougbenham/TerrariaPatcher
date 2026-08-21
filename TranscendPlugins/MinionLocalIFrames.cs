@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Microsoft.Xna.Framework.Input;
 using PluginLoader;
 using Terraria;
 using Terraria.ID;
@@ -31,6 +32,9 @@ namespace DoombubblesPlugins
             ProjectileID.SporeTrap,
             ProjectileID.SporeTrap2,
         };
+
+        public MinionLocalIFrames() : base(toggleKey: Keys.None)
+        { }
 
         public void OnProjectileSetDefaults(Projectile projectile)
         {

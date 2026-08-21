@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Microsoft.Xna.Framework.Input;
 using PluginLoader;
 using Terraria;
 using Terraria.ID;
@@ -14,6 +15,9 @@ namespace DoombubblesPlugins
             ProjectileID.SandBallGun, ProjectileID.EbonsandBallGun, 
             ProjectileID.PearlSandBallGun, ProjectileID.CrimsandBallGun
         };
+
+        public SandgunTidy() : base(toggleKey: Keys.None)
+        { }
 
         public void OnProjectileSetDefaults(Projectile projectile)
         {

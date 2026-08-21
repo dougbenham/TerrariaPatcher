@@ -1,3 +1,4 @@
+using Microsoft.Xna.Framework.Input;
 using PluginLoader;
 using Terraria;
 using Terraria.ID;
@@ -20,6 +21,9 @@ namespace DoombubblesPlugins
         };
 
         private bool alreadyHappenedThisFrame;
+
+        public DryadSeeds() : base(toggleKey: Keys.None)
+        { }
 
         public void OnUpdate()
         {

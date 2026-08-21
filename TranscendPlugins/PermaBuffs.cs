@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Xna.Framework.Input;
 using PluginLoader;
 using Terraria;
 using Terraria.ID;
@@ -60,7 +61,7 @@ namespace DoombubblesPlugins
         /// </summary>
         private static HashSet<int> allowedStationBuffs;
 
-        public PermaBuffs()
+        public PermaBuffs() : base(toggleKey: Keys.None)
         {
             StationBuffs.Changed += RebuildAllowedStationBuffs;
             RebuildAllowedStationBuffs();

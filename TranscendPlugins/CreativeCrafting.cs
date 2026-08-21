@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.Xna.Framework.Input;
 using PluginLoader;
 using Terraria;
 
@@ -28,7 +29,7 @@ namespace TranscendPlugins
         private bool recipesOverridden;
 
         public CreativeCrafting()
-            : base(enabledByDefault: false)
+            : base(enabledByDefault: false, toggleKey: Keys.None)
         {
             EnabledChanged += OnEnabledChanged;
         }

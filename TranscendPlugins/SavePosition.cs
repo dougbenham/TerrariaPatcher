@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 using Terraria;
 using PluginLoader;
 using Terraria.IO;
@@ -14,6 +15,9 @@ namespace TranscendPlugins
         private const string Section = "SavePosition";
 
         private bool justLoadedIn = false;
+
+        public SavePosition() : base(toggleKey: Keys.None)
+        { }
 
         public void OnPlayerSave(PlayerFileData playerFileData, Player player, BinaryWriter binaryWriter)
         {

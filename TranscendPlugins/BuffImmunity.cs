@@ -1,4 +1,5 @@
-﻿using PluginLoader;
+﻿using Microsoft.Xna.Framework.Input;
+using PluginLoader;
 using Terraria;
 using Terraria.ID;
 
@@ -14,6 +15,9 @@ namespace TranscendPlugins
             BuffID.PotionSickness, BuffID.ManaSickness, BuffID.Blackout, BuffID.Darkness, BuffID.Webbed
         };
 		
+        public BuffImmunity() : base(toggleKey: Keys.None)
+        { }
+
         public void OnPlayerUpdateBuffs(Player player)
         {
             foreach (var type in Buffs.Value)

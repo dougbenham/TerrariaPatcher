@@ -1,4 +1,5 @@
 using System.Linq;
+using Microsoft.Xna.Framework.Input;
 using PluginLoader;
 using Terraria;
 
@@ -11,6 +12,9 @@ namespace DoombubblesPlugins
     {
         private static readonly Setting<int> RequiredCount = 9999;
         private static readonly Setting<int> ThrownRequiredCount = 999;
+
+        public PermaAmmo() : base(toggleKey: Keys.None)
+        { }
 
         public void OnPlayerPickAmmo(Player player, Item weapon, ref int shoot, ref float speed, ref bool canShoot,
             ref int damage, ref float knockback, ref int usedAmmoItemId, bool dontConsume)

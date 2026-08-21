@@ -1,6 +1,7 @@
 ﻿using System;
 using PluginLoader;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 using Terraria;
 using Terraria.ID;
 
@@ -21,6 +22,9 @@ namespace BlahPlugins
         }
 
         private static readonly Setting<Modes> Mode = Modes.Home;
+
+        public EnhancedCellPhone() : base(toggleKey: Keys.None)
+        { }
 
         public void OnPlayerPreUpdate(Player player)
         {

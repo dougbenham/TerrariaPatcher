@@ -17,6 +17,7 @@ namespace TerrariaPatcher
         public bool RemoveDiscordBuff = false;
         public bool RemoveAnglerQuestLimit = false;
         public bool RemoveDrowning = false;
+        public bool AlwaysAllowRespawnSkip = false;
         public bool OneHitKill = false;
 		public bool InfiniteAmmo = false;
         public bool SteamFix = false;
@@ -85,6 +86,8 @@ namespace TerrariaPatcher
                     RemoveManaCost();
                 if (details.RemoveDrowning)
                     RemoveDrowning();
+                if (details.AlwaysAllowRespawnSkip)
+                    AlwaysAllowRespawnSkip();
                 if (details.DisplayTime)
                     DisplayTime();
                 if (details.OneHitKill)
@@ -278,6 +281,40 @@ namespace TerrariaPatcher
             checkDrowning.Body.ExceptionHandlers.Clear();
             checkDrowning.Body.Instructions.Clear();
             checkDrowning.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
+        }
+
+        /// <summary>
+        /// The game only offers the "press jump to respawn now" prompt while nothing dangerous is nearby: no invasion
+        /// or boss level threat, no PvP death, and none of the moon or Old One's Army events running. This rewrites the
+        /// check to allow the skip regardless, keeping only the two conditions that are not about danger - being a
+        /// ghost, where there is nothing to respawn from, and the short delay the prompt fades in over.
+        /// </summary>
+        private static void AlwaysAllowRespawnSkip()
+        {
+            var player = IL.GetTypeDefinition(_mainModule, "Player");
+            var allowsRespawnTimerSkip = IL.GetMethodDefinition(player, "AllowsRespawnTimerSkip");
+            var ghost = IL.GetFieldDefinition(player, "ghost");
+            var deadTime = IL.GetFieldDefinition(player, "deadTime");
+            var deadSkipLockoutTime = IL.GetFieldDefinition(player, "DeadSkipLockoutTime");
+
+            allowsRespawnTimerSkip.Body.ExceptionHandlers.Clear();
+            allowsRespawnTimerSkip.Body.Variables.Clear();
+            allowsRespawnTimerSkip.Body.Instructions.Clear();
+
+            var denied = Instruction.Create(OpCodes.Ldc_I4_0);
+            var il = allowsRespawnTimerSkip.Body.GetILProcessor();
+
+            il.Append(Instruction.Create(OpCodes.Ldarg_0));
+            il.Append(Instruction.Create(OpCodes.Ldfld, ghost));
+            il.Append(Instruction.Create(OpCodes.Brtrue, denied));
+            il.Append(Instruction.Create(OpCodes.Ldarg_0));
+            il.Append(Instruction.Create(OpCodes.Ldfld, deadTime));
+            il.Append(Instruction.Create(OpCodes.Ldsfld, deadSkipLockoutTime));
+            il.Append(Instruction.Create(OpCodes.Blt, denied));
+            il.Append(Instruction.Create(OpCodes.Ldc_I4_1));
+            il.Append(Instruction.Create(OpCodes.Ret));
+            il.Append(denied);
+            il.Append(Instruction.Create(OpCodes.Ret));
         }
 
         private static void RemoveAnglerQuestLimit()

@@ -1,3 +1,4 @@
+using Microsoft.Xna.Framework.Input;
 using PluginLoader;
 using Terraria;
 
@@ -10,6 +11,9 @@ namespace TranscendPlugins
     {
         private static readonly Setting<bool> Xmas = false;
         private static readonly Setting<bool> Halloween = false;
+
+        public Season() : base(toggleKey: Keys.None)
+        { }
 
         public bool OnCheckXmas()
         {

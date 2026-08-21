@@ -1,4 +1,5 @@
-﻿using PluginLoader;
+﻿using Microsoft.Xna.Framework.Input;
+using PluginLoader;
 using Terraria;
 using Terraria.ID;
 using Terraria.Utilities;
@@ -19,6 +20,9 @@ namespace TranscendPlugins
 
         private bool keepStats;
 		
+        public ItemPrefix() : base(toggleKey: Keys.None)
+        { }
+
         private bool Correct(Item item, ref int rolledPrefix)
         {
 	        float num = 1f;

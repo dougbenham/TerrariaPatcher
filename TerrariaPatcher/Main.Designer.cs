@@ -28,7 +28,6 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Main));
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.label10 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
@@ -36,6 +35,7 @@
             this.timeEnabled = new System.Windows.Forms.CheckBox();
             this.steamFixEnabled = new System.Windows.Forms.CheckBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.alwaysAllowRespawnSkip = new System.Windows.Forms.CheckBox();
             this.functionalSocialSlots = new System.Windows.Forms.CheckBox();
             this.plugins = new System.Windows.Forms.CheckBox();
             this.maxCraftingRange = new System.Windows.Forms.CheckBox();
@@ -152,7 +152,7 @@
             this.steamFixEnabled.AutoSize = true;
             this.steamFixEnabled.Checked = true;
             this.steamFixEnabled.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.steamFixEnabled.Location = new System.Drawing.Point(6, 293);
+            this.steamFixEnabled.Location = new System.Drawing.Point(6, 316);
             this.steamFixEnabled.Name = "steamFixEnabled";
             this.steamFixEnabled.Size = new System.Drawing.Size(72, 17);
             this.steamFixEnabled.TabIndex = 4;
@@ -176,12 +176,26 @@
             this.groupBox2.Controls.Add(this.removeRodBuffEnabled);
             this.groupBox2.Controls.Add(this.timeEnabled);
             this.groupBox2.Controls.Add(this.steamFixEnabled);
+            this.groupBox2.Controls.Add(this.alwaysAllowRespawnSkip);
             this.groupBox2.Location = new System.Drawing.Point(12, 63);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(308, 361);
             this.groupBox2.TabIndex = 5;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "General:";
+            // 
+            // alwaysAllowRespawnSkip
+            // 
+            this.alwaysAllowRespawnSkip.AutoSize = true;
+            this.alwaysAllowRespawnSkip.Checked = true;
+            this.alwaysAllowRespawnSkip.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.alwaysAllowRespawnSkip.Location = new System.Drawing.Point(6, 293);
+            this.alwaysAllowRespawnSkip.Name = "alwaysAllowRespawnSkip";
+            this.alwaysAllowRespawnSkip.Size = new System.Drawing.Size(159, 17);
+            this.alwaysAllowRespawnSkip.TabIndex = 34;
+            this.alwaysAllowRespawnSkip.Text = "Always Allow Respawn Skip";
+            this.alwaysAllowRespawnSkip.UseVisualStyleBackColor = true;
+            this.alwaysAllowRespawnSkip.CheckedChanged += new System.EventHandler(this.config_Changed);
             // 
             // functionalSocialSlots
             // 
@@ -201,7 +215,7 @@
             this.plugins.AutoSize = true;
             this.plugins.Checked = true;
             this.plugins.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.plugins.Location = new System.Drawing.Point(6, 316);
+            this.plugins.Location = new System.Drawing.Point(6, 339);
             this.plugins.Name = "plugins";
             this.plugins.Size = new System.Drawing.Size(215, 17);
             this.plugins.TabIndex = 32;
@@ -457,7 +471,7 @@
             // save
             // 
             this.save.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.save.Location = new System.Drawing.Point(747, 405);
+            this.save.Location = new System.Drawing.Point(747, 401);
             this.save.Name = "save";
             this.save.Size = new System.Drawing.Size(83, 23);
             this.save.TabIndex = 0;
@@ -468,7 +482,7 @@
             // syncPlugins
             // 
             this.syncPlugins.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.syncPlugins.Location = new System.Drawing.Point(836, 405);
+            this.syncPlugins.Location = new System.Drawing.Point(836, 401);
             this.syncPlugins.Name = "syncPlugins";
             this.syncPlugins.Size = new System.Drawing.Size(112, 23);
             this.syncPlugins.TabIndex = 29;
@@ -589,7 +603,7 @@
             // 
             this.linkLabel.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.linkLabel.AutoSize = true;
-            this.linkLabel.Location = new System.Drawing.Point(689, 389);
+            this.linkLabel.Location = new System.Drawing.Point(689, 385);
             this.linkLabel.Name = "linkLabel";
             this.linkLabel.Size = new System.Drawing.Size(259, 13);
             this.linkLabel.TabIndex = 28;
@@ -622,7 +636,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(956, 436);
+            this.ClientSize = new System.Drawing.Size(956, 432);
             this.Controls.Add(this.groupBox7);
             this.Controls.Add(this.linkLabel);
             this.Controls.Add(this.save);
@@ -686,6 +700,7 @@
         private System.Windows.Forms.CheckBox removeAnglerQuestLimit;
         private System.Windows.Forms.CheckBox oneHitKill;
         private System.Windows.Forms.CheckBox removeDrowning;
+        private System.Windows.Forms.CheckBox alwaysAllowRespawnSkip;
 		private System.Windows.Forms.CheckBox infiniteAmmo;
         private System.Windows.Forms.CheckBox infiniteCloudJumps;
         private System.Windows.Forms.NumericUpDown vampiricKnivesHealingRate;

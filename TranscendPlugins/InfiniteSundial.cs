@@ -1,4 +1,5 @@
-﻿using PluginLoader;
+﻿using Microsoft.Xna.Framework.Input;
+using PluginLoader;
 using Terraria;
 
 namespace TranscendPlugins
@@ -7,6 +8,9 @@ namespace TranscendPlugins
                        "day or night as often as you like. Single player only.")]
     public class InfiniteSundial : PluginBase, IPluginUpdate
     {
+        public InfiniteSundial() : base(toggleKey: Keys.None)
+        { }
+
         public void OnUpdate()
         {
             if (Main.netMode != 0) return;

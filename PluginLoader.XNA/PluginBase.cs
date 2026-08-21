@@ -56,7 +56,8 @@ namespace PluginLoader
 
         /// <summary>
         /// The hotkey that switches the plugin on and off, for a plugin that asked for one, and null for one that
-        /// did not.
+        /// did not. A plugin can ask for one and leave it unbound, so that the player has a ToggleKey to bind in
+        /// Plugins.ini or the settings window rather than a plugin that is only switched from the menu.
         /// </summary>
         public HotkeySetting ToggleKeySetting => toggleKey;
 
@@ -77,13 +78,17 @@ namespace PluginLoader
         /// <summary>
         /// Whether the plugin's hotkeys and chat commands still reach it while it is switched off. A plugin whose
         /// own hotkey or command is how it gets switched back on has to say so, or there would be no way back.
-        /// A plugin that asked for a toggle hotkey gets this for free.
+        /// A plugin whose toggle hotkey is bound to a key gets this for free; one whose toggle hotkey is left
+        /// unbound does not, because there is no key to switch it back on with until the player binds one.
         /// </summary>
-        public virtual bool RespondsWhileDisabled => toggleKey != null;
+        public virtual bool RespondsWhileDisabled => toggleKey != null && toggleKey.Value.Key != Keys.None;
 
         protected static Player Player => Main.LocalPlayer;
-		
-        /// <param name="toggleKey">The key that switches the plugin on and off.</param>
+
+        /// <param name="toggleKey">
+        /// The key that switches the plugin on and off, or <see cref="Keys.None"/> for a ToggleKey the player can
+        /// bind but that starts out unbound.
+        /// </param>
         protected PluginBase(Keys toggleKey)
             : this(true, new Hotkey { Key = toggleKey })
         { }
@@ -91,7 +96,10 @@ namespace PluginLoader
         /// <param name="enabledByDefault">
         /// Whether the plugin starts switched on, for one that does nothing until the player asks for it.
         /// </param>
-        /// <param name="toggleKey">The key that switches the plugin on and off.</param>
+        /// <param name="toggleKey">
+        /// The key that switches the plugin on and off, or <see cref="Keys.None"/> for a ToggleKey the player can
+        /// bind but that starts out unbound.
+        /// </param>
         protected PluginBase(bool enabledByDefault, Keys toggleKey)
             : this(enabledByDefault, new Hotkey { Key = toggleKey })
         { }
@@ -101,7 +109,8 @@ namespace PluginLoader
         /// </param>
         /// <param name="toggleKey">
         /// The binding that switches the plugin on and off, registered under the name ToggleKey so that the player
-        /// can rebind it, or null for a plugin that is only switched from the settings window.
+        /// can rebind it, or null for a plugin that is only switched from the settings window. A binding whose key
+        /// is <see cref="Keys.None"/> still registers the setting, giving the player something to bind.
         /// </param>
         protected PluginBase(bool enabledByDefault = true, Hotkey toggleKey = null)
         {

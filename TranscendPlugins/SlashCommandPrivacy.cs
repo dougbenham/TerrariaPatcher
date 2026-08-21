@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.Xna.Framework.Input;
 using PluginLoader;
 
 namespace TranscendPlugins
@@ -57,6 +58,9 @@ namespace TranscendPlugins
             "alletode",
             "allepvptode"
         };
+
+        public SlashCommandPrivacy() : base(toggleKey: Keys.None)
+        { }
 
         public bool OnChatCommand(string command, string[] args)
         {

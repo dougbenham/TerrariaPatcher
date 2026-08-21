@@ -1,3 +1,4 @@
+using Microsoft.Xna.Framework.Input;
 using PluginLoader;
 using Terraria;
 
@@ -9,6 +10,9 @@ namespace Ruffi123456789Plugins
     {
         private static readonly Setting<bool> Force = false;
         private static readonly Setting<int> Count = 2;
+
+        public MoreAccessorySlots() : base(toggleKey: Keys.None)
+        { }
 
         public void OnPlayerUpdateBuffs(Player player)
         {

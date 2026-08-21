@@ -211,6 +211,7 @@ namespace TerrariaPatcher
                 removeManaCosts.Checked = ReadBool("General", "RemoveManaCosts", true);
                 removeAnglerQuestLimit.Checked = ReadBool("General", "RemoveAnglerQuestLimit", false);
                 removeDrowning.Checked = ReadBool("General", "RemoveDrowning", true);
+                alwaysAllowRespawnSkip.Checked = ReadBool("General", "AlwaysAllowRespawnSkip", true);
                 oneHitKill.Checked = ReadBool("General", "OneHitKill", false);
                 infiniteAmmo.Checked = ReadBool("General", "InfiniteAmmo", true);
                 permanentWings.Checked = ReadBool("General", "PermanentWings", true);
@@ -253,6 +254,7 @@ namespace TerrariaPatcher
             IniAPI.WriteIni("General", "RemoveManaCosts", removeManaCosts.Checked.ToString(), ConfigPath);
             IniAPI.WriteIni("General", "RemoveAnglerQuestLimit", removeAnglerQuestLimit.Checked.ToString(), ConfigPath);
             IniAPI.WriteIni("General", "RemoveDrowning", removeDrowning.Checked.ToString(), ConfigPath);
+            IniAPI.WriteIni("General", "AlwaysAllowRespawnSkip", alwaysAllowRespawnSkip.Checked.ToString(), ConfigPath);
             IniAPI.WriteIni("General", "OneHitKill", oneHitKill.Checked.ToString(), ConfigPath);
             IniAPI.WriteIni("General", "InfiniteAmmo", infiniteAmmo.Checked.ToString(), ConfigPath);
             IniAPI.WriteIni("General", "PermanentWings", permanentWings.Checked.ToString(), ConfigPath);
@@ -445,6 +447,7 @@ namespace TerrariaPatcher
                     OneHitKill = oneHitKill.Checked,
 					InfiniteAmmo = infiniteAmmo.Checked,
                     RemoveDrowning = removeDrowning.Checked,
+                    AlwaysAllowRespawnSkip = alwaysAllowRespawnSkip.Checked,
                     RemoveDiscordBuff = removeRodBuffEnabled.Checked,
                     RemoveManaCost = removeManaCosts.Checked,
                     RemovePotionSickness = removePotionSickness.Checked,

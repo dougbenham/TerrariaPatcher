@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 using PluginLoader;
 using Terraria;
 using Terraria.DataStructures;
@@ -71,6 +72,9 @@ namespace TranscendPlugins
         private Point swungAt;
         private int swungAtType = -1;
         private int swungAtPickPower;
+
+        public VeinMiner() : base(toggleKey: Keys.None)
+        { }
 
         /// <summary>
         /// Runs for every swing that lands on a tile, including drills and the other tools that pick tiles through

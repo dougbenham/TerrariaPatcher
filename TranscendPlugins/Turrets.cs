@@ -1,3 +1,4 @@
+using Microsoft.Xna.Framework.Input;
 using PluginLoader;
 using Terraria;
 
@@ -8,6 +9,9 @@ namespace TranscendPlugins
     public class Turrets : PluginBase, IPluginPlayerUpdateArmorSets
     {
         private static readonly Setting<int> Bonus = 100;
+
+        public Turrets() : base(toggleKey: Keys.None)
+        { }
 
         public void OnPlayerUpdateArmorSets(Player player)
         {
