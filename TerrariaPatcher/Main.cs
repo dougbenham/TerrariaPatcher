@@ -18,11 +18,11 @@ namespace TerrariaPatcher
 {
     public partial class Main : Form
     {
-        private static string changelogURL = "https://raw.githubusercontent.com/dougbenham/TerrariaPatcher/master/changelog.txt";
+        private static string changelogURL = "https://raw.githubusercontent.com/SyntacticFlow/TerrariaPatcher/master/changelog.txt";
 #if PUBLIC
-        private static string updateURL = "https://github.com/dougbenham/TerrariaPatcher/raw/master/TerrariaPatcher.public.zip";
+        private static string updateURL = "https://github.com/SyntacticFlow/TerrariaPatcher/raw/master/TerrariaPatcher.public.zip";
 #else
-        private static string updateURL = "https://github.com/dougbenham/TerrariaPatcher/raw/master/TerrariaPatcher.zip";
+        private static string updateURL = "https://github.com/SyntacticFlow/TerrariaPatcher/raw/master/TerrariaPatcher.zip";
 #endif
         private static List<Buff> buffs;
         private static readonly int[] defaultBuffs = new[] { 3, 5, 11, 14, 26, 60, 58, 7, 146 };

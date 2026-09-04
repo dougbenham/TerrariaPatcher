@@ -1,4 +1,5 @@
-﻿v1.4.0.0:	Updated for Terraria v1.4.5.7.
+﻿v1.4.0.1:	Updated repository location.
+v1.4.0.0:	Updated for Terraria v1.4.5.7.
 		Added SettingsMenu plugin: an in game window on ~, or /menu, for every plugin's settings and hotkeys.
 		Plugins can now be switched on and off, in that window or with /plugins enable|disable.
 		Settings holding a list of tiles, buffs or items are configurable with a searchable list.
